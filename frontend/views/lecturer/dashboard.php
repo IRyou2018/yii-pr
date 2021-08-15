@@ -23,7 +23,15 @@ use yii\grid\GridView;
         'filterModel' => $searchModel,
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
-            'name',
+            [
+                'attribute'=>'name',
+                'format'=>'raw',
+                'value' => function($data)
+                {
+                    return
+                    Html::a($data->name, ['../assessments/view','id'=>$data->id], ['title' => 'View','class'=>'no-pjax']);
+                }
+            ],
             'assessment_type',
             'deadline',
             'active',
