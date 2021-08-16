@@ -17,8 +17,8 @@ class RubricsSearch extends Rubrics
     public function rules()
     {
         return [
-            [['id', 'value', 'item_id'], 'integer'],
-            [['description'], 'safe'],
+            [['id', 'weight', 'item_id'], 'integer'],
+            [['level', 'description'], 'safe'],
         ];
     }
 
@@ -59,11 +59,12 @@ class RubricsSearch extends Rubrics
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'value' => $this->value,
+            'weight' => $this->weight,
             'item_id' => $this->item_id,
         ]);
 
-        $query->andFilterWhere(['like', 'description', $this->description]);
+        $query->andFilterWhere(['like', 'level', $this->level])
+            ->andFilterWhere(['like', 'description', $this->description]);
 
         return $dataProvider;
     }

@@ -6,7 +6,6 @@ use yii\helpers\Html;
 /* @var $model common\models\Assessments */
 
 $this->title = 'Create Assessments';
-$this->params['breadcrumbs'][] = ['label' => 'Assessments', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="assessments-create">
@@ -15,6 +14,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?= $this->render('_form', [
         'model' => $model,
+        'modelsSection' => $modelsSection,
+        'modelsItem' => $modelsItem,
     ]) ?>
 
 </div>

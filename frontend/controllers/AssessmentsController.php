@@ -3,7 +3,13 @@
 namespace frontend\controllers;
 
 use common\models\Assessments;
+use common\models\Items;
+use common\models\LecturerAssessment;
+use common\models\Sections;
+use Exception;
 use frontend\models\AssessmentsSearch;
+use frontend\models\Model;
+use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -67,10 +73,84 @@ class AssessmentsController extends Controller
     public function actionCreate()
     {
         $model = new Assessments();
+        $modelsSection = [new Sections()];
+        $modelsItem = [[new Items()]];
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
+
+                $modelsSection = Model::createMultiple(Sections::classname());
+                Model::loadMultiple($modelsSection, Yii::$app->request->post());
+
+                // validate all models
+                $valid = $model->validate();
+                $valid = Model::validateMultiple($modelsSection) && $valid;
+
+                if (isset($_POST['Items'][0][0])) {
+                    foreach ($_POST['Items'] as $indexSection => $items) {
+                        foreach ($items as $indexItem => $item) {
+                            $data['Items'] = $item;
+                            $modelItem = new Items;
+                            $modelItem->load($data);
+                            $modelsItem[$indexSection][$indexItem] = $modelItem;
+                            $valid = $modelItem->validate();
+                        }
+                    }
+                }
+                
+                if ($valid) {
+                    $transaction = \Yii::$app->db->beginTransaction();
+                    try {
+                        if ($flag = $model->save(false)) {
+
+                            foreach ($modelsSection as $indexSection => $modelSection) {
+
+                                if ($flag === false) {
+                                    break;  
+                                }
+    
+                                $modelSection->assessment_id = $model->id;
+
+                                if (!($flag = $modelSection->save(false))) {
+                                    break;
+                                }
+
+                                if (isset($modelsItem[$indexSection]) && is_array($modelsItem[$indexSection])) {
+                                    foreach ($modelsItem[$indexSection] as $indexItem => $modelItem) {
+
+                                        $modelItem->section_id = $modelSection->id;
+    
+                                        if (!($flag = $modelItem->save(false))) {
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if($flag) {
+                                    $modelLecturerAssessment = new LecturerAssessment();
+
+                                    $modelLecturerAssessment->assessment_id = $model->id;
+                                    $modelLecturerAssessment->lecturer_id = Yii::$app->user->id;
+
+                                    if (!($flag = $modelLecturerAssessment->save(false))) {
+                                        break;
+                                    }
+
+                                }
+                            }
+                        }
+                        if ($flag) {
+                            $transaction->commit();
+                            return $this->redirect(['../lecturer/dashboard']);
+                        } else {
+
+                            $transaction->rollBack();
+    
+                        }
+                    } catch (Exception $e) {
+                        $transaction->rollBack();
+                    }
+                }
             }
         } else {
             $model->loadDefaultValues();
@@ -78,6 +158,8 @@ class AssessmentsController extends Controller
 
         return $this->render('create', [
             'model' => $model,
+            'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
+            'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
         ]);
     }
 

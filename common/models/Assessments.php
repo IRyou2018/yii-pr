@@ -3,19 +3,21 @@
 namespace common\models;
 
 use Yii;
+use yii\behaviors\BlameableBehavior;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "assessments".
  *
  * @property int $id
  * @property string $name
- * @property int|null $assessment_type
+ * @property int $assessment_type
  * @property int $deadline
- * @property int|null $active
+ * @property int $active
  * @property int $created_at
- * @property int|null $created_by
+ * @property int $created_by
  * @property int $updated_at
- * @property int|null $updated_by
+ * @property int $updated_by
  *
  * @property User $createdBy
  * @property LecturerAssessment[] $lecturerAssessments
@@ -32,13 +34,21 @@ class Assessments extends \yii\db\ActiveRecord
         return 'assessments';
     }
 
+    public function behaviors()
+    {
+        return [
+            TimestampBehavior::class,
+            BlameableBehavior::class
+        ];
+    }
+
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['name', 'deadline', 'created_at', 'updated_at'], 'required'],
+            [['name', 'assessment_type', 'deadline', 'active'], 'required'],
             [['assessment_type', 'deadline', 'active', 'created_at', 'created_by', 'updated_at', 'updated_by'], 'integer'],
             [['name'], 'string', 'max' => 255],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'id']],

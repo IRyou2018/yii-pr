@@ -17,8 +17,9 @@ class m210802_112716_create_rubrics_table extends Migration
     {
         $this->createTable('{{%rubrics}}', [
             'id' => $this->primaryKey(),
+            'level' => $this->string(255)->notNull(),
+            'weight' => $this->integer(2)->notNull(),
             'description' => $this->string(255)->notNull(),
-            'value' => $this->integer(2)->notNull(),
             'item_id' => $this->integer(11)->notNull(),
         ]);
 

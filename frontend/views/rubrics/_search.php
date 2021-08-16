@@ -17,9 +17,11 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'id') ?>
 
+    <?= $form->field($model, 'level') ?>
+
     <?= $form->field($model, 'description') ?>
 
-    <?= $form->field($model, 'value') ?>
+    <?= $form->field($model, 'weight') ?>
 
     <?= $form->field($model, 'item_id') ?>
 

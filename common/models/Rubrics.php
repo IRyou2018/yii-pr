@@ -8,8 +8,9 @@ use Yii;
  * This is the model class for table "rubrics".
  *
  * @property int $id
+ * @property string $level
  * @property string $description
- * @property int $value
+ * @property int $weight
  * @property int $item_id
  *
  * @property Items $item
@@ -30,9 +31,9 @@ class Rubrics extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['description', 'value', 'item_id'], 'required'],
-            [['value', 'item_id'], 'integer'],
-            [['description'], 'string', 'max' => 255],
+            [['level', 'description', 'weight', 'item_id'], 'required'],
+            [['weight', 'item_id'], 'integer'],
+            [['level', 'description'], 'string', 'max' => 255],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
         ];
     }
@@ -44,8 +45,9 @@ class Rubrics extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
+            'level' => 'Level',
             'description' => 'Description',
-            'value' => 'Value',
+            'weight' => 'Weight',
             'item_id' => 'Item ID',
         ];
     }
