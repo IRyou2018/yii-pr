@@ -135,11 +135,6 @@ class LecturerController extends Controller
                         }
                     }
                 }
-
-                // echo '<pre>';
-                // print_r($modelsRubric);
-                // echo '</pre>';
-                // die();
                 
                 if ($valid) {
                     $transaction = \Yii::$app->db->beginTransaction();
@@ -170,10 +165,12 @@ class LecturerController extends Controller
                                         if (isset($modelsRubric[$indexSection][$indexItem]) && is_array($modelsRubric[$indexSection][$indexItem])) {
                                             foreach ($modelsRubric[$indexSection][$indexItem] as $indexRubric => $modelRubric) {
         
-                                                $modelRubric->item_id = $modelItem->id;
+                                                if (!empty($modelRubric->level) && !empty($modelRubric->weight) && !empty($modelRubric->description)) {
+                                                    $modelRubric->item_id = $modelItem->id;
             
-                                                if (!($flag = $modelRubric->save(false))) {
-                                                    break;
+                                                    if (!($flag = $modelRubric->save(false))) {
+                                                        break;
+                                                    }
                                                 }
                                             }
                                         }

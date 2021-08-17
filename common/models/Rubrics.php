@@ -31,7 +31,15 @@ class Rubrics extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['level', 'description', 'weight'], 'required'],
+            ['level', 'required', 'when' => function($model) {
+                return !empty($model->weight) || !empty($model->description) ;
+            }, 'enableClientValidation' => false],
+            ['weight', 'required', 'when' => function($model) {
+                return !empty($model->level) || !empty($model->description) ;
+            }, 'enableClientValidation' => false],
+            ['description', 'required', 'when' => function($model) {
+                return !empty($model->weight) || !empty($model->level) ;
+            }, 'enableClientValidation' => false],
             [['weight', 'item_id'], 'integer'],
             [['level', 'description'], 'string', 'max' => 255],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
