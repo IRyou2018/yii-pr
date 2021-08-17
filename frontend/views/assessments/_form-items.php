@@ -21,65 +21,50 @@ use wbraganca\dynamicform\DynamicFormWidget;
     ],
 ]); ?>
 
-<div class="card"><!-- widgetBody -->
-    <div class="card-header">
-        <div class="row">
-            <div class="col-md-11">
-                <h3>Item</h3>
+<?php foreach ($modelsItem as $indexItem => $modelItem) : ?>
+<div class="container-item"><!-- widgetContainer -->
+    <div class="item card mt-2"><!-- widgetBody -->
+        <div class="card-header text-white bg-secondary">
+            <div class="row">
+                <div class="col-md-10">
+                    <h3>Item</h3>
+                </div>
+                <div class="col-md-2 float-right">
+                    <button type="button" class="add-item btn-success btn-xs"><span class="material-icons">add</span></button>
+                    <button type="button" class="remove-item btn-danger"><span class="material-icons">remove</span></button>
+                </div>
             </div>
-            <div class="col-md-1 float-right">
-                <button type="button" class="add-item btn btn-success btn-xs"><span class="material-icons">add</span></button>
+        </div>
+        <div class="card-body">
+            <?php
+                // necessary for update action.
+                if (!$modelItem->isNewRecord) {
+                    echo Html::activeHiddenInput($modelItem, "[{$indexSection}][{$indexItem}]id");
+                }
+            ?>
+            <div class="row">
+                <div class="col-sm-6">
+                    <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]name")->textInput(['maxlength' => true]) ?>
+                </div>
+                <div class="col-sm-3">
+                    <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]max_mark_value")->textInput(['maxlength' => true]) ?>
+                </div>
+                <div class="col-sm-3">
+                    <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]item_type")->textInput(['maxlength' => true]) ?>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <?= $this->render('_form-rubrics', [
+                        'form' => $form,
+                        'indexSection' => $indexSection,
+                        'indexItem' => $indexItem,
+                        'modelsRubric' => $modelsRubric[$indexSection][$indexItem],
+                        ]) ?>
+                </div>
             </div>
         </div>
     </div>
-    <?php foreach ($modelsItem as $indexItem => $modelItem) : ?>
-    <div class="container-item card-body">
-        <table class="item table table-bordered">
-            <thead>
-                <tr>
-                    <th>Item Name</th>
-                    <th>Max Mark Value</th>
-                    <th>Item Type</th>
-                    <th class="text-center">
-                    <button type="button" class="remove-item btn-danger"><span class="material-icons">remove</span></button>
-                    </th>
-                </tr>
-            </thead>
-            
-            <tbody class="">
-                    <tr>
-                        <td class="vcenter">
-                            <?php
-                            // necessary for update action.
-                            if (!$modelItem->isNewRecord) {
-                                echo Html::activeHiddenInput($modelItem, "[{$indexSection}][{$indexItem}]id");
-                            }
-                            ?>
-
-                            <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]name")->label(false)->textInput(['maxlength' => true]) ?>
-                        </td>
-                        <td class="vcenter">
-                            <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]max_mark_value")->label(false)->textInput(['maxlength' => true]) ?>
-                        </td>
-                        <td class="vcenter">
-                            <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]item_type")->label(false)->textInput(['maxlength' => true]) ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="vcenter"  colspan="3">
-                        <?= $this->render('_form-rubrics', [
-                            'form' => $form,
-                            'indexSection' => $indexSection,
-                            'indexItem' => $indexItem,
-                            'modelsRubric' => $modelsRubric[$indexSection][$indexItem],
-                            ]) ?>
-                        </td>
-                    </tr>
-                    </tbody>
-                
-            
-        </table>
-    </div>
-    <?php endforeach; ?>
 </div>
+<?php endforeach; ?>
 <?php DynamicFormWidget::end(); ?>
