@@ -1,27 +1,10 @@
 <?php
 
 use yii\helpers\Html;
-use yii\widgets\ActiveForm;
 use wbraganca\dynamicform\DynamicFormWidget;
-
-/* @var $this yii\web\View */
-/* @var $model common\models\Assessments */
-/* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="assessments-form">
-
-    <?php $form = ActiveForm::begin(['id' => 'dynamic-form']); ?>
-
-    <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
-
-    <?= $form->field($model, 'assessment_type')->textInput() ?>
-
-    <?= $form->field($model, 'deadline')->textInput() ?>
-
-    <?= $form->field($model, 'active')->textInput() ?>
-
-    <?php DynamicFormWidget::begin([
+<?php DynamicFormWidget::begin([
         'widgetContainer' => 'dynamicform_section', // required: only alphanumeric characters plus "_" [A-Za-z0-9_]
         'widgetBody' => '.container-section', // required: css class selector
         'widgetItem' => '.section', // required: css class
@@ -38,16 +21,15 @@ use wbraganca\dynamicform\DynamicFormWidget;
     ]); ?>
     <?php foreach ($modelsSection as $indexSection => $modelSection): ?>
     <div class="container-section"><!-- widgetContainer -->
-
-        <div class="section card"><!-- widgetBody -->
-            <div class="card-header">
+        <div class="section card mt-3"><!-- widgetBody -->
+            <div class="card-header text-white bg-dark">
                 <div class="row">
                     <div class="col-md-10">
-                        <h3>Section</h3>
+                        <h4>Section</h4>
                     </div>
                     <div class="col-md-2 float-right">
-                        <button type="button" class="add-section btn btn-success btn-xs"><span class="material-icons">add</span></button>
-                        <button type="button" class="remove-section btn btn-danger btn-xs"><span class="material-icons">remove</span></button>
+                        <button type="button" class="add-section btn-success btn-xs"><span class="material-icons">add</span></button>
+                        <button type="button" class="remove-section btn-danger btn-xs"><span class="material-icons">remove</span></button>
                     </div>
                 </div>
             </div>
@@ -81,13 +63,3 @@ use wbraganca\dynamicform\DynamicFormWidget;
     <?php endforeach; ?>
     </div>
     <?php DynamicFormWidget::end(); ?>
-
-
-
-    <div class="form-group">
-        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
-    </div>
-
-    <?php ActiveForm::end(); ?>
-
-</div>

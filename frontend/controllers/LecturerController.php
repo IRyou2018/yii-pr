@@ -3,7 +3,14 @@
 namespace frontend\controllers;
 
 use common\models\Assessments;
+use common\models\Items;
+use common\models\LecturerAssessment;
+use common\models\Rubrics;
+use common\models\Sections;
+use Exception;
 use frontend\models\AssessmentsSearch;
+use frontend\models\Model;
+use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -88,7 +95,127 @@ class LecturerController extends Controller
      */
     public function actionCreate()
     {
-        return $this->redirect(['../assessments/create']);
+        $model = new Assessments();
+        $modelsSection = [new Sections()];
+        $modelsItem = [[new Items()]];
+        $modelsRubric = [[[new Rubrics()]]];
+
+        if ($this->request->isPost) {
+            if ($model->load($this->request->post()) && $model->save()) {
+
+                $modelsSection = Model::createMultiple(Sections::classname());
+                Model::loadMultiple($modelsSection, Yii::$app->request->post());
+
+                // validate all models
+                $valid = $model->validate();
+                $valid = Model::validateMultiple($modelsSection) && $valid;
+
+                if (isset($_POST['Items'][0][0])) {
+                    foreach ($_POST['Items'] as $indexSection => $items) {
+                        foreach ($items as $indexItem => $item) {
+                            $data['Items'] = $item;
+                            $modelItem = new Items;
+                            $modelItem->load($data);
+                            $modelsItem[$indexSection][$indexItem] = $modelItem;
+                            $valid = $modelItem->validate();
+                        }
+                    }
+                }
+
+                if (isset($_POST['Rubrics'][0][0][0])) {
+                    foreach ($_POST['Rubrics'] as $indexSection => $items) {
+                        foreach ($items as $indexItem => $rubrics) {
+                            foreach ($rubrics as $indexRubric => $rubric) {
+                                $data['Rubrics'] = $rubric;
+                                $modelRubric = new Rubrics;
+                                $modelRubric->load($data);
+                                $modelsRubric[$indexSection][$indexItem][$indexRubric] = $modelRubric;
+                                $valid = $modelRubric->validate();
+                            }
+                        }
+                    }
+                }
+
+                // echo '<pre>';
+                // print_r($modelsRubric);
+                // echo '</pre>';
+                // die();
+                
+                if ($valid) {
+                    $transaction = \Yii::$app->db->beginTransaction();
+                    try {
+                        if ($flag = $model->save(false)) {
+
+                            foreach ($modelsSection as $indexSection => $modelSection) {
+
+                                if ($flag === false) {
+                                    break;  
+                                }
+    
+                                $modelSection->assessment_id = $model->id;
+
+                                if (!($flag = $modelSection->save(false))) {
+                                    break;
+                                }
+
+                                if (isset($modelsItem[$indexSection]) && is_array($modelsItem[$indexSection])) {
+                                    foreach ($modelsItem[$indexSection] as $indexItem => $modelItem) {
+
+                                        $modelItem->section_id = $modelSection->id;
+    
+                                        if (!($flag = $modelItem->save(false))) {
+                                            break;
+                                        }
+
+                                        if (isset($modelsRubric[$indexSection][$indexItem]) && is_array($modelsRubric[$indexSection][$indexItem])) {
+                                            foreach ($modelsRubric[$indexSection][$indexItem] as $indexRubric => $modelRubric) {
+        
+                                                $modelRubric->item_id = $modelItem->id;
+            
+                                                if (!($flag = $modelRubric->save(false))) {
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if($flag) {
+                                    $modelLecturerAssessment = new LecturerAssessment();
+
+                                    $modelLecturerAssessment->assessment_id = $model->id;
+                                    $modelLecturerAssessment->lecturer_id = Yii::$app->user->id;
+
+                                    if (!($flag = $modelLecturerAssessment->save(false))) {
+                                        break;
+                                    }
+
+                                }
+                            }
+                        }
+                        if ($flag) {
+                            $transaction->commit();
+                            return $this->redirect(['../lecturer/dashboard']);
+                        } else {
+
+                            $transaction->rollBack();
+    
+                        }
+                    } catch (Exception $e) {
+                        $transaction->rollBack();
+                    }
+                }
+            }
+        } else {
+            $model->loadDefaultValues();
+        }
+
+        return $this->render('create', [
+            'model' => $model,
+            'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
+            'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
+            'modelsRubric' => (empty($modelsRubric)) ? [[[new Rubrics()]]] : $modelsRubric,
+        ]);
     }
 
     /**

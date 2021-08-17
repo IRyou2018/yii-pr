@@ -5,6 +5,7 @@ namespace frontend\controllers;
 use common\models\Assessments;
 use common\models\Items;
 use common\models\LecturerAssessment;
+use common\models\Rubrics;
 use common\models\Sections;
 use Exception;
 use frontend\models\AssessmentsSearch;
@@ -75,6 +76,7 @@ class AssessmentsController extends Controller
         $model = new Assessments();
         $modelsSection = [new Sections()];
         $modelsItem = [[new Items()]];
+        $modelsRubric = [[[new Rubrics()]]];
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
@@ -97,6 +99,25 @@ class AssessmentsController extends Controller
                         }
                     }
                 }
+
+                if (isset($_POST['Rubrics'][0][0][0])) {
+                    foreach ($_POST['Rubrics'] as $indexSection => $items) {
+                        foreach ($items as $indexItem => $rubrics) {
+                            foreach ($rubrics as $indexRubric => $rubric) {
+                                $data['Rubrics'] = $rubric;
+                                $modelRubric = new Rubrics;
+                                $modelRubric->load($data);
+                                $modelsRubric[$indexSection][$indexItem][$indexRubric] = $modelRubric;
+                                $valid = $modelRubric->validate();
+                            }
+                        }
+                    }
+                }
+
+                // echo '<pre>';
+                // print_r($modelsRubric);
+                // echo '</pre>';
+                // die();
                 
                 if ($valid) {
                     $transaction = \Yii::$app->db->beginTransaction();
@@ -122,6 +143,17 @@ class AssessmentsController extends Controller
     
                                         if (!($flag = $modelItem->save(false))) {
                                             break;
+                                        }
+
+                                        if (isset($modelsRubric[$indexSection][$indexItem]) && is_array($modelsRubric[$indexSection][$indexItem])) {
+                                            foreach ($modelsRubric[$indexSection][$indexItem] as $indexRubric => $modelRubric) {
+        
+                                                $modelRubric->item_id = $modelItem->id;
+            
+                                                if (!($flag = $modelRubric->save(false))) {
+                                                    break;
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -160,6 +192,7 @@ class AssessmentsController extends Controller
             'model' => $model,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
+            'modelsRubric' => (empty($modelsRubric)) ? [[[new Rubrics()]]] : $modelsRubric,
         ]);
     }
 

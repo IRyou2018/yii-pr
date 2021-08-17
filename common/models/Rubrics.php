@@ -31,7 +31,7 @@ class Rubrics extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['level', 'description', 'weight', 'item_id'], 'required'],
+            [['level', 'description', 'weight'], 'required'],
             [['weight', 'item_id'], 'integer'],
             [['level', 'description'], 'string', 'max' => 255],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],

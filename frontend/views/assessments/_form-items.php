@@ -5,7 +5,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
 ?>
 
 <?php DynamicFormWidget::begin([
-    'widgetContainer' => 'dynamicform_inner',
+    'widgetContainer' => 'dynamicform_item',
     'widgetBody' => '.container-item',
     'widgetItem' => '.item',
     'limit' => 4,
@@ -23,25 +23,31 @@ use wbraganca\dynamicform\DynamicFormWidget;
 
 <div class="card"><!-- widgetBody -->
     <div class="card-header">
-        <h3>Item</h3>
+        <div class="row">
+            <div class="col-md-11">
+                <h3>Item</h3>
+            </div>
+            <div class="col-md-1 float-right">
+                <button type="button" class="add-item btn btn-success btn-xs"><span class="material-icons">add</span></button>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        <table class="table table-bordered">
+    <?php foreach ($modelsItem as $indexItem => $modelItem) : ?>
+    <div class="container-item card-body">
+        <table class="item table table-bordered">
             <thead>
                 <tr>
                     <th>Item Name</th>
                     <th>Max Mark Value</th>
                     <th>Item Type</th>
-                    <th>Rubrics</th>
                     <th class="text-center">
-                        <button type="button" class="add-item btn-success"><span class="material-icons">add</span></button>
+                    <button type="button" class="remove-item btn-danger"><span class="material-icons">remove</span></button>
                     </th>
                 </tr>
             </thead>
-
-            <tbody class="container-item">
-                <?php foreach ($modelsItem as $indexItem => $modelItem) : ?>
-                    <tr class="item">
+            
+            <tbody class="">
+                    <tr>
                         <td class="vcenter">
                             <?php
                             // necessary for update action.
@@ -58,7 +64,9 @@ use wbraganca\dynamicform\DynamicFormWidget;
                         <td class="vcenter">
                             <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]item_type")->label(false)->textInput(['maxlength' => true]) ?>
                         </td>
-                        <td class="vcenter">
+                    </tr>
+                    <tr>
+                        <td class="vcenter"  colspan="3">
                         <?= $this->render('_form-rubrics', [
                             'form' => $form,
                             'indexSection' => $indexSection,
@@ -66,14 +74,12 @@ use wbraganca\dynamicform\DynamicFormWidget;
                             'modelsRubric' => $modelsRubric[$indexSection][$indexItem],
                             ]) ?>
                         </td>
-
-                        <td class="text-center vcenter" style="width: 90px;">
-                            <button type="button" class="remove-item btn-danger"><span class="material-icons">remove</span></button>
-                        </td>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
+                    </tbody>
+                
+            
         </table>
     </div>
+    <?php endforeach; ?>
 </div>
 <?php DynamicFormWidget::end(); ?>
