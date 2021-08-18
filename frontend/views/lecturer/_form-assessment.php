@@ -1,8 +1,7 @@
 <?php
 
 use yii\helpers\Html;
-use yii\widgets\ActiveForm;
-use wbraganca\dynamicform\DynamicFormWidget;
+use yii\bootstrap4\ActiveForm;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\Assessments */
@@ -11,7 +10,10 @@ use wbraganca\dynamicform\DynamicFormWidget;
 
 <div class="assessments-form">
 
-    <?php $form = ActiveForm::begin(['id' => 'dynamic-form']); ?>
+    <?php $form = ActiveForm::begin([
+        'id' => 'dynamic-form',
+        'options' => ['enctype' => 'multipart/form-data']
+    ]); ?>
 
     <div class="card"><!-- widgetBody -->
         <div class="card-header text-white bg-dark">
@@ -36,6 +38,11 @@ use wbraganca\dynamicform\DynamicFormWidget;
                 </div>
                 <div class="col">
                     <?= $form->field($model, 'active')->textInput() ?>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <?= $form->field($modelUpload,'file')->fileInput(['multiple'=>'multiple']) ?>
                 </div>
             </div>
         </div>

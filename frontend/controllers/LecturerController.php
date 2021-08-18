@@ -3,17 +3,23 @@
 namespace frontend\controllers;
 
 use common\models\Assessments;
+use common\models\GroupInfo;
 use common\models\Items;
 use common\models\LecturerAssessment;
+use common\models\PeerAssessment;
 use common\models\Rubrics;
 use common\models\Sections;
+use common\models\User;
 use Exception;
 use frontend\models\AssessmentsSearch;
 use frontend\models\Model;
+use frontend\models\Upload;
+use moonland\phpexcel\Excel;
 use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\web\UploadedFile;
 
 /**
  * LecturerController
@@ -99,9 +105,10 @@ class LecturerController extends Controller
         $modelsSection = [new Sections()];
         $modelsItem = [[new Items()]];
         $modelsRubric = [[[new Rubrics()]]];
+        $modelUpload = new Upload();
 
         if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
+            if ($model->load($this->request->post()) && $modelUpload->load($this->request->post())) {
 
                 $modelsSection = Model::createMultiple(Sections::classname());
                 Model::loadMultiple($modelsSection, Yii::$app->request->post());
@@ -135,11 +142,285 @@ class LecturerController extends Controller
                         }
                     }
                 }
+
+                $modelUpload->file = UploadedFile::getInstance($modelUpload, 'file');
+                $path = "uploads/";
+
+                $valid = $modelUpload->validate();
+
+                if($valid) {
+                    if(!file_exists($path)) {
+                        mkdir($path, 0777, true);
+                    }
+                    $modelUpload->file->saveAs($path . time() . '.' . $modelUpload->file->extension);
+
+                    $fileName = $path . time() . '.' . $modelUpload->file->extension;
+
+                    $excelData = Excel::widget([
+                        'mode' => 'import',
+                        'fileName' => $fileName,
+                        'setFirstRecordAsKeys' => true,
+                        'setIndexSheetByName' => true,
+                    ]);
+
+                    $valid = $modelUpload->validateGroupTemplateFormat($excelData);
+
+                    $valid = $modelUpload->validateInputContents($excelData);
+
+                    // echo '<pre>';
+                    // print_r($excelData);
+                    // echo '</pre>';
+                    // die();
+
+                    // require(Yii::getAlias("@vendor")."/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
+                    // require(Yii::getAlias("@vendor")."/phpoffice/phpexcel/Classes/PHPExcel.php");
+
+                    // $fileType = \PHPExcel_IOFactory::identify($fileName);
+                    // $excelReader = \PHPExcel_IOFactory::createReader($fileType);
+
+                    // $excel = $excelReader->load($fileName);
+
+                    // if($model->assessment_type = "1") {
+                    //     $sheet = $excel->getSheet(0); 
+                    //     $highestRow = $sheet->getHighestRow(); 
+                    //     $highestColumn = $sheet->getHighestColumn();
+                    //     $array = $sheet->toArray();
+
+                    //     if($this->validateTableFormat($array))
+                    //     {
+                    //         if($this->validateTableContests($array))
+                    //         {
+                    // }
+                }
                 
                 if ($valid) {
                     $transaction = \Yii::$app->db->beginTransaction();
                     try {
                         if ($flag = $model->save(false)) {
+
+                            if($flag && count($excelData) > 0) {
+                                print_r(" 1 ");
+                                
+                                $sortedData = $this->arraySort($excelData, 'Group Name', SORT_ASC);
+
+                                $i = 0;
+
+                                $temp_Group_name = '';
+                                $temp_Group_id = '';
+
+                                do {
+                                    print_r(" 2 ");
+                                    
+                                    if(!empty($temp_Group_name) && $sortedData[$i]['Group Name'] == $temp_Group_name) {
+                                        print_r(" 3 ");
+                                        // echo '<pre>';
+                                        // print_r($sortedData);
+                                        // echo '</pre>';
+                                        // die();
+                                        $modelUser = new User();
+                                        $modelUser->first_name = $sortedData[$i]['First Name'];
+                                        $modelUser->last_name = $sortedData[$i]['Last Name'];
+                                        $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
+                                        $modelUser->email = $sortedData[$i]['Email'];
+                                        $modelUser->type = '1';
+
+                                        if($modelUser->findByEmail($sortedData[$i]['Email'])) {
+                                            print_r(" 4 ");
+                                        } else {
+                                            $modelUser->save();
+                                            print_r(" 5 ");
+                                        }
+
+                                        $modelPeerAssessment = new PeerAssessment();
+                                        $modelPeerAssessment->student_id = $modelUser->id;
+                                        $modelPeerAssessment->group_id = $temp_Group_id;
+                                        
+                                        if($flag = $modelPeerAssessment->save(false)) {
+                                            print_r(" 6 ");
+                                        } else {
+                                            print_r(" 7 ");
+                                            $flag = false;
+                                            break;
+                                        }
+
+                                    } else {
+                                        print_r(" 8 ");
+                                        
+                                        $temp_Group_name = $sortedData[$i]['Group Name'];;
+
+                                        $modelGroupInfo = new GroupInfo();
+
+                                        $modelGroupInfo->name = $temp_Group_name;
+                                        $modelGroupInfo->assessment_id = $model->id;
+
+                                        // echo '<pre>';
+                                        // print_r($flag = $modelGroupInfo->save(false));
+                                        // echo '</pre>';
+                                        // die();
+                                        if($flag = $modelGroupInfo->save(false)) {
+                                            print_r(" 9 ");
+                                            $temp_Group_id = $modelGroupInfo->id;
+
+                                            $modelUser = new User();
+                                            $modelUser->first_name = $sortedData[$i]['First Name'];
+                                            $modelUser->last_name = $sortedData[$i]['Last Name'];
+                                            $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
+                                            $modelUser->email = $sortedData[$i]['Email'];
+                                            $modelUser->type = '1';
+
+                                            if($modelUser->findByEmail($sortedData[$i]['Email'])) {
+                                                print_r(" 10 ");
+                                                // echo '<pre>';
+                                                // print_r($modelUser);
+                                                // echo '</pre>';
+                                                // die();
+                                            } else {
+                                                $modelUser->save();
+                                                print_r(" 11 ");
+                                            }
+
+                                            $modelPeerAssessment = new PeerAssessment();
+                                            $modelPeerAssessment->student_id = $modelUser->id;
+                                            $modelPeerAssessment->group_id = $temp_Group_id;
+
+                                            if($flag = $modelPeerAssessment->save(false)) {
+                                                print_r(" 12 ");
+                                            } else {
+                                                print_r(" 13 ");
+                                                $flag = false;
+                                                break;
+                                            }
+                                        } else {
+                                            print_r(" 14 ");
+                                            $flag = false;
+                                            break;
+                                        }
+                                    }
+
+                                    $i++;
+                                    print_r(" 15 ");
+                                } while ($i < count($sortedData));
+                                print_r(" 16 ");
+                                // die();
+        
+                                // $temp_Group = $sortedData[0]["Group Name"];
+        
+                                // // $indexGroupInfo = 0;
+                                // // $indexPeerAssessment = 0;
+                                // $modelGroupInfo = new GroupInfo();
+        
+                                // $modelGroupInfo->name = $temp_Group;
+                                // $modelGroupInfo->assessment_id = $model->id;
+                                // // $modelsGroupInfo[$indexGroupInfo] = $modelGroupInfo;
+                                // if($flag = $modelGroupInfo->save(false)) {
+
+                                //     $temp_Group_id = $modelGroupInfo->id;
+
+                                //     $modelUser = new User();
+                                //     $modelUser->first_name = $sortedData[0]["First Name"];
+                                //     $modelUser->last_name = $sortedData[0]["Last Name"];
+                                //     $modelUser->matric_number = $sortedData[0]["Matriculation Number"];
+                                //     $modelUser->email = $sortedData[0]["Email"];
+                                //     $modelUser->type = "1";
+
+                                //     if($modelUser->findByEmail($sortedData[0]["Email"])) {
+                                        
+                                //     } else {
+                                //         $modelUser->save();
+                                //     }
+
+                                //     $modelPeerAssessment = new PeerAssessment();
+                                //     $modelPeerAssessment->student_id = $modelUser->id;
+                                //     $modelPeerAssessment->group_id = $temp_Group_id;
+
+                                //     if($flag = $modelPeerAssessment->save(false)) {
+
+                                //         for($i=1; $i < count($sortedData); $i++) {
+            
+                                //             if($sortedData[$i]["Group Name"] == $temp_Group) {
+
+                                //                 $modelUser = new User();
+                                //                 $modelUser->first_name = $sortedData[$i]["First Name"];
+                                //                 $modelUser->last_name = $sortedData[$i]["Last Name"];
+                                //                 $modelUser->matric_number = $sortedData[$i]["Matriculation Number"];
+                                //                 $modelUser->email = $sortedData[$i]["Email"];
+                                //                 $modelUser->type = "1";
+
+                                //                 if($modelUser->findByEmail($sortedData[$i]["Email"])) {
+                                                    
+                                //                 } else {
+                                //                     $modelUser->save();
+                                //                 }
+
+                                //                 $modelPeerAssessment = new PeerAssessment();
+                                //                 $modelPeerAssessment->student_id = $modelUser->id;
+                                //                 $modelPeerAssessment->group_id = $modelGroupInfo->id;
+                                                
+                                //                 if($modelPeerAssessment->save()) {
+
+                                //                 } else {
+                                //                     $flag = false;
+                                //                     break;
+                                //                 }
+
+                                //             } else {
+
+                                //                 $temp_Group = $sortedData[$i]["Group Name"];;
+
+                                //                 $modelGroupInfo = new GroupInfo();
+        
+                                //                 $modelGroupInfo->name = $temp_Group;
+                                //                 $modelGroupInfo->assessment_id = $model->id;
+
+                                //                 if($modelGroupInfo->save()) {
+                                //                     $temp_Group_id = $modelGroupInfo->id;
+
+                                //                     $modelUser = new User();
+                                //                     $modelUser->first_name = $sortedData[$i]["First Name"];
+                                //                     $modelUser->last_name = $sortedData[$i]["Last Name"];
+                                //                     $modelUser->matric_number = $sortedData[$i]["Matriculation Number"];
+                                //                     $modelUser->email = $sortedData[$i]["Email"];
+                                //                     $modelUser->type = "1";
+
+                                //                     if($modelUser->findByEmail($sortedData[$i]["Email"])) {
+                                                        
+                                //                     } else {
+                                //                         $modelUser->save();
+                                //                     }
+
+                                //                     $modelPeerAssessment = new PeerAssessment();
+                                //                     $modelPeerAssessment->student_id = $modelUser->id;
+                                //                     $modelPeerAssessment->group_id = $temp_Group_id;
+
+                                //                     if($modelPeerAssessment->save()) {
+
+                                //                     } else {
+                                //                         $flag = false;
+                                //                         break;
+                                //                     }
+                                //                 } else {
+                                //                     $flag = false;
+                                //                     break;
+                                //                 }
+                                //             }
+
+                                //             $i++;
+                                //         }
+                                //     }
+            
+                                //     // echo '<pre>';
+                                //     // print_r($modelsGroupInfo);
+                                //     // echo '</pre>';
+                                //     // die();
+            
+                                    
+            
+                                //     echo '<pre>';
+                                //     print_r($temp_Group);
+                                //     echo '</pre>';
+                                //     die();
+                                // }
+                            }
 
                             foreach ($modelsSection as $indexSection => $modelSection) {
 
@@ -209,6 +490,7 @@ class LecturerController extends Controller
 
         return $this->render('create', [
             'model' => $model,
+            'modelUpload' => $modelUpload,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
             'modelsRubric' => (empty($modelsRubric)) ? [[[new Rubrics()]]] : $modelsRubric,
@@ -263,5 +545,14 @@ class LecturerController extends Controller
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    public function arraySort($array, $keys, $sort = SORT_DESC) {
+        $keysValue = [];
+        foreach ($array as $k => $v) {
+            $keysValue[$k] = $v[$keys];
+        }
+        array_multisort($keysValue, $sort, $array);
+        return $array;
     }
 }
