@@ -28,7 +28,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
             <th>Weight</th>
             <th>Description</th>
             <th class="text-center" style="width: 90px;">
-                <button type="button" class="add-rubric btn-success btn-xs"><span class="material-icons">add</span></button>
+                <button type="button" class="add-rubric btn-success btn-xs"><i class="fas fa-plus"></i></button>
             </th>
         </tr>
     </thead>
@@ -54,7 +54,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
             </td>
 
             <td class="col-sm-1">
-                <button type="button" class="remove-rubric btn-danger"><span class="material-icons">remove</span></button>
+                <button type="button" class="remove-rubric btn-danger"><i class="fas fa-minus"></i></button>
             </td>
         </tr>
     <?php endforeach; ?>

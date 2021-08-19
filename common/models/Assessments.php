@@ -12,7 +12,7 @@ use yii\behaviors\TimestampBehavior;
  * @property int $id
  * @property string $name
  * @property int $assessment_type
- * @property int $deadline
+ * @property string $deadline
  * @property int $active
  * @property int $created_at
  * @property int $created_by
@@ -20,6 +20,7 @@ use yii\behaviors\TimestampBehavior;
  * @property int $updated_by
  *
  * @property User $createdBy
+ * @property GroupInfo[] $groupInfos
  * @property LecturerAssessment[] $lecturerAssessments
  * @property Sections[] $sections
  * @property User $updatedBy
@@ -49,7 +50,8 @@ class Assessments extends \yii\db\ActiveRecord
     {
         return [
             [['name', 'assessment_type', 'deadline', 'active'], 'required'],
-            [['assessment_type', 'deadline', 'active', 'created_at', 'created_by', 'updated_at', 'updated_by'], 'integer'],
+            [['assessment_type', 'active', 'created_at', 'created_by', 'updated_at', 'updated_by'], 'integer'],
+            [['deadline'], 'safe'],
             [['name'], 'string', 'max' => 255],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'id']],
             [['updated_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['updated_by' => 'id']],
@@ -63,7 +65,7 @@ class Assessments extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'name' => 'Name',
+            'name' => 'Assessment Name',
             'assessment_type' => 'Assessment Type',
             'deadline' => 'Deadline',
             'active' => 'Active',
@@ -82,6 +84,16 @@ class Assessments extends \yii\db\ActiveRecord
     public function getCreatedBy()
     {
         return $this->hasOne(User::className(), ['id' => 'created_by']);
+    } 
+ 
+    /** 
+     * Gets query for [[GroupInfos]]. 
+     * 
+     * @return \yii\db\ActiveQuery 
+     */ 
+    public function getGroupInfos() 
+    { 
+        return $this->hasMany(GroupInfo::className(), ['assessment_id' => 'id']); 
     }
 
     /**

@@ -21,7 +21,9 @@
         "wbraganca/yii2-dynamicform": "*",
         "moonlandsoft/yii2-phpexcel": "*",
         "phpoffice/phpexcel": "^1.8",
-        "kartik-v/yii2-icons": "@dev"
+        "kartik-v/yii2-icons": "@dev",
+        "kartik-v/yii2-widget-datetimepicker": "dev-master",
+        "kartik-v/yii2-widgets": "dev-master"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",

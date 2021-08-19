@@ -16,9 +16,11 @@ use frontend\models\Model;
 use frontend\models\Upload;
 use moonland\phpexcel\Excel;
 use Yii;
+use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\helpers\ArrayHelper;
 use yii\web\UploadedFile;
 
 /**
@@ -34,6 +36,15 @@ class LecturerController extends Controller
         return array_merge(
             parent::behaviors(),
             [
+                'access' => [
+                    'class' => AccessControl::className(),
+                    'rules' => [
+                        [
+                            'allow' => true,
+                            'roles' => ['@']
+                        ],
+                    ],
+                ],
                 'verbs' => [
                     'class' => VerbFilter::className(),
                     'actions' => [
@@ -83,11 +94,6 @@ class LecturerController extends Controller
         $searchModel = new AssessmentsSearch();
         $dataProvider = $searchModel->searchByLecturerID($this->request->queryParams);
 
-        // echo "<pre>";
-        // print_r($dataProvider);
-        // echo "</pre>";
-        // exit(0);
-
         return $this->render('dashboard', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
@@ -106,9 +112,17 @@ class LecturerController extends Controller
         $modelsItem = [[new Items()]];
         $modelsRubric = [[[new Rubrics()]]];
         $modelUpload = new Upload();
+        $modelLecturerAssessment = new LecturerAssessment();
+        $coordinators = User::findCoordinators(Yii::$app->user->id);
+        $coordinators = ArrayHelper::map($coordinators, 'id', function($array, $default){return $array['first_name'] . ' '. $array['last_name'];});
+        // echo '<pre>';
+        // // print_r($coordinators);
+        // print_r($coordinators);
+        // echo '</pre>';
+        // die();
 
         if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $modelUpload->load($this->request->post())) {
+            if ($model->load($this->request->post()) && $modelUpload->load($this->request->post()) && $modelLecturerAssessment->load($this->request->post())) {
 
                 $modelsSection = Model::createMultiple(Sections::classname());
                 Model::loadMultiple($modelsSection, Yii::$app->request->post());
@@ -166,31 +180,6 @@ class LecturerController extends Controller
                     $valid = $modelUpload->validateGroupTemplateFormat($excelData);
 
                     $valid = $modelUpload->validateInputContents($excelData);
-
-                    // echo '<pre>';
-                    // print_r($excelData);
-                    // echo '</pre>';
-                    // die();
-
-                    // require(Yii::getAlias("@vendor")."/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
-                    // require(Yii::getAlias("@vendor")."/phpoffice/phpexcel/Classes/PHPExcel.php");
-
-                    // $fileType = \PHPExcel_IOFactory::identify($fileName);
-                    // $excelReader = \PHPExcel_IOFactory::createReader($fileType);
-
-                    // $excel = $excelReader->load($fileName);
-
-                    // if($model->assessment_type = "1") {
-                    //     $sheet = $excel->getSheet(0); 
-                    //     $highestRow = $sheet->getHighestRow(); 
-                    //     $highestColumn = $sheet->getHighestColumn();
-                    //     $array = $sheet->toArray();
-
-                    //     if($this->validateTableFormat($array))
-                    //     {
-                    //         if($this->validateTableContests($array))
-                    //         {
-                    // }
                 }
                 
                 if ($valid) {
@@ -210,90 +199,100 @@ class LecturerController extends Controller
 
                                 do {
                                     print_r(" 2 ");
-                                    
-                                    if(!empty($temp_Group_name) && $sortedData[$i]['Group Name'] == $temp_Group_name) {
-                                        print_r(" 3 ");
-                                        // echo '<pre>';
-                                        // print_r($sortedData);
-                                        // echo '</pre>';
-                                        // die();
-                                        $modelUser = new User();
-                                        $modelUser->first_name = $sortedData[$i]['First Name'];
-                                        $modelUser->last_name = $sortedData[$i]['Last Name'];
-                                        $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
-                                        $modelUser->email = $sortedData[$i]['Email'];
-                                        $modelUser->type = '1';
+                                    if(empty($sortedData[$i]['Group Name'])
+                                        && empty($sortedData[$i]['First Name']) 
+                                        && empty($sortedData[$i]['Last Name']) 
+                                        && empty($sortedData[$i]['Matriculation Number']) 
+                                        && empty($sortedData[$i]['Email'])) {
 
-                                        if($modelUser->findByEmail($sortedData[$i]['Email'])) {
-                                            print_r(" 4 ");
-                                        } else {
-                                            $modelUser->save();
-                                            print_r(" 5 ");
-                                        }
-
-                                        $modelPeerAssessment = new PeerAssessment();
-                                        $modelPeerAssessment->student_id = $modelUser->id;
-                                        $modelPeerAssessment->group_id = $temp_Group_id;
-                                        
-                                        if($flag = $modelPeerAssessment->save(false)) {
-                                            print_r(" 6 ");
-                                        } else {
-                                            print_r(" 7 ");
-                                            $flag = false;
-                                            break;
-                                        }
-
+                                        continue;
                                     } else {
-                                        print_r(" 8 ");
-                                        
-                                        $temp_Group_name = $sortedData[$i]['Group Name'];;
-
-                                        $modelGroupInfo = new GroupInfo();
-
-                                        $modelGroupInfo->name = $temp_Group_name;
-                                        $modelGroupInfo->assessment_id = $model->id;
-
-                                        // echo '<pre>';
-                                        // print_r($flag = $modelGroupInfo->save(false));
-                                        // echo '</pre>';
-                                        // die();
-                                        if($flag = $modelGroupInfo->save(false)) {
-                                            print_r(" 9 ");
-                                            $temp_Group_id = $modelGroupInfo->id;
-
+                                        if(!empty($temp_Group_name) && $sortedData[$i]['Group Name'] == $temp_Group_name) {
+                                            print_r(" 3 ");
+                                            // echo '<pre>';
+                                            // print_r($sortedData);
+                                            // echo '</pre>';
+                                            // die();
                                             $modelUser = new User();
-                                            $modelUser->first_name = $sortedData[$i]['First Name'];
-                                            $modelUser->last_name = $sortedData[$i]['Last Name'];
-                                            $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
-                                            $modelUser->email = $sortedData[$i]['Email'];
-                                            $modelUser->type = '1';
 
                                             if($modelUser->findByEmail($sortedData[$i]['Email'])) {
-                                                print_r(" 10 ");
-                                                // echo '<pre>';
-                                                // print_r($modelUser);
-                                                // echo '</pre>';
-                                                // die();
+                                                print_r(" 4 ");
                                             } else {
+                                                $modelUser->first_name = $sortedData[$i]['First Name'];
+                                                $modelUser->last_name = $sortedData[$i]['Last Name'];
+                                                $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
+                                                $modelUser->email = $sortedData[$i]['Email'];
+                                                $modelUser->type = '1';
+                                                $modelUser->generateAuthKey();
                                                 $modelUser->save();
-                                                print_r(" 11 ");
+                                                print_r(" 5 ");
                                             }
 
                                             $modelPeerAssessment = new PeerAssessment();
                                             $modelPeerAssessment->student_id = $modelUser->id;
                                             $modelPeerAssessment->group_id = $temp_Group_id;
-
+                                            
                                             if($flag = $modelPeerAssessment->save(false)) {
-                                                print_r(" 12 ");
+                                                print_r(" 6 ");
                                             } else {
-                                                print_r(" 13 ");
+                                                print_r(" 7 ");
                                                 $flag = false;
                                                 break;
                                             }
+
                                         } else {
-                                            print_r(" 14 ");
-                                            $flag = false;
-                                            break;
+                                            print_r(" 8 ");
+                                            
+                                            $temp_Group_name = $sortedData[$i]['Group Name'];;
+
+                                            $modelGroupInfo = new GroupInfo();
+
+                                            $modelGroupInfo->name = $temp_Group_name;
+                                            $modelGroupInfo->assessment_id = $model->id;
+
+                                            // echo '<pre>';
+                                            // print_r($flag = $modelGroupInfo->save(false));
+                                            // echo '</pre>';
+                                            // die();
+                                            if($flag = $modelGroupInfo->save(false)) {
+                                                print_r(" 9 ");
+                                                $temp_Group_id = $modelGroupInfo->id;
+
+                                                $modelUser = new User();
+
+                                                if($modelUser->findByEmail($sortedData[$i]['Email'])) {
+                                                    print_r(" 10 ");
+                                                    // echo '<pre>';
+                                                    // print_r($modelUser);
+                                                    // echo '</pre>';
+                                                    // die();
+                                                } else {
+                                                    $modelUser->first_name = $sortedData[$i]['First Name'];
+                                                    $modelUser->last_name = $sortedData[$i]['Last Name'];
+                                                    $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
+                                                    $modelUser->email = $sortedData[$i]['Email'];
+                                                    $modelUser->type = '1';
+                                                    $modelUser->generateAuthKey();
+                                                    $modelUser->save();
+                                                    print_r(" 11 ");
+                                                }
+
+                                                $modelPeerAssessment = new PeerAssessment();
+                                                $modelPeerAssessment->student_id = $modelUser->id;
+                                                $modelPeerAssessment->group_id = $temp_Group_id;
+
+                                                if($flag = $modelPeerAssessment->save(false)) {
+                                                    print_r(" 12 ");
+                                                } else {
+                                                    print_r(" 13 ");
+                                                    $flag = false;
+                                                    break;
+                                                }
+                                            } else {
+                                                print_r(" 14 ");
+                                                $flag = false;
+                                                break;
+                                            }
                                         }
                                     }
 
@@ -301,125 +300,6 @@ class LecturerController extends Controller
                                     print_r(" 15 ");
                                 } while ($i < count($sortedData));
                                 print_r(" 16 ");
-                                // die();
-        
-                                // $temp_Group = $sortedData[0]["Group Name"];
-        
-                                // // $indexGroupInfo = 0;
-                                // // $indexPeerAssessment = 0;
-                                // $modelGroupInfo = new GroupInfo();
-        
-                                // $modelGroupInfo->name = $temp_Group;
-                                // $modelGroupInfo->assessment_id = $model->id;
-                                // // $modelsGroupInfo[$indexGroupInfo] = $modelGroupInfo;
-                                // if($flag = $modelGroupInfo->save(false)) {
-
-                                //     $temp_Group_id = $modelGroupInfo->id;
-
-                                //     $modelUser = new User();
-                                //     $modelUser->first_name = $sortedData[0]["First Name"];
-                                //     $modelUser->last_name = $sortedData[0]["Last Name"];
-                                //     $modelUser->matric_number = $sortedData[0]["Matriculation Number"];
-                                //     $modelUser->email = $sortedData[0]["Email"];
-                                //     $modelUser->type = "1";
-
-                                //     if($modelUser->findByEmail($sortedData[0]["Email"])) {
-                                        
-                                //     } else {
-                                //         $modelUser->save();
-                                //     }
-
-                                //     $modelPeerAssessment = new PeerAssessment();
-                                //     $modelPeerAssessment->student_id = $modelUser->id;
-                                //     $modelPeerAssessment->group_id = $temp_Group_id;
-
-                                //     if($flag = $modelPeerAssessment->save(false)) {
-
-                                //         for($i=1; $i < count($sortedData); $i++) {
-            
-                                //             if($sortedData[$i]["Group Name"] == $temp_Group) {
-
-                                //                 $modelUser = new User();
-                                //                 $modelUser->first_name = $sortedData[$i]["First Name"];
-                                //                 $modelUser->last_name = $sortedData[$i]["Last Name"];
-                                //                 $modelUser->matric_number = $sortedData[$i]["Matriculation Number"];
-                                //                 $modelUser->email = $sortedData[$i]["Email"];
-                                //                 $modelUser->type = "1";
-
-                                //                 if($modelUser->findByEmail($sortedData[$i]["Email"])) {
-                                                    
-                                //                 } else {
-                                //                     $modelUser->save();
-                                //                 }
-
-                                //                 $modelPeerAssessment = new PeerAssessment();
-                                //                 $modelPeerAssessment->student_id = $modelUser->id;
-                                //                 $modelPeerAssessment->group_id = $modelGroupInfo->id;
-                                                
-                                //                 if($modelPeerAssessment->save()) {
-
-                                //                 } else {
-                                //                     $flag = false;
-                                //                     break;
-                                //                 }
-
-                                //             } else {
-
-                                //                 $temp_Group = $sortedData[$i]["Group Name"];;
-
-                                //                 $modelGroupInfo = new GroupInfo();
-        
-                                //                 $modelGroupInfo->name = $temp_Group;
-                                //                 $modelGroupInfo->assessment_id = $model->id;
-
-                                //                 if($modelGroupInfo->save()) {
-                                //                     $temp_Group_id = $modelGroupInfo->id;
-
-                                //                     $modelUser = new User();
-                                //                     $modelUser->first_name = $sortedData[$i]["First Name"];
-                                //                     $modelUser->last_name = $sortedData[$i]["Last Name"];
-                                //                     $modelUser->matric_number = $sortedData[$i]["Matriculation Number"];
-                                //                     $modelUser->email = $sortedData[$i]["Email"];
-                                //                     $modelUser->type = "1";
-
-                                //                     if($modelUser->findByEmail($sortedData[$i]["Email"])) {
-                                                        
-                                //                     } else {
-                                //                         $modelUser->save();
-                                //                     }
-
-                                //                     $modelPeerAssessment = new PeerAssessment();
-                                //                     $modelPeerAssessment->student_id = $modelUser->id;
-                                //                     $modelPeerAssessment->group_id = $temp_Group_id;
-
-                                //                     if($modelPeerAssessment->save()) {
-
-                                //                     } else {
-                                //                         $flag = false;
-                                //                         break;
-                                //                     }
-                                //                 } else {
-                                //                     $flag = false;
-                                //                     break;
-                                //                 }
-                                //             }
-
-                                //             $i++;
-                                //         }
-                                //     }
-            
-                                //     // echo '<pre>';
-                                //     // print_r($modelsGroupInfo);
-                                //     // echo '</pre>';
-                                //     // die();
-            
-                                    
-            
-                                //     echo '<pre>';
-                                //     print_r($temp_Group);
-                                //     echo '</pre>';
-                                //     die();
-                                // }
                             }
 
                             foreach ($modelsSection as $indexSection => $modelSection) {
@@ -459,6 +339,7 @@ class LecturerController extends Controller
                                 }
 
                                 if($flag) {
+
                                     $modelLecturerAssessment = new LecturerAssessment();
 
                                     $modelLecturerAssessment->assessment_id = $model->id;
@@ -466,6 +347,19 @@ class LecturerController extends Controller
 
                                     if (!($flag = $modelLecturerAssessment->save(false))) {
                                         break;
+                                    }
+
+                                    $coordinatorList = $_POST['LecturerAssessment']['lecturer_id'];
+
+                                    foreach ($coordinatorList as $coorinator) {
+
+                                        $modelLecturerAssessment = new LecturerAssessment();
+                                        $modelLecturerAssessment->assessment_id = $model->id;
+                                        $modelLecturerAssessment->lecturer_id = $coorinator;
+                                        
+                                        if (!($flag = $modelLecturerAssessment->save(false))) {
+                                            break;
+                                        }
                                     }
 
                                 }
@@ -490,6 +384,8 @@ class LecturerController extends Controller
 
         return $this->render('create', [
             'model' => $model,
+            'modelLecturerAssessment' => $modelLecturerAssessment,
+            'coordinators' => $coordinators,
             'modelUpload' => $modelUpload,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,

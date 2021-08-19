@@ -25,7 +25,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
         <tr class="text-white bg-dark">
             <th colspan="2"><h4>Sections</h4></th>
             <th class="text-center" style="width: 90px;">
-                <button type="button" class="add-section btn-success btn-xs"><span class="material-icons">add</span></button>
+                <button type="button" class="add-section btn-success btn-xs"><i class="fas fa-plus"></i></button>
             </th>
         </tr>
     </thead>
@@ -54,7 +54,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
                 ]) ?>
             </td>
             <td class="text-center vcenter" style="width: 90px;">
-                <button type="button" class="remove-section btn-danger btn-xs"><span class="material-icons">remove</span></button>
+                <button type="button" class="remove-section btn-danger btn-xs"><i class="fas fa-minus"></i></button>
             </td>
         </tr>
     <?php endforeach; ?>

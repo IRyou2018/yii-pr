@@ -30,6 +30,9 @@ class User extends ActiveRecord implements IdentityInterface
     const STATUS_INACTIVE = 9;
     const STATUS_ACTIVE = 10;
 
+    const Type_Lecturer = 0;
+    const Type_Student = 1;
+
 
     /**
      * {@inheritdoc}
@@ -221,5 +224,19 @@ class User extends ActiveRecord implements IdentityInterface
     public function removePasswordResetToken()
     {
         $this->password_reset_token = null;
+    }
+
+    /**
+     * Finds coordinators
+     *
+     * @param string $username
+     * @return static|null
+     */
+    public static function findCoordinators($id)
+    {
+        return static::find()
+            ->where(['status' => self::STATUS_ACTIVE, 'type' => self::Type_Lecturer])
+            ->andWhere(['<>','id', $id])
+            ->all();
     }
 }
