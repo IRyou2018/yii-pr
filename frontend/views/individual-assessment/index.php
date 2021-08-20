@@ -4,18 +4,18 @@ use yii\helpers\Html;
 use yii\grid\GridView;
 
 /* @var $this yii\web\View */
-/* @var $searchModel frontend\models\SectionsSearch */
+/* @var $searchModel frontend\models\IndividualAssessmentSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Sections';
+$this->title = 'Individual Assessments';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="sections-index">
+<div class="individual-assessment-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Create Sections', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Create Individual Assessment', ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
@@ -27,9 +27,11 @@ $this->params['breadcrumbs'][] = $this->title;
             ['class' => 'yii\grid\SerialColumn'],
 
             'id',
-            'name',
-            'assessment_id',
-            'section_type',
+            'student_id',
+            'mark',
+            'marked',
+            'file',
+            //'assessment_id',
 
             ['class' => 'yii\grid\ActionColumn'],
         ],

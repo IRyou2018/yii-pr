@@ -4,12 +4,12 @@ namespace frontend\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use common\models\Items;
+use common\models\PeerReview;
 
 /**
- * ItemsSearch represents the model behind the search form of `common\models\Items`.
+ * PeerReviewSearch represents the model behind the search form of `common\models\PeerReview`.
  */
-class ItemsSearch extends Items
+class PeerReviewSearch extends PeerReview
 {
     /**
      * {@inheritdoc}
@@ -17,8 +17,7 @@ class ItemsSearch extends Items
     public function rules()
     {
         return [
-            [['id', 'max_mark_value', 'item_type', 'section_id'], 'integer'],
-            [['name'], 'safe'],
+            [['id', 'marker_student_id', 'individual_assessment_id'], 'integer'],
         ];
     }
 
@@ -40,7 +39,7 @@ class ItemsSearch extends Items
      */
     public function search($params)
     {
-        $query = Items::find();
+        $query = PeerReview::find();
 
         // add conditions that should always apply here
 
@@ -59,12 +58,9 @@ class ItemsSearch extends Items
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'max_mark_value' => $this->max_mark_value,
-            'item_type' => $this->item_type,
-            'section_id' => $this->section_id,
+            'marker_student_id' => $this->marker_student_id,
+            'individual_assessment_id' => $this->individual_assessment_id,
         ]);
-
-        $query->andFilterWhere(['like', 'name', $this->name]);
 
         return $dataProvider;
     }

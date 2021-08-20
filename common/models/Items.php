@@ -32,7 +32,7 @@ class Items extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'max_mark_value', 'item_type'], 'required'],
+            [['name', 'max_mark_value', 'item_type', 'section_id'], 'required'],
             [['max_mark_value', 'item_type', 'section_id'], 'integer'],
             [['name'], 'string', 'max' => 255],
             [['section_id'], 'exist', 'skipOnError' => true, 'targetClass' => Sections::className(), 'targetAttribute' => ['section_id' => 'id']],

@@ -3,19 +3,18 @@
 use yii\helpers\Html;
 
 /* @var $this yii\web\View */
-/* @var $model common\models\Sections */
+/* @var $model common\models\PeerReview */
 
-$this->title = 'Create Sections';
-$this->params['breadcrumbs'][] = ['label' => 'Sections', 'url' => ['index']];
+$this->title = 'Create Peer Review';
+$this->params['breadcrumbs'][] = ['label' => 'Peer Reviews', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="sections-create">
+<div class="peer-review-create">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <?= $this->render('_form', [
         'model' => $model,
-        'dataProvider' => $dataProvider,
     ]) ?>
 
 </div>

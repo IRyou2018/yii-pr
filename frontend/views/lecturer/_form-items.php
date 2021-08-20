@@ -8,7 +8,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
     'widgetContainer' => 'dynamicform_item',
     'widgetBody' => '.container-item',
     'widgetItem' => '.item',
-    'limit' => 4,
+    'limit' => 10,
     'min' => 1,
     'insertButton' => '.add-item',
     'deleteButton' => '.remove-item',
@@ -26,7 +26,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
         <tr class="text-white bg-secondary">
             <th>Items</th>
             <th>Rubrics (optional)</th>
-            <th class="text-center" style="width: 90px;">
+            <th class="text-center" style="width: 60px;">
                 <button type="button" class="add-item btn-success btn-xs"><i class="fas fa-plus"></i></button>
             </th>
         </tr>
@@ -57,7 +57,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
                     'modelsRubric' => $modelsRubric[$indexSection][$indexItem],
                 ]) ?>
             </td>
-            <td class="text-center vcenter" style="width: 90px;">
+            <td class="text-center vcenter" style="width: 60px;">
                 <button type="button" class="remove-item btn-danger btn-xs"><i class="fas fa-minus"></i></button>
             </td>
         </tr>

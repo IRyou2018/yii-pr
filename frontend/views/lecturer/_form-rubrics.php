@@ -27,7 +27,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
             <th>Level</th>
             <th>Weight</th>
             <th>Description</th>
-            <th class="text-center" style="width: 90px;">
+            <th class="text-center" style="width: 60px;">
                 <button type="button" class="add-rubric btn-success btn-xs"><i class="fas fa-plus"></i></button>
             </th>
         </tr>

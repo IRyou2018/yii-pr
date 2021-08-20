@@ -4,18 +4,18 @@ use yii\helpers\Html;
 use yii\grid\GridView;
 
 /* @var $this yii\web\View */
-/* @var $searchModel frontend\models\SectionsSearch */
+/* @var $searchModel frontend\models\PeerReviewSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Sections';
+$this->title = 'Peer Reviews';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="sections-index">
+<div class="peer-review-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Create Sections', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Create Peer Review', ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
@@ -27,9 +27,8 @@ $this->params['breadcrumbs'][] = $this->title;
             ['class' => 'yii\grid\SerialColumn'],
 
             'id',
-            'name',
-            'assessment_id',
-            'section_type',
+            'marker_student_id',
+            'individual_assessment_id',
 
             ['class' => 'yii\grid\ActionColumn'],
         ],

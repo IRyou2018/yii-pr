@@ -4,14 +4,14 @@ use yii\helpers\Html;
 use yii\widgets\DetailView;
 
 /* @var $this yii\web\View */
-/* @var $model common\models\Items */
+/* @var $model common\models\IndividualAssessment */
 
-$this->title = $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'Items', 'url' => ['index']];
+$this->title = $model->id;
+$this->params['breadcrumbs'][] = ['label' => 'Individual Assessments', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
-<div class="items-view">
+<div class="individual-assessment-view">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
@@ -30,10 +30,11 @@ $this->params['breadcrumbs'][] = $this->title;
         'model' => $model,
         'attributes' => [
             'id',
-            'name',
-            'max_mark_value',
-            'item_type',
-            'section_id',
+            'student_id',
+            'mark',
+            'marked',
+            'file',
+            'assessment_id',
         ],
     ]) ?>
 

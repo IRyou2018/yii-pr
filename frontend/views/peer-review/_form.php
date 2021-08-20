@@ -4,21 +4,17 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
-/* @var $model common\models\Items */
+/* @var $model common\models\PeerReview */
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="items-form">
+<div class="peer-review-form">
 
     <?php $form = ActiveForm::begin(); ?>
 
-    <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'marker_student_id')->textInput() ?>
 
-    <?= $form->field($model, 'max_mark_value')->textInput() ?>
-
-    <?= $form->field($model, 'item_type')->textInput() ?>
-
-    <?= $form->field($model, 'section_id')->textInput() ?>
+    <?= $form->field($model, 'individual_assessment_id')->textInput() ?>
 
     <div class="form-group">
         <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>

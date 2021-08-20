@@ -3,19 +3,18 @@
 use yii\helpers\Html;
 
 /* @var $this yii\web\View */
-/* @var $model common\models\Sections */
+/* @var $model common\models\IndividualAssessment */
 
-$this->title = 'Create Sections';
-$this->params['breadcrumbs'][] = ['label' => 'Sections', 'url' => ['index']];
+$this->title = 'Create Individual Assessment';
+$this->params['breadcrumbs'][] = ['label' => 'Individual Assessments', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="sections-create">
+<div class="individual-assessment-create">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <?= $this->render('_form', [
         'model' => $model,
-        'dataProvider' => $dataProvider,
     ]) ?>
 
 </div>

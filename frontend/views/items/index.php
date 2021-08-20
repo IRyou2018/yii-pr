@@ -30,8 +30,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'name',
             'max_mark_value',
             'item_type',
-            'lecturer_only',
-            //'section_id',
+            'section_id',
 
             ['class' => 'yii\grid\ActionColumn'],
         ],

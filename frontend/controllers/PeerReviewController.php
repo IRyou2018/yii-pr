@@ -2,18 +2,16 @@
 
 namespace frontend\controllers;
 
-use common\models\Sections;
-use frontend\models\ItemsSearch;
-use frontend\models\SectionsSearch;
-use Yii;
+use common\models\PeerReview;
+use frontend\models\PeerReviewSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * SectionsController implements the CRUD actions for Sections model.
+ * PeerReviewController implements the CRUD actions for PeerReview model.
  */
-class SectionsController extends Controller
+class PeerReviewController extends Controller
 {
     /**
      * @inheritDoc
@@ -34,12 +32,12 @@ class SectionsController extends Controller
     }
 
     /**
-     * Lists all Sections models.
+     * Lists all PeerReview models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new SectionsSearch();
+        $searchModel = new PeerReviewSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
         return $this->render('index', [
@@ -49,7 +47,7 @@ class SectionsController extends Controller
     }
 
     /**
-     * Displays a single Sections model.
+     * Displays a single PeerReview model.
      * @param int $id ID
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
@@ -62,19 +60,16 @@ class SectionsController extends Controller
     }
 
     /**
-     * Creates a new Sections model.
+     * Creates a new PeerReview model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-        $model = new Sections();
-        $searchModel = new ItemsSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+        $model = new PeerReview();
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
-
                 return $this->redirect(['view', 'id' => $model->id]);
             }
         } else {
@@ -83,12 +78,11 @@ class SectionsController extends Controller
 
         return $this->render('create', [
             'model' => $model,
-            'dataProvider' => $dataProvider,
         ]);
     }
 
     /**
-     * Updates an existing Sections model.
+     * Updates an existing PeerReview model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param int $id ID
      * @return mixed
@@ -108,7 +102,7 @@ class SectionsController extends Controller
     }
 
     /**
-     * Deletes an existing Sections model.
+     * Deletes an existing PeerReview model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param int $id ID
      * @return mixed
@@ -122,15 +116,15 @@ class SectionsController extends Controller
     }
 
     /**
-     * Finds the Sections model based on its primary key value.
+     * Finds the PeerReview model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param int $id ID
-     * @return Sections the loaded model
+     * @return PeerReview the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Sections::findOne($id)) !== null) {
+        if (($model = PeerReview::findOne($id)) !== null) {
             return $model;
         }
 

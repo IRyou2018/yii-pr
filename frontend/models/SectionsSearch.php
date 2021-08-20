@@ -17,7 +17,7 @@ class SectionsSearch extends Sections
     public function rules()
     {
         return [
-            [['id', 'assessment_id'], 'integer'],
+            [['id', 'assessment_id', 'section_type'], 'integer'],
             [['name'], 'safe'],
         ];
     }
@@ -60,6 +60,7 @@ class SectionsSearch extends Sections
         $query->andFilterWhere([
             'id' => $this->id,
             'assessment_id' => $this->assessment_id,
+            'section_type' => $this->section_type,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name]);
