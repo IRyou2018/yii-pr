@@ -36,7 +36,7 @@ class SiteController extends Controller
                         'allow' => true,
                     ],
                     [
-                        'actions' => ['logout', 'index', 'about', 'contact'],
+                        'actions' => ['logout', 'index', 'about', 'archived'],
                         'allow' => true,
                         'roles' => ['@'],
                     ],
@@ -80,6 +80,22 @@ class SiteController extends Controller
             return $this->redirect(['../lecturer/dashboard']);
         } else {
             return $this->redirect(['../student/dashboard']);
+        }
+    }
+
+    /**
+     * Displays homepage.
+     *
+     * @return mixed
+     */
+    public function actionArchived()
+    {
+        $userType = Yii::$app->user->identity->type;
+
+        if ($userType == "0") {
+            return $this->redirect(['../lecturer/archived']);
+        } else {
+            return $this->redirect(['../student/archived']);
         }
     }
 

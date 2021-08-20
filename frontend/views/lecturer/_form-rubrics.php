@@ -23,7 +23,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
 
 <table class="table">
     <thead>
-        <tr class="text-white bg-primary">
+        <tr class="bg-light">
             <th>Level</th>
             <th>Weight</th>
             <th>Description</th>

@@ -102,24 +102,39 @@ class LecturerController extends Controller
         ]);
     }
 
-    public function actionDownload($assessment_type)
-    {
-        // print_r($assessment_type);
-        // die();
-        $path = Yii::getAlias('@webroot') . '/uploads';
+    public function actionUpdateActive(){
+        $status = Yii::$app->request->post('status');
+        $id = Yii::$app->request->post('id');
 
-        if ($assessment_type == 0) {
-            $file = '/PeerAssessmentTemplate.xlsx';
-            $root = $path . $file;
-        } else if ($assessment_type == 1) {
-            $file = $path . '/PeerReviewTemplate.xlsx';
-        }
+        $model = $this->findModel($id);
 
-        if (file_exists($root)) {
-            return Yii::$app->response->sendFile($root);
+        if($status == "true") {
+
+            $model->active = 1;
         } else {
-            throw new \yii\web\NotFoundHttpException("{$file} is not found!");
+
+            $model->active = 0;
+
         }
+        
+        $model->save();
+     }
+
+    /**
+     * Displays a single Assessments model.
+     * @param int $id ID
+     * @return mixed
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    public function actionArchived()
+    {
+        $searchModel = new AssessmentsSearch();
+        $dataProvider = $searchModel->searchByLecturerID($this->request->queryParams);
+
+        return $this->render('archived', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
     }
 
     /**
@@ -214,232 +229,11 @@ class LecturerController extends Controller
 
                                 $i = 0;
 
-                                // echo '<pre>';
-                                // print_r($excelData);
-                                // echo '</pre>';
-                                // die();
-
-                                // For peer assessment (Group)
-                                if ($model->assessment_type == 0) {
-
-                                    $sortedData = $this->arraySort($excelData, 'Group Name', SORT_ASC);
-
-                                    $temp_Group_name = '';
-                                    $temp_Group_id = '';
-
-                                    do {
-                                        print_r("1");
-                                        // die();
-                                        // Skip empty row
-                                        if (
-                                            empty($sortedData[$i]['Group Name'])
-                                            && empty($sortedData[$i]['First Name'])
-                                            && empty($sortedData[$i]['Last Name'])
-                                            && empty($sortedData[$i]['Matriculation Number'])
-                                            && empty($sortedData[$i]['Email'])
-                                        ) {
-
-                                            continue;
-                                        } else {
-
-                                            // For same group add Student to group
-                                            if (!empty($temp_Group_name) && $sortedData[$i]['Group Name'] == $temp_Group_name) {
-
-                                                $modelUser = new User();
-
-                                                // If student not exist, regist
-                                                if (!$modelUser->findByEmail($sortedData[$i]['Email'])) {
-
-                                                    $modelUser->first_name = $sortedData[$i]['First Name'];
-                                                    $modelUser->last_name = $sortedData[$i]['Last Name'];
-                                                    $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
-                                                    $modelUser->email = $sortedData[$i]['Email'];
-                                                    $modelUser->type = '1';
-                                                    $modelUser->generateAuthKey();
-                                                    $modelUser->save();
-                                                }
-
-                                                $modelPeerAssessment = new PeerAssessment();
-                                                $modelPeerAssessment->student_id = $modelUser->id;
-                                                $modelPeerAssessment->group_id = $temp_Group_id;
-
-                                                if ($flag = $modelPeerAssessment->save(false)) {
-                                                } else {
-                                                    break;
-                                                }
-                                            } else {
-
-                                                // Regist new gourp
-                                                $temp_Group_name = $sortedData[$i]['Group Name'];;
-
-                                                $modelGroupInfo = new GroupInfo();
-
-                                                $modelGroupInfo->name = $temp_Group_name;
-                                                $modelGroupInfo->assessment_id = $model->id;
-
-                                                if ($flag = $modelGroupInfo->save(false)) {
-
-                                                    $temp_Group_id = $modelGroupInfo->id;
-
-                                                    $modelUser = new User();
-
-                                                    // If student not exist, regist
-                                                    if (!$modelUser->findByEmail($sortedData[$i]['Email'])) {
-                                                        $modelUser->first_name = $sortedData[$i]['First Name'];
-                                                        $modelUser->last_name = $sortedData[$i]['Last Name'];
-                                                        $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
-                                                        $modelUser->email = $sortedData[$i]['Email'];
-                                                        $modelUser->type = '1';
-                                                        $modelUser->generateAuthKey();
-                                                        $modelUser->save();
-                                                    }
-
-                                                    $modelPeerAssessment = new PeerAssessment();
-                                                    $modelPeerAssessment->student_id = $modelUser->id;
-                                                    $modelPeerAssessment->group_id = $temp_Group_id;
-
-                                                    if ($flag = $modelPeerAssessment->save(false)) {
-                                                    } else {
-                                                        break;
-                                                    }
-                                                } else {
-                                                    $flag = false;
-                                                    break;
-                                                }
-                                            }
-                                        }
-
-                                        $i++;
-                                    } while ($i < count($sortedData));
-                                    // die();
-                                }
-                                // For peer review (Individual)
-                                else if ($model->assessment_type == 1) {
-                                    $sortedData = $this->arraySort($excelData, 'Email', SORT_ASC);
-                                    $temp_student_email = '';
-                                    $temp_individual_assessment_id = '';
-
-                                    // echo '<pre>';
-                                    // print_r($sortedData);
-                                    // echo '</pre>';
-                                    // die();
-
-                                    do {
-                                        print_r("1");
-                                        // die();
-                                        // Skip empty row
-                                        if (
-                                            empty($sortedData[$i]['First Name'])
-                                            && empty($sortedData[$i]['Last Name'])
-                                            && empty($sortedData[$i]['Matriculation Number'])
-                                            && empty($sortedData[$i]['Email'])
-                                            && empty($sortedData[$i]['Work File'])
-                                            && empty($sortedData[$i]['First Name(Marker Student)'])
-                                            && empty($sortedData[$i]['Last Name(Marker Student)'])
-                                            && empty($sortedData[$i]['Matriculation Number(Marker Student)'])
-                                            && empty($sortedData[$i]['Email(Marker Student)'])
-                                        ) {
-                                            print_r("2");
-                                            continue;
-                                        } else {
-                                            print_r("3");
-                                            // die();
-                                            // For same work student, regist peer review (Marker Student)
-                                            if (!empty($temp_student_email) && $sortedData[$i]['Email'] == $temp_student_email) {
-                                                print_r("4");
-                                                $modelUser = new User();
-
-                                                if (!$modelUser->findByEmail($sortedData[$i]['Email(Marker Student)'])) {
-                                                    print_r("5");
-                                                    $modelUser->first_name = $sortedData[$i]['First Name(Marker Student)'];
-                                                    $modelUser->last_name = $sortedData[$i]['Last Name(Marker Student)'];
-                                                    $modelUser->matric_number = $sortedData[$i]['Matriculation Number(Marker Student)'];
-                                                    $modelUser->email = $sortedData[$i]['Email(Marker Student)'];
-                                                    $modelUser->type = '1';
-                                                    $modelUser->generateAuthKey();
-                                                    $modelUser->save();
-                                                }
-
-                                                $modelPeerReview = new PeerReview();
-                                                $modelPeerReview->marker_student_id = $modelUser->id;
-                                                $modelPeerReview->individual_assessment_id = $temp_individual_assessment_id;
-
-                                                if ($flag = $modelPeerReview->save(false)) {
-                                                } else {
-                                                    break;
-                                                }
-                                            } else {
-                                                print_r("6");
-                                                // die();
-                                                // Regist new work student assessment info
-                                                $temp_student_email = $sortedData[$i]['Email'];
-
-                                                $modelUser = new User();
-                                                // print_r($temp_student_email);
-                                                if ($user = $modelUser->findByEmail($temp_student_email)) {
-
-                                                    print_r("7");
-                                                    // die();
-                                                    $modelUser->id = $user->id;
-                                                } else {
-
-                                                    $modelUser->first_name = $sortedData[$i]['First Name'];
-                                                    $modelUser->last_name = $sortedData[$i]['Last Name'];
-                                                    $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
-                                                    $modelUser->email = $sortedData[$i]['Email'];
-                                                    $modelUser->type = '1';
-                                                    $modelUser->generateAuthKey();
-                                                    $modelUser->save();
-                                                }
-
-                                                $modelIndividualAssessment = new IndividualAssessment();
-                                                
-                                                $modelIndividualAssessment->student_id = $modelUser->id;
-                                                $modelIndividualAssessment->file_path = $sortedData[$i]['Work File'];;
-
-                                                $modelIndividualAssessment->assessment_id = $model->id;
-
-                                                if ($flag = $modelIndividualAssessment->save(false)) {
-
-                                                } else {
-                                                    print_r("9");
-                                                    die();
-                                                    $temp_individual_assessment_id = $modelIndividualAssessment->id;
-
-                                                    $modelUser = new User();
-
-                                                    if (!$modelUser->findByEmail($sortedData[$i]['Email(Marker Student)'])) {
-                                                        print_r("10");
-                                                        $modelUser->first_name = $sortedData[$i]['First Name(Marker Student)'];
-                                                        $modelUser->last_name = $sortedData[$i]['Last Name(Marker Student)'];
-                                                        $modelUser->matric_number = $sortedData[$i]['Matriculation Number(Marker Student)'];
-                                                        $modelUser->email = $sortedData[$i]['Email(Marker Student)'];
-                                                        $modelUser->type = '1';
-                                                        $modelUser->generateAuthKey();
-                                                        $modelUser->save();
-                                                    }
-
-                                                    $modelPeerReview = new PeerReview();
-                                                    $modelPeerReview->marker_student_id = $modelUser->id;
-                                                    $modelPeerReview->individual_assessment_id = $temp_individual_assessment_id;
-
-                                                    if ($flag = $modelPeerReview->save(false)) {
-                                                    } else {
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        $i++;
-                                    } while ($i < count($sortedData));
-                                    // die();
-                                }
-                                // $flag = $this->registDatafromUpload($excelData, $model);
+                                $flag = $this->registDatafromUpload($excelData, $model);
                             }
 
                             foreach ($modelsSection as $indexSection => $modelSection) {
-                                
+
                                 if ($flag === false) {
                                     break;
                                 }
@@ -447,7 +241,6 @@ class LecturerController extends Controller
                                 $modelSection->assessment_id = $model->id;
 
                                 if ($flag = $modelSection->save(false)) {
-                                    
                                 } else {
                                     break;
                                 }
@@ -478,7 +271,7 @@ class LecturerController extends Controller
                                     }
                                 }
                             }
-                            
+
                             if ($flag) {
 
                                 $modelLecturerAssessment = new LecturerAssessment();
@@ -492,14 +285,14 @@ class LecturerController extends Controller
                                     print_r($coordinatorList);
                                     print_r(Yii::$app->request->post('selection'));
                                     // die();
-                                    if(!empty($coordinatorList)) {
+                                    if (!empty($coordinatorList)) {
                                         foreach ($coordinatorList as $coorinator) {
                                             print_r("A");
                                             // die();
                                             $modelLecturerAssessment = new LecturerAssessment();
                                             $modelLecturerAssessment->assessment_id = $model->id;
                                             $modelLecturerAssessment->lecturer_id = $coorinator;
-    
+
                                             if ($flag = $modelLecturerAssessment->save(false)) {
                                             } else {
                                                 break;
@@ -600,240 +393,222 @@ class LecturerController extends Controller
     {
         $flag = true;
 
-        // $i = 0;
+        $i = 0;
+        // For peer assessment (Group)
+        if ($model->assessment_type == 0) {
 
-        // // echo '<pre>';
-        // // print_r($excelData);
-        // // echo '</pre>';
-        // // die();
+            $sortedData = $this->arraySort($excelData, 'Group Name', SORT_ASC);
 
-        // // For peer assessment (Group)
-        // if($model->assessment_type = 0) {
+            $temp_Group_name = '';
+            $temp_Group_id = '';
 
-        //     $sortedData = $this->arraySort($excelData, 'Group Name', SORT_ASC);
+            do {
+                print_r("1");
+                // die();
+                // Skip empty row
+                if (
+                    empty($sortedData[$i]['Group Name'])
+                    && empty($sortedData[$i]['First Name'])
+                    && empty($sortedData[$i]['Last Name'])
+                    && empty($sortedData[$i]['Matriculation Number'])
+                    && empty($sortedData[$i]['Email'])
+                ) {
 
-        //     $temp_Group_name = '';
-        //     $temp_Group_id = '';
+                    continue;
+                } else {
 
-        //     do {
-        //         // Skip empty row
-        //         if(empty($sortedData[$i]['Group Name'])
-        //             && empty($sortedData[$i]['First Name']) 
-        //             && empty($sortedData[$i]['Last Name']) 
-        //             && empty($sortedData[$i]['Matriculation Number']) 
-        //             && empty($sortedData[$i]['Email'])) {
+                    // For same group add Student to group
+                    if (!empty($temp_Group_name) && $sortedData[$i]['Group Name'] == $temp_Group_name) {
 
-        //             continue;
-        //         } else {
+                        $modelUser = new User();
 
-        //             // For same group add Student to group
-        //             if(!empty($temp_Group_name) && $sortedData[$i]['Group Name'] == $temp_Group_name) {
+                        // If student not exist, regist
+                        if (!$modelUser->findByEmail($sortedData[$i]['Email'])) {
 
-        //                 $modelUser = new User();
+                            $modelUser->first_name = $sortedData[$i]['First Name'];
+                            $modelUser->last_name = $sortedData[$i]['Last Name'];
+                            $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
+                            $modelUser->email = $sortedData[$i]['Email'];
+                            $modelUser->type = '1';
+                            $modelUser->generateAuthKey();
+                            $modelUser->save();
+                        }
 
-        //                 // If student not exist, regist
-        //                 if(!$modelUser->findByEmail($sortedData[$i]['Email'])) {
+                        $modelPeerAssessment = new PeerAssessment();
+                        $modelPeerAssessment->student_id = $modelUser->id;
+                        $modelPeerAssessment->group_id = $temp_Group_id;
 
-        //                     $modelUser->first_name = $sortedData[$i]['First Name'];
-        //                     $modelUser->last_name = $sortedData[$i]['Last Name'];
-        //                     $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
-        //                     $modelUser->email = $sortedData[$i]['Email'];
-        //                     $modelUser->type = '1';
-        //                     $modelUser->generateAuthKey();
-        //                     $modelUser->save();
-        //                 }
+                        if ($flag = $modelPeerAssessment->save(false)) {
+                        } else {
+                            break;
+                        }
+                    } else {
 
-        //                 $modelPeerAssessment = new PeerAssessment();
-        //                 $modelPeerAssessment->student_id = $modelUser->id;
-        //                 $modelPeerAssessment->group_id = $temp_Group_id;
+                        // Regist new gourp
+                        $temp_Group_name = $sortedData[$i]['Group Name'];;
 
-        //                 if(!($flag = $modelPeerAssessment->save(false))) {
+                        $modelGroupInfo = new GroupInfo();
 
-        //                     break;
-        //                 }
+                        $modelGroupInfo->name = $temp_Group_name;
+                        $modelGroupInfo->assessment_id = $model->id;
 
-        //             } else {
+                        if ($flag = $modelGroupInfo->save(false)) {
 
-        //                 // Regist new gourp
-        //                 $temp_Group_name = $sortedData[$i]['Group Name'];;
+                            $temp_Group_id = $modelGroupInfo->id;
 
-        //                 $modelGroupInfo = new GroupInfo();
+                            $modelUser = new User();
 
-        //                 $modelGroupInfo->name = $temp_Group_name;
-        //                 $modelGroupInfo->assessment_id = $model->id;
+                            // If student not exist, regist
+                            if (!$modelUser->findByEmail($sortedData[$i]['Email'])) {
+                                $modelUser->first_name = $sortedData[$i]['First Name'];
+                                $modelUser->last_name = $sortedData[$i]['Last Name'];
+                                $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
+                                $modelUser->email = $sortedData[$i]['Email'];
+                                $modelUser->type = '1';
+                                $modelUser->generateAuthKey();
+                                $modelUser->save();
+                            }
 
-        //                 if($flag = $modelGroupInfo->save(false)) {
+                            $modelPeerAssessment = new PeerAssessment();
+                            $modelPeerAssessment->student_id = $modelUser->id;
+                            $modelPeerAssessment->group_id = $temp_Group_id;
 
-        //                     $temp_Group_id = $modelGroupInfo->id;
+                            if ($flag = $modelPeerAssessment->save(false)) {
+                            } else {
+                                break;
+                            }
+                        } else {
+                            $flag = false;
+                            break;
+                        }
+                    }
+                }
 
-        //                     $modelUser = new User();
+                $i++;
+            } while ($i < count($sortedData));
+            // die();
+        }
+        // For peer review (Individual)
+        else if ($model->assessment_type == 1) {
+            $sortedData = $this->arraySort($excelData, 'Email', SORT_ASC);
+            $temp_student_email = '';
+            $temp_individual_assessment_id = '';
 
-        //                     // If student not exist, regist
-        //                     if(!$modelUser->findByEmail($sortedData[$i]['Email'])) {
-        //                         $modelUser->first_name = $sortedData[$i]['First Name'];
-        //                         $modelUser->last_name = $sortedData[$i]['Last Name'];
-        //                         $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
-        //                         $modelUser->email = $sortedData[$i]['Email'];
-        //                         $modelUser->type = '1';
-        //                         $modelUser->generateAuthKey();
-        //                         $modelUser->save();
-        //                     }
+            // echo '<pre>';
+            // print_r($sortedData);
+            // echo '</pre>';
+            // die();
 
-        //                     $modelPeerAssessment = new PeerAssessment();
-        //                     $modelPeerAssessment->student_id = $modelUser->id;
-        //                     $modelPeerAssessment->group_id = $temp_Group_id;
+            do {
+                print_r("1");
+                // die();
+                // Skip empty row
+                if (
+                    empty($sortedData[$i]['First Name'])
+                    && empty($sortedData[$i]['Last Name'])
+                    && empty($sortedData[$i]['Matriculation Number'])
+                    && empty($sortedData[$i]['Email'])
+                    && empty($sortedData[$i]['Work File'])
+                    && empty($sortedData[$i]['First Name(Marker Student)'])
+                    && empty($sortedData[$i]['Last Name(Marker Student)'])
+                    && empty($sortedData[$i]['Matriculation Number(Marker Student)'])
+                    && empty($sortedData[$i]['Email(Marker Student)'])
+                ) {
+                    print_r("2");
+                    continue;
+                } else {
+                    print_r("3");
+                    // die();
+                    // For same work student, regist peer review (Marker Student)
+                    if (!empty($temp_student_email) && $sortedData[$i]['Email'] == $temp_student_email) {
+                        print_r("4");
+                        $modelUser = new User();
 
-        //                     if(!($flag = $modelPeerAssessment->save(false))) {
-        //                         break;
-        //                     }
-        //                 } else {
-        //                     $flag = false;
-        //                     break;
-        //                 }
-        //             }
-        //         }
+                        if (!$modelUser->findByEmail($sortedData[$i]['Email(Marker Student)'])) {
+                            print_r("5");
+                            $modelUser->first_name = $sortedData[$i]['First Name(Marker Student)'];
+                            $modelUser->last_name = $sortedData[$i]['Last Name(Marker Student)'];
+                            $modelUser->matric_number = $sortedData[$i]['Matriculation Number(Marker Student)'];
+                            $modelUser->email = $sortedData[$i]['Email(Marker Student)'];
+                            $modelUser->type = '1';
+                            $modelUser->generateAuthKey();
+                            $modelUser->save();
+                        }
 
-        //         $i++;
-        //     } while ($i < count($sortedData));
-        // }
-        // // For peer review (Individual)
-        // else if ($model->assessment_type = 1) {
-        //     $sortedData = $this->arraySort($excelData, 'Email', SORT_ASC);
-        //     $temp_student_email = '';
-        //     $temp_individual_assessment_id = '';
+                        $modelPeerReview = new PeerReview();
+                        $modelPeerReview->marker_student_id = $modelUser->id;
+                        $modelPeerReview->individual_assessment_id = $temp_individual_assessment_id;
 
-        //     // echo '<pre>';
-        //     // print_r($sortedData);
-        //     // echo '</pre>';
-        //     // die();
+                        if ($flag = $modelPeerReview->save(false)) {
+                        } else {
+                            break;
+                        }
+                    } else {
+                        print_r("6");
+                        // die();
+                        // Regist new work student assessment info
+                        $temp_student_email = $sortedData[$i]['Email'];
 
-        //     do {
-        //         print_r("1");
-        //         // Skip empty row
-        //         if(empty($sortedData[$i]['First Name']) 
-        //             && empty($sortedData[$i]['Last Name']) 
-        //             && empty($sortedData[$i]['Matriculation Number']) 
-        //             && empty($sortedData[$i]['Email'])
-        //             && empty($sortedData[$i]['Work File'])
-        //             && empty($sortedData[$i]['First Name(Marker Student)']) 
-        //             && empty($sortedData[$i]['Last Name(Marker Student)']) 
-        //             && empty($sortedData[$i]['Matriculation Number(Marker Student)']) 
-        //             && empty($sortedData[$i]['Email(Marker Student)'])) {
-        //                 print_r("2");
-        //             continue;
-        //         } else {
-        //             print_r("3");
-        //             // die();
-        //             // For same work student, regist peer review (Marker Student)
-        //             if(!empty($temp_student_email) && $sortedData[$i]['Email'] == $temp_student_email) {
-        //                 print_r("4");
-        //                 $modelUser = new User();
+                        $modelUser = new User();
+                        // print_r($temp_student_email);
+                        if ($user = $modelUser->findByEmail($temp_student_email)) {
 
-        //                 if(!$modelUser->findByEmail($sortedData[$i]['Email(Marker Student)'])) {
-        //                     print_r("5");
-        //                     $modelUser->first_name = $sortedData[$i]['First Name(Marker Student)'];
-        //                     $modelUser->last_name = $sortedData[$i]['Last Name(Marker Student)'];
-        //                     $modelUser->matric_number = $sortedData[$i]['Matriculation Number(Marker Student)'];
-        //                     $modelUser->email = $sortedData[$i]['Email(Marker Student)'];
-        //                     $modelUser->type = '1';
-        //                     $modelUser->generateAuthKey();
-        //                     $modelUser->save();
-        //                 }
+                            print_r("7");
+                            // die();
+                            $modelUser->id = $user->id;
+                        } else {
 
-        //                 $modelPeerReview = new PeerReview();
-        //                 $modelPeerReview->marker_student_id = $modelUser->id;
-        //                 $modelPeerReview->individual_assessment_id = $temp_individual_assessment_id;
+                            $modelUser->first_name = $sortedData[$i]['First Name'];
+                            $modelUser->last_name = $sortedData[$i]['Last Name'];
+                            $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
+                            $modelUser->email = $sortedData[$i]['Email'];
+                            $modelUser->type = '1';
+                            $modelUser->generateAuthKey();
+                            $modelUser->save();
+                        }
 
-        //                 if(!($flag = $modelPeerReview->save(false))) {
-        //                     print_r("6");
-        //                     break;
-        //                 }
+                        $modelIndividualAssessment = new IndividualAssessment();
 
-        //             } else {
+                        $modelIndividualAssessment->student_id = $modelUser->id;
+                        $modelIndividualAssessment->file_path = $sortedData[$i]['Work File'];;
 
-        //                 // Regist new work student assessment info
-        //                 $temp_student_email = $sortedData[$i]['Email'];
+                        $modelIndividualAssessment->assessment_id = $model->id;
 
-        //                 $modelUser = new User();
-        //                 // print_r($temp_student_email);
-        //                 if($user = $modelUser->findByEmail($temp_student_email)) {
-        //                     $modelUser->id = $user->id;
+                        if ($flag = $modelIndividualAssessment->save(false)) {
+                        } else {
+                            print_r("9");
+                            die();
+                            $temp_individual_assessment_id = $modelIndividualAssessment->id;
 
-        //                 } else {
+                            $modelUser = new User();
 
-        //                     $modelUser->first_name = $sortedData[$i]['First Name'];
-        //                     $modelUser->last_name = $sortedData[$i]['Last Name'];
-        //                     $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
-        //                     $modelUser->email = $sortedData[$i]['Email'];
-        //                     $modelUser->type = '1';
-        //                     $modelUser->generateAuthKey();
-        //                     $modelUser->save();
-        //                 }
+                            if (!$modelUser->findByEmail($sortedData[$i]['Email(Marker Student)'])) {
+                                print_r("10");
+                                $modelUser->first_name = $sortedData[$i]['First Name(Marker Student)'];
+                                $modelUser->last_name = $sortedData[$i]['Last Name(Marker Student)'];
+                                $modelUser->matric_number = $sortedData[$i]['Matriculation Number(Marker Student)'];
+                                $modelUser->email = $sortedData[$i]['Email(Marker Student)'];
+                                $modelUser->type = '1';
+                                $modelUser->generateAuthKey();
+                                $modelUser->save();
+                            }
 
+                            $modelPeerReview = new PeerReview();
+                            $modelPeerReview->marker_student_id = $modelUser->id;
+                            $modelPeerReview->individual_assessment_id = $temp_individual_assessment_id;
 
-        //                 $modelIndividualAssessment = new IndividualAssessment();
+                            if ($flag = $modelPeerReview->save(false)) {
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
 
-        //                 // echo '<pre>';
-        //                 // print_r($sortedData[$i]);
-        //                 // print_r($modelUser->id);
-        //                 // print_r($model->id);
-        //                 // echo '</pre>';
-        //                 // die();
-        //                 $file_path = $sortedData[$i]['File'];
-        //                 echo '<pre>';
-        //                 print_r($file_path);
-        //                 echo '</pre>';
-        //                 die();
-        //                 $modelIndividualAssessment->student_id = $modelUser->id;
-        //                 // $modelIndividualAssessment->file_path = $file_path;
-
-        //                 $modelIndividualAssessment->assessment_id = $model->id;
-
-        //                 echo '<pre>';
-        //                 print_r($modelIndividualAssessment);
-        //                 echo '</pre>';
-        //                 die();
-
-        //                 if($flag = $modelIndividualAssessment->save(false)) {
-        //                     echo '<pre>';
-        //                     print_r($flag);
-        //                     print_r($modelIndividualAssessment);
-        //                     echo '</pre>';
-        //                     die();
-        //                 } else {
-        //                     print_r("9");
-        //                     die();
-        //                     $temp_individual_assessment_id = $modelIndividualAssessment->id;
-
-        //                     $modelUser = new User();
-
-        //                     if(!$modelUser->findByEmail($sortedData[$i]['Email(Marker Student)'])) {
-        //                         print_r("10");
-        //                         $modelUser->first_name = $sortedData[$i]['First Name(Marker Student)'];
-        //                         $modelUser->last_name = $sortedData[$i]['Last Name(Marker Student)'];
-        //                         $modelUser->matric_number = $sortedData[$i]['Matriculation Number(Marker Student)'];
-        //                         $modelUser->email = $sortedData[$i]['Email(Marker Student)'];
-        //                         $modelUser->type = '1';
-        //                         $modelUser->generateAuthKey();
-        //                         $modelUser->save();
-        //                     }
-
-        //                     $modelPeerReview = new PeerReview();
-        //                     $modelPeerReview->marker_student_id = $modelUser->id;
-        //                     $modelPeerReview->individual_assessment_id = $temp_individual_assessment_id;
-
-        //                     if(!($flag = $modelPeerReview->save(false))) {
-        //                         print_r("11");
-        //                         die();
-        //                         break;
-        //                     }
-        //                 }
-        //             }
-        //         }
-
-        //         $i++;
-        //     } while ($i < count($sortedData));
-        // }
+                $i++;
+            } while ($i < count($sortedData));
+            // die();
+        }
         return $flag;
     }
 }

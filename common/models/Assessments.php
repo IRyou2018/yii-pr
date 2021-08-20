@@ -27,6 +27,12 @@ use yii\behaviors\TimestampBehavior;
  */
 class Assessments extends \yii\db\ActiveRecord
 {
+    const INACTIVE = 0;
+    const ACTIVE = 1;
+
+    const GROUP = 0;
+    const INDIVIDUAL = 1;
+
     /**
      * {@inheritdoc}
      */
@@ -68,7 +74,7 @@ class Assessments extends \yii\db\ActiveRecord
             'name' => 'Assessment Name',
             'assessment_type' => 'Assessment Type',
             'deadline' => 'Deadline',
-            'active' => 'Active',
+            'active' => 'Visibility',
             'created_at' => 'Created At',
             'created_by' => 'Created By',
             'updated_at' => 'Updated At',
@@ -124,5 +130,55 @@ class Assessments extends \yii\db\ActiveRecord
     public function getUpdatedBy()
     {
         return $this->hasOne(User::className(), ['id' => 'updated_by']);
+    }
+
+    /**
+     * Customizie return text of assessment_type.
+     */
+    public function getAssessmentType()
+    {
+        switch ($this->assessment_type) {
+            case self::GROUP:
+
+                $text = "Peer Assessment";
+                break;
+        
+            case self::INDIVIDUAL:
+        
+                $text = "Peer Review";
+                break;
+            
+            default:
+
+                $text = "(Undefined)";
+                break;
+        }       
+
+        return $text;
+    }
+
+    /**
+     * Customizie return text of active status.
+     */
+    public function getActiveStatus()
+    {
+        switch ($this->active) {
+            case self::ACTIVE:
+
+                $text = "Active";
+                break;
+        
+            case self::INACTIVE:
+        
+                $text = "Inactive";
+                break;
+            
+            default:
+
+                $text = "(Undefined)";
+                break;
+        }       
+
+        return $text;
     }
 }

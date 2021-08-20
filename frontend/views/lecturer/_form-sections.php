@@ -33,7 +33,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
     <tbody class="container-section">
     <?php foreach ($modelsSection as $indexSection => $modelSection): ?>
         <tr class="section">
-            <td class="vcenter">
+            <td class="vcenter col-md-2">
                 <?php
                     // necessary for update action.
                     if (! $modelSection->isNewRecord) {

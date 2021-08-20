@@ -35,7 +35,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
     <tbody class="container-item">
     <?php foreach ($modelsItem as $indexItem => $modelItem) : ?>
         <tr class="item">
-            <td class="vcenter">
+            <td class="vcenter col-md-3">
                 <?php
                     // necessary for update action.
                     if (!$modelItem->isNewRecord) {

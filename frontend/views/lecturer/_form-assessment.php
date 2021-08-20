@@ -57,8 +57,8 @@ use yii\helpers\Url;
                 <div class="col-md-6">
                     <?= $form->field($model, 'active')->dropdownList(
                         [
-                            0 => 'Active', 
-                            1 => 'InActive'
+                            1 => 'Active', 
+                            0 => 'Inactive'
                         ],
                         ['prompt'=>'Select Active Status']
                     ) ?>

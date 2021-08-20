@@ -101,6 +101,14 @@ class AssessmentsSearch extends Assessments
 
         $query->join('INNER JOIN', 'lecturer_assessment as la', 'la.assessment_id = assessments.id');
 
+        $query->andFilterWhere([
+            'id' => $this->id,
+            'assessment_type' => $this->assessment_type,
+            'deadline' => $this->deadline,
+            'active' => $this->active,
+        ]);
+
+        $query->andFilterWhere(['like', 'name', $this->name]);
 
         // grid filtering conditions
         $query->andFilterWhere([
