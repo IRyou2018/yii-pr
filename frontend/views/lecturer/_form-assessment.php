@@ -68,42 +68,43 @@ use yii\helpers\Url;
                 <div class="col-md-6">
                     <?= $form->field($modelUpload,'file')->fileInput(['multiple'=>'multiple']) ?>
                 </div>
-                <div class="col-md-6">
-                    <a id="downloadTemp" href="#"><i class="fas fa-download"></i> Download Template</a>
+                <div class="col-md-4 mt-3">
+                    <a id="downloadTemp" class="btn btn-secondary" href="#"><i class="fas fa-download"></i> Download Template</a>
+                </div>
+                <div class="col-md-2 mt-3">
+                    <?php
+                        $itemsQuery = User::find();
+                        $itemsQuery->where(['status' => 10, 'type' => 0]);
+                        $itemsQuery->andWhere(['<>','id', Yii::$app->user->id]);
+                        $itemsQuery->all();
+                        $dataProvider = new ActiveDataProvider([
+                                                            'query' => $itemsQuery,
+                                                            ]);
+                        Modal::begin([
+                            'title' => 'Add coordinators',
+                            'toggleButton' => ['label' => 'Add Coordinator', 'class' => 'btn btn-primary'],
+                        ]);
+                    ?>
+
+                    <?= GridView::widget([
+                        'dataProvider' => $dataProvider,
+                        'id' => 'coordinatorList',
+                        // 'rowOptions' => function($model,$index,$key){
+                        //     return ['id' => $model['id'], 'onclick' => 'check(this)'];           
+                        // },
+                        'columns' => [
+                            ['class' => 'yii\grid\CheckboxColumn'],
+                            // 'id',
+                            'first_name',
+                            'last_name',
+                        ],
+                    ]); ?>
+                    <?php Modal::end(); ?>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6">
-                    <div style="margin-top: 20px">
-                        <?php
-                            $itemsQuery = User::find();
-                            $itemsQuery->where(['status' => 10, 'type' => 0]);
-                            $itemsQuery->andWhere(['<>','id', Yii::$app->user->id]);
-                            $itemsQuery->all();
-                            $dataProvider = new ActiveDataProvider([
-                                                                'query' => $itemsQuery,
-                                                                ]);
-                            Modal::begin([
-                                'title' => 'Add coordinators',
-                                'toggleButton' => ['label' => 'Add Coordinator', 'class' => 'btn btn-primary'],
-                            ]);
-                        ?>
-
-                        <?= GridView::widget([
-                            'dataProvider' => $dataProvider,
-                            'id' => 'coordinatorList',
-                            // 'rowOptions' => function($model,$index,$key){
-                            //     return ['id' => $model['id'], 'onclick' => 'check(this)'];           
-                            // },
-                            'columns' => [
-                                ['class' => 'yii\grid\CheckboxColumn'],
-                                // 'id',
-                                'first_name',
-                                'last_name',
-                            ],
-                        ]); ?>
-                        <?php Modal::end(); ?>
-                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -128,7 +129,14 @@ use yii\helpers\Url;
 <?php
 $script = <<< JS
 
+    $('#selection_all').click(function(){
+        $('input[name=selection_all]').click();
 
+    });
+
+    $('#Create').click(function(){
+    var selection = $('#coordinatorList').yiiGridView('getSelectedRows');
+    });
 
     $('#downloadTemplate').click(function(){
         var typeValue = $('#assType').val();
@@ -153,17 +161,4 @@ $script = <<< JS
 JS;
 
 $this->registerJS($script);
-
-$this->registerJS("
-$('#selection_all').click(function(){
-    $('input[name=selection_all]').click();
-
-});
-
-$('#Create').click(function(){
-var selection = $('#coordinatorList').yiiGridView('getSelectedRows');
-});
-"
-
-)
 ?>
