@@ -12,7 +12,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
     'min' => 1,
     'insertButton' => '.add-item',
     'deleteButton' => '.remove-item',
-    'model' => $modelsItem[0],
+    'model' => $modelsItem[0][0],
     'formId' => 'dynamic-form',
     'formFields' => [
         'name',
@@ -33,7 +33,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
     </thead>
 
     <tbody class="container-item">
-    <?php foreach ($modelsItem as $indexItem => $modelItem) : ?>
+    <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem) : ?>
         <tr class="item">
             <td class="vcenter col-md-3">
                 <?php
@@ -54,7 +54,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
                     'form' => $form,
                     'indexSection' => $indexSection,
                     'indexItem' => $indexItem,
-                    'modelsRubric' => $modelsRubric[$indexSection][$indexItem],
+                    'modelsRubric' => $modelsRubric,
                 ]) ?>
             </td>
             <td class="text-center vcenter" style="width: 60px;">

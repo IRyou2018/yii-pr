@@ -46,15 +46,6 @@ use yii\helpers\Url;
             </div>
             <div class="row">
                 <div class="col-md-6">
-                    <?= $form->field($model, 'assessment_type')->dropdownList(
-                        [
-                            0 => 'Peer Assessment', 
-                            1 => 'Peer Review'
-                        ],
-                        ['prompt'=>'Select Assessment Type', 'id' => 'assType']
-                    ) ?>
-                </div>
-                <div class="col-md-6">
                     <?= $form->field($model, 'active')->dropdownList(
                         [
                             1 => 'Active', 
@@ -63,15 +54,7 @@ use yii\helpers\Url;
                         ['prompt'=>'Select Active Status']
                     ) ?>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <?= $form->field($modelUpload,'file')->fileInput(['multiple'=>'multiple']) ?>
-                </div>
-                <div class="col-md-4 mt-3">
-                    <a id="downloadTemp" class="btn btn-secondary" href="#"><i class="fas fa-download"></i> Download Template</a>
-                </div>
-                <div class="col-md-2 mt-3">
+                <div class="col-md-6 mt-3">
                     <?php
                         $itemsQuery = User::find();
                         $itemsQuery->where(['status' => 10, 'type' => 0]);
@@ -114,7 +97,7 @@ use yii\helpers\Url;
     ]) ?>
 
     <div class="form-group">
-        <?= Html::submitButton('Submit', ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton('Create', ['class' => 'btn btn-success']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>

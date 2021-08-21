@@ -49,7 +49,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
                 <?= $this->render('_form-items', [
                     'form' => $form,
                     'indexSection' => $indexSection,
-                    'modelsItem' => $modelsItem[$indexSection],
+                    'modelsItem' => $modelsItem,
                     'modelsRubric' => $modelsRubric,
                 ]) ?>
             </td>

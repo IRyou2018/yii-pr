@@ -10,6 +10,7 @@ use Yii;
  * @property int $id
  * @property int $marker_student_id
  * @property int $individual_assessment_id
+ * @property int $completed
  *
  * @property IndividualAssessment $individualAssessment
  * @property User $markerStudent
@@ -30,8 +31,8 @@ class PeerReview extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['marker_student_id', 'individual_assessment_id'], 'required'],
-            [['marker_student_id', 'individual_assessment_id'], 'integer'],
+            [['marker_student_id', 'individual_assessment_id', 'completed'], 'required'],
+            [['marker_student_id', 'individual_assessment_id', 'completed'], 'integer'],
             [['individual_assessment_id'], 'exist', 'skipOnError' => true, 'targetClass' => IndividualAssessment::className(), 'targetAttribute' => ['individual_assessment_id' => 'id']],
             [['marker_student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['marker_student_id' => 'id']],
         ];
@@ -46,6 +47,7 @@ class PeerReview extends \yii\db\ActiveRecord
             'id' => 'ID',
             'marker_student_id' => 'Marker Student ID',
             'individual_assessment_id' => 'Individual Assessment ID',
+            'completed' => 'Completed',
         ];
     }
 

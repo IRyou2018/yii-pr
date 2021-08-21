@@ -1,5 +1,8 @@
 <?php
 
+use common\models\Items;
+use common\models\Rubrics;
+use common\models\Sections;
 use yii\helpers\Html;
 
 /* @var $this yii\web\View */
@@ -14,8 +17,11 @@ $this->params['breadcrumbs'][] = 'Update';
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <?= $this->render('_form', [
+    <?= $this->render('_form-assessment_update', [
         'model' => $model,
+        'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
+        'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
+        'modelsRubric' => (empty($modelsRubric)) ? [[[new Rubrics()]]] : $modelsRubric,
     ]) ?>
 
 </div>

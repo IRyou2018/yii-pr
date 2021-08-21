@@ -21,7 +21,7 @@ class m210802_213327_create_peer_assessment_table extends Migration
             'student_id' => $this->integer(11)->notNull(),
             'completed' => $this->boolean(),
             'mark' => $this->string(5),
-            'marked' => $this->integer(3),
+            'marked' => $this->boolean(),
             'group_id' => $this->integer(11),
         ]);
 

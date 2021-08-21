@@ -9,6 +9,7 @@ use Yii;
  *
  * @property int $id
  * @property int $student_id
+ * @property int $student_number
  * @property int $mark_value
  * @property int|null $marked
  * @property string|null $file_path
@@ -35,7 +36,7 @@ class IndividualAssessment extends \yii\db\ActiveRecord
     {
         return [
             [['student_id', 'assessment_id'], 'required'],
-            [['student_id', 'mark_value', 'marked', 'assessment_id'], 'integer'],
+            [['student_id', 'student_number', 'mark_value', 'marked', 'assessment_id'], 'integer'],
             [['file_path'], 'string', 'max' => 255],
             [['assessment_id'], 'exist', 'skipOnError' => true, 'targetClass' => Assessments::className(), 'targetAttribute' => ['assessment_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_id' => 'id']],
@@ -50,6 +51,7 @@ class IndividualAssessment extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'student_id' => 'Student ID',
+            'student_number' => 'Student Number', 
             'mark_value' => 'Mark Value',
             'marked' => 'Marked',
             'file_path' => 'File Path',

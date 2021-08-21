@@ -12,10 +12,10 @@ $this->title = 'Dashboard';
 ?>
 <div class="lecturer-assessment-index">
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6 mb-3">
             <h4><?= Html::encode($this->title) ?></h4>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6 mb-3">
             <p>
                 <?= Html::a('Create an Assessment', ['create'], ['class' => 'btn btn-success float-right']) ?>
             </p>
@@ -30,17 +30,19 @@ $this->title = 'Dashboard';
             ['class' => 'yii\grid\SerialColumn'],
             [
                 'attribute' => 'name',
-                'contentOptions' =>['width' => '700px']
+                'contentOptions' =>['width' => '60%']
             ],
             [
                 'attribute' =>'assessment_type',
                 'value' => 'assessmentType',
-                'filter'=> false
+                'filter'=> false,
+                'contentOptions' =>['width' => '15%']
             ],
             // 'deadline',
             [
                 'attribute' => 'active',
                 'format' => 'raw',
+                'contentOptions' =>['width' => '10%'],
                 'value' => function ($data) {
                     return SwitchInput::widget(
                         [
@@ -62,7 +64,10 @@ $this->title = 'Dashboard';
                 }
             ],
 
-            ['class' => 'yii\grid\ActionColumn'],
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'template' => '{update},{delete}'
+            ],
         ],
     ]); ?>
     <?php Pjax::end() ?>

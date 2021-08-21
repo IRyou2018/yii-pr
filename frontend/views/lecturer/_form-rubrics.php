@@ -12,7 +12,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
     'min' => 1,
     'insertButton' => '.add-rubric',
     'deleteButton' => '.remove-rubric',
-    'model' => $modelsRubric[0],
+    'model' => $modelsRubric[0][0][0],
     'formId' => 'dynamic-form',
     'formFields' => [
         'level',
@@ -34,7 +34,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
     </thead>
 
     <tbody class="container-rubric">
-    <?php foreach ($modelsRubric as $indexRubric => $modelRubric) : ?>
+    <?php foreach ($modelsRubric[$indexSection][$indexItem] as $indexRubric => $modelRubric) : ?>
         <tr class="rubric">
             <td class="col-sm-2">
                 <?php
