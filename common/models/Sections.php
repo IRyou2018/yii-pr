@@ -70,4 +70,18 @@ class Sections extends \yii\db\ActiveRecord
     {
         return $this->hasMany(Items::className(), ['section_id' => 'id']);
     }
+
+    /**
+     * Gets query for [[Items]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getStudentSections($id)
+    {
+        return $this->find()
+            ->join('INNER JOIN', 'assessments', 'sections.assessment_id = assessments.id')
+            ->where('assessments.id = :id', [':id' => $id])
+            ->andWhere('sections.section_type = 0')
+            ->all();
+    }
 }

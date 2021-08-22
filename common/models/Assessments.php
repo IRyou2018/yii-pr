@@ -181,4 +181,12 @@ class Assessments extends \yii\db\ActiveRecord
 
         return $text;
     }
+
+    /**
+     * Customizie return text of active status.
+     */
+    public function getFinished()
+    {
+        return "Finished";
+    }
 }

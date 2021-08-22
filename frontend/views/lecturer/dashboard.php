@@ -26,6 +26,8 @@ $this->title = 'Dashboard';
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
+        'tableOptions' => ['class' => 'table table-bordered'],
+        'summary'=>'', 
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
             [

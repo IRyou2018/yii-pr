@@ -184,10 +184,7 @@ class LecturerController extends Controller
 
                     // Validate file format
                     $valid = $modelUpload->validateTemplateFormat($excelData, $model->assessment_type);
-                    // echo '<pre>';
-                    // print_r($valid);
-                    // echo '</pre>';
-                    // die();
+
                     // Validate file Content
                     $valid = $modelUpload->validateInputContents($excelData, $model->assessment_type);
                 }
@@ -315,21 +312,23 @@ class LecturerController extends Controller
         $modelsRubric = [[[new Rubrics()]]];
         $oldRubrics = [];
         
-        if (!empty($modelsSection)) {
+        if (!empty($modelsSection[0]->id)) {
             foreach ($modelsSection as $indexSection => $modelSection) {
 
                 $temp_Items = $modelSection->items;
                 $modelsItem[$indexSection] = $temp_Items;
                 $oldItems = ArrayHelper::merge(ArrayHelper::index($temp_Items, 'id'), $oldItems);
 
-                foreach ($modelsItem[$indexSection] as $indexItem => $modelItem) {
-                    $temp_Rubrics = $modelItem->rubrics;
-                    
-                    if(!empty($temp_Rubrics[0]->id)) {
-                        $modelsRubric[$indexSection][$indexItem] = $temp_Rubrics;
-                        $oldRubrics = ArrayHelper::merge(ArrayHelper::index($temp_Rubrics, 'id'), $oldRubrics);
+                if (!empty($temp_Items[0]->id)) {
+                    foreach ($modelsItem[$indexSection] as $indexItem => $modelItem) {
+                        $temp_Rubrics = $modelItem->rubrics;
+                        
+                        if(!empty($temp_Rubrics[0]->id)) {
+                            $modelsRubric[$indexSection][$indexItem] = $temp_Rubrics;
+                            $oldRubrics = ArrayHelper::merge(ArrayHelper::index($temp_Rubrics, 'id'), $oldRubrics);
+                        }
                     }
-                }    
+                }
             }
         }
 
