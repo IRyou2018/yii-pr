@@ -2,7 +2,6 @@
 
 use yii\bootstrap4\ActiveForm;
 use yii\helpers\Html;
-use yii\widgets\DetailView;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\Assessments */
@@ -40,7 +39,9 @@ use yii\widgets\DetailView;
                 <td class="col-md-1">
                     <?= $modelItem->max_mark_value ?>
                 </td>
-                <td class="col-md-1"> 
+                <td class="col-md-1">
+                    <?= Html::activeHiddenInput($modelsPeerReviewDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]item_id"); ?>
+                    <?= Html::activeHiddenInput($modelsPeerReviewDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]peer_review_id"); ?>
                     <?= $form->field($modelsPeerReviewDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]mark")->textInput(['maxlength' => true])->label(false) ?>
                 </td>
                 <td class="col-md-7">
@@ -52,6 +53,9 @@ use yii\widgets\DetailView;
     </table>
     <?php endforeach; ?>
 
+    <div class="form-group">
+        <?= Html::submitButton('Submit', ['class' => 'btn btn-success']) ?>
+    </div>
     <?php ActiveForm::end(); ?>
 
 </div>

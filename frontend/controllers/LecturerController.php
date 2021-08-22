@@ -238,7 +238,7 @@ class LecturerController extends Controller
                                     }
                                 }
                             }
-
+                            
                             if ($flag) {
 
                                 $modelLecturerAssessment = new LecturerAssessment();
@@ -430,6 +430,7 @@ class LecturerController extends Controller
                         $modelPeerAssessment = new PeerAssessment();
                         $modelPeerAssessment->group_id = $temp_Group_id;
                         $modelPeerAssessment->marked = 0;
+                        $modelPeerAssessment->completed = 0;
 
                         // If student not exist, regist
                         if (empty($student)) {
@@ -453,7 +454,6 @@ class LecturerController extends Controller
                             break;
                         }
                     } else {
-
                         // Regist new gourp
                         $temp_Group_name = $sortedData[$i]['Group Name'];;
 
@@ -461,8 +461,13 @@ class LecturerController extends Controller
 
                         $modelGroupInfo->name = $temp_Group_name;
                         $modelGroupInfo->assessment_id = $model->id;
-                        $modelGroupInfo->number = $group_number;
+                        $modelGroupInfo->group_number = $group_number;
+                        $modelGroupInfo->marked = 0;
 
+                        // echo '<pre>';
+                        // print_r($modelGroupInfo);
+                        // echo '</pre>';
+                        // die;
                         if ($flag = $modelGroupInfo->save(false)) {
 
                             $temp_Group_id = $modelGroupInfo->id;
@@ -476,7 +481,8 @@ class LecturerController extends Controller
                             $modelPeerAssessment = new PeerAssessment();
                             $modelPeerAssessment->group_id = $temp_Group_id;
                             $modelPeerAssessment->marked = 0;
-
+                            $modelPeerAssessment->completed = 0;
+                            
                             // If student not exist, regist
                             if (empty($student)) {
                                 $modelUser->first_name = $sortedData[$i]['First Name'];

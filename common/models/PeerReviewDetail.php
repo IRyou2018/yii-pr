@@ -32,11 +32,15 @@ class PeerReviewDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['item_id', 'mark'], 'required'],
+            [
+                ['item_id', 'mark', 'comment'], 'required',
+                'message'=>'Please enter a value for {attribute}.'
+            ],
             [['item_id', 'mark', 'peer_review_id'], 'integer'],
             [['comment'], 'string'],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
             [['peer_review_id'], 'exist', 'skipOnError' => true, 'targetClass' => PeerReview::className(), 'targetAttribute' => ['peer_review_id' => 'id']],
+            [['mark'], 'validateMark'],
         ];
     }
 
@@ -48,10 +52,17 @@ class PeerReviewDetail extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'item_id' => 'Item ID',
-            'mark' => 'Mark',
+            'mark' => 'Proposed Mark',
             'comment' => 'Comment',
             'peer_review_id' => 'Peer Review ID',
         ];
+    }
+
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios['submit'] = ['mark'];
+        return $scenarios;
     }
 
     /**
@@ -72,5 +83,18 @@ class PeerReviewDetail extends \yii\db\ActiveRecord
     public function getPeerReview()
     {
         return $this->hasOne(PeerReview::className(), ['id' => 'peer_review_id']);
+    }
+
+    public function getMaxMarkValue() {
+        
+        return $this->item->max_mark_value;
+    }
+
+    public function validateMark($attribute, $params) {
+        
+        if ($this->mark > $this->item->max_mark_value) {
+            $this->addError($attribute, 'Mark must be less than or equal to Max Mark.');
+            return false;
+        }
     }
 }

@@ -25,6 +25,8 @@ $this->title = 'Dashboard';
     <?php Pjax::begin() ?>
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
+        'options' => ['style' => 'max-height:20px;'
+                      ],
         'filterModel' => $searchModel,
         'tableOptions' => ['class' => 'table table-bordered'],
         'summary'=>'', 
@@ -48,13 +50,13 @@ $this->title = 'Dashboard';
                 'value' => function ($data) {
                     return SwitchInput::widget(
                         [
-                            'name' => 'active',
+                            'name' => 'status_11',
                             'pluginEvents' => [
                                 'switchChange.bootstrapSwitch' => "function(e){sendRequest(e.currentTarget.checked, $data->id);}"
                             ],
                     
                             'pluginOptions' => [
-                                'size' => '',
+                                'size' => 'small',
                                 'onColor' => 'primary',
                                 'offColor' => 'primary',
                                 'onText' => 'ON',

@@ -91,12 +91,12 @@ use yii\helpers\Url;
         'columns' => [
             [
                 'attribute' => 'name',
-                'contentOptions' =>['width' => '70%'],
+                'contentOptions' =>['width' => '80%'],
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
             ],
             [
                 'attribute' => 'deadline',
-                'contentOptions' =>['width' => '30%'],
+                'contentOptions' =>['width' => '20%'],
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
             ],
         ],

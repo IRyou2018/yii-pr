@@ -5,9 +5,11 @@ namespace frontend\controllers;
 use common\models\Assessments;
 use common\models\Items;
 use common\models\PeerAssessmentDetail;
+use common\models\PeerReview;
 use common\models\PeerReviewDetail;
 use common\models\Rubrics;
 use common\models\Sections;
+use Exception;
 use frontend\models\AssessmentsSearch;
 use frontend\models\StudentModel;
 use frontend\models\Upload;
@@ -22,6 +24,9 @@ use yii\helpers\ArrayHelper;
  */
 class StudentController extends Controller
 {
+    const COMPLETED = 1;
+    const PEER_ASSESS = 0;
+    const PEER_REVIEW = 1;
     /**
      * @inheritDoc
      */
@@ -102,18 +107,6 @@ class StudentController extends Controller
         $modelsPeerAssessmentDetail = [[new PeerAssessmentDetail()]];
         $modelsPeerReviewDetail = [[new PeerReviewDetail()]];
 
-        // $items = Items::find()
-        //     ->join('INNER JOIN', 'sections', 'items.section_id = sections.id')
-        //     ->join('INNER JOIN', 'assessments', 'sections.assessment_id = assessments.id')
-        //     ->where('assessments.id = :id')
-        //     ->addParams([':id' => $id])
-        //     ->all();
-
-        // echo "<pre>";
-        // print_r($modelsSection);
-        // echo "</pre>";
-        // exit;
-
         foreach ($modelsSection as $indexSection => $modelSection) {
 
             $items = $modelSection->items;
@@ -121,7 +114,7 @@ class StudentController extends Controller
 
             $studentModel = new StudentModel();
             // Peer Assessment
-            if ($assessment_type == 0) {
+            if ($assessment_type == self::PEER_ASSESS) {
 
                 $peerAssessmentID = $studentModel->getPeerAssessmentId($id);
 
@@ -133,7 +126,7 @@ class StudentController extends Controller
                 }
             } 
             // Peer Review
-            else if ($assessment_type == 1) {
+            else if ($assessment_type == self::PEER_REVIEW) {
 
                 $peerReviewID = $studentModel->getPeerReviewId($id);
 
@@ -146,38 +139,86 @@ class StudentController extends Controller
                 }
             }
         }
-        // echo "<pre>";
-        // // print_r($modelsItem);
-        // print_r($modelsPeerReviewDetail);
-        // echo "</pre>";
-        // exit;
 
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post())) {
+        // Peer Assessment
+        if ($assessment_type == self::PEER_ASSESS) {
 
+        }
+        // Peer Assessment
+        else if ($assessment_type == self::PEER_REVIEW) {
+            
+            if ($this->request->isPost) {
+                
+                if (isset($_POST['PeerReviewDetail'][0][0])) {
+
+                    $index = 0;
+                    $prDetails = [];
+
+                    foreach ($_POST['PeerReviewDetail'] as $indexSection => $peerReviewDetails) {
+                        
+                        foreach ($peerReviewDetails as $indexItem => $peerReviewDetail) {
+                            
+                            $data['PeerReviewDetail'] = $peerReviewDetail;
+                            $modelPeerReviewDetail = new PeerReviewDetail();
+                            $modelPeerReviewDetail->load($data);
+                            $modelPeerReviewDetail->scenario = 'submit';
+                            
+                            $prDetails[$index] = $modelPeerReviewDetail;
+
+                            $valid = $modelPeerReviewDetail->validate();
+
+                            $index++;
+                        }
+                    }
+
+                    if($valid) {
+                        $transaction = \Yii::$app->db->beginTransaction();
+
+                        try {
+
+                            $flag = true;
+
+                            foreach ($prDetails as $index => $peerReviewDetail) {
+
+                                if ($flag = $peerReviewDetail->save(false)) {
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            
+
+                            if($flag) {
+                                $peerReview = PeerReview::findOne($peerReviewID);
+
+                                $peerReview->completed = self::COMPLETED;
+
+                                $flag = $peerReview->save(false);
+                                // echo '<pre>';
+                                // print_r($flag);
+                                // // print_r($peerReviewDetail);
+                                // // print_r($peerReviewDetail->save(false));
+                                // echo '</pre>';
+                                // die;
+                            }
+
+                            if ($flag) {
+                                $transaction->commit();
+                                return $this->redirect(['dashboard']);
+                            } else {
+
+                                $transaction->rollBack();
+                            }
+                        } catch (Exception $e) {
+                            $transaction->rollBack();
+                        }
+                    }
+                }
+            } else {
+                $model->loadDefaultValues();
             }
-        } else {
-            $model->loadDefaultValues();
         }
 
-        // if($assessment_type == 0) {
-        //     return $this->render('peer-assessment', [
-        //         'model' => $model,
-        //         'modelsSection' => $modelsSection,
-        //         'modelsItem' => $modelsItem,
-        //         'modelsPeerAssessmentDetail' => $modelsPeerAssessmentDetail,
-        //         // 'peerAssessmentID' => $peerAssessmentID,
-        //     ]);
-        // }
-        // else if ($assessment_type ==1) {
-        //     return $this->render('peer-review', [
-        //         'model' => $model,
-        //         'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
-        //         'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
-        //         'modelsPeerReviewDetail' => (empty($modelsPeerReviewDetail)) ? [[new PeerReviewDetail()]] :  $modelsPeerReviewDetail,
-        //         // 'peerReviewID' => $peerReviewID,
-        //     ]);
-        // }
         return $this->render('submit', [
             'model' => $model,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,

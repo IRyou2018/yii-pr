@@ -97,7 +97,7 @@ use yii\helpers\Url;
     ]) ?>
 
     <div class="form-group">
-        <?= Html::submitButton('Create', ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton('Update', ['class' => 'btn btn-success']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>
@@ -112,7 +112,7 @@ $script = <<< JS
 
     });
 
-    $('#Create').click(function(){
+    $('#Update').click(function(){
     var selection = $('#coordinatorList').yiiGridView('getSelectedRows');
     });
 

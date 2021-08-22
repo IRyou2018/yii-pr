@@ -9,10 +9,10 @@ use Yii;
  *
  * @property int $id
  * @property string $name
- * @property int|null  $number
+ * @property int $group_number
  * @property string|null $mark
  * @property int|null $marked
- * @property int $assessment_id
+ * @property int|null $assessment_id
  *
  * @property Assessments $assessment
  * @property PeerAssessment[] $peerAssessments
@@ -33,8 +33,8 @@ class GroupInfo extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'assessment_id'], 'required'],
-            [['number', 'marked', 'assessment_id'], 'integer'],
+            [['name', 'group_number'], 'required'],
+            [['group_number', 'marked', 'assessment_id'], 'integer'],
             [['name'], 'string', 'max' => 255],
             [['mark'], 'string', 'max' => 5],
             [['assessment_id'], 'exist', 'skipOnError' => true, 'targetClass' => Assessments::className(), 'targetAttribute' => ['assessment_id' => 'id']],
@@ -49,7 +49,7 @@ class GroupInfo extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'name' => 'Name',
-            'number' => 'Number',
+            'group_number' => 'Group Number',
             'mark' => 'Mark',
             'marked' => 'Marked',
             'assessment_id' => 'Assessment ID',
