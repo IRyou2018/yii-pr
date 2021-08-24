@@ -352,16 +352,11 @@ class LecturerController extends Controller
     {
         $modelPeerReview = PeerReview::findOne($id);
         $model = $modelPeerReview->individualAssessment->assessment;
-
-        // echo "<pre>";
-        // print_r($this->request);
-        // echo "</pre>";
-        // exit;
         $modelsSection = $model->sections;
-        $modelsItem = [[new Items()]];
-        $modelsPeerReviewDetail = [[new PeerReviewDetail()]];
+        $modelsItem = [];
+        $modelsPeerReviewDetail = [];
         $peerReviewDetails = $modelPeerReview->peerReviewDetails;
-        $modelsIndividualFeedback = [[new IndividualFeedback()]];
+        $modelsIndividualFeedback = [];
 
         foreach ($modelsSection as $indexSection => $modelSection) {
 
@@ -372,11 +367,16 @@ class LecturerController extends Controller
             
                 if ($modelSection->section_type == 0) {
 
-                    foreach($peerReviewDetails as $peerReviewDetail) {
-                        if ($peerReviewDetail->item_id == $item->id) {
-                            $modelsPeerReviewDetail[$indexSection][$index] = $peerReviewDetail;
-                            break;
+                    if (!empty($peerReviewDetails)) {
+                        foreach($peerReviewDetails as $peerReviewDetail) {
+                            if ($peerReviewDetail->item_id == $item->id) {
+                                $modelsPeerReviewDetail[$indexSection][$index] = $peerReviewDetail;
+                                break;
+                            }
                         }
+                    } else {
+                        $peerReviewDetail = new PeerReviewDetail();
+                        $modelsPeerReviewDetail[$indexSection][$index] = $peerReviewDetail;
                     }
                 }
 
@@ -386,13 +386,17 @@ class LecturerController extends Controller
                 $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
             }
         }
+        // echo "<pre>";
+        // print_r(!empty($modelsPeerReviewDetail));
+        // echo "</pre>";
+        // exit;
 
         if ($this->request->isPost) {
                 
             if (isset($_POST['IndividualFeedback'][0][0])) {
 
                 $index = 0;
-                $individualFeedbacks = [];
+                $individualFeedbacks = [new IndividualFeedback()];
                 $actualMark = 0;
                 $student_id = $modelPeerReview->individualAssessment->student_id;
 
@@ -405,26 +409,33 @@ class LecturerController extends Controller
                         $modelIndividualFeedback->load($data);
                         $modelIndividualFeedback->student_id = $student_id;
                         $modelIndividualFeedback->scenario = 'submit';
-                        
-                        $individualFeedbacks[$index] = $modelIndividualFeedback;
-                        $modelsIndividualFeedback[$indexSection][$indexItem] = $modelIndividualFeedback;
 
-                        $valid = $modelIndividualFeedback->validate();
+                        $modelsIndividualFeedback[$indexSection][$indexItem] = $modelIndividualFeedback;
+                        
+                        // Input validation
+                        if($feedback->validate()) {
+                            $actualMark += $feedback->mark;
+                            $individualFeedbacks[$index] = $modelIndividualFeedback;
+                        } else {
+                            $valid = false;
+                        }
 
                         $index++;
                     }
                 }
 
-
-                // foreach ($modelsIndividualFeedback as $feedbacks) {
+                $valid = true;
+                foreach ($modelsIndividualFeedback as $feedbacks) {
                     
-                //     foreach ($feedbacks as $feedback) {
+                    foreach ($feedbacks as $feedback) {
 
-                //         $valid = $feedback->validate();
-                //         $actualMark += $feedback->mark;
-
-                //     }
-                // }
+                        if($feedback->validate()) {
+                            $actualMark += $feedback->mark;
+                        } else {
+                            $valid = false;
+                        }
+                    }
+                }
                 
                 if($valid) {
                     $transaction = \Yii::$app->db->beginTransaction();
@@ -432,9 +443,9 @@ class LecturerController extends Controller
                     try {
 
                         $flag = true;
-
+                        
                         foreach ($individualFeedbacks as $index => $individualFeedback) {
-
+                            
                             if ($flag = $individualFeedback->save(false)) {
                             } else {
                                 break;

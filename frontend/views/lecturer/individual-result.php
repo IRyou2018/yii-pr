@@ -4,14 +4,16 @@ use yii\helpers\Html;
 use yii\bootstrap4\ActiveForm;
 
 /* @var $this yii\web\View */
-/* @var $model common\models\Assessments */
 /* @var $form yii\widgets\ActiveForm */
 
 $this->title = 'Individual Result';
+$this->params['breadcrumbs'][] = ['label' => 'Assessments', 'url' => ['assessment', 'id' => $model->id]];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
 <div class="individual-result-form">
+
+    <h4>Assessment : <?= $model->name ?></h4>
 
     <?php $form = ActiveForm::begin(); ?>
 
@@ -25,8 +27,8 @@ $this->params['breadcrumbs'][] = $this->title;
             </tr>
             <tr class="text-white bg-secondary">
                 <th class="align-middle">Item/Functionality</th>
-                <th class="align-middle">Max Mark</th>
-                <th class="align-middle">
+                <th class="align-middle text-center">Max Mark</th>
+                <th class="align-middle text-center">
                     <?php 
                         if ($modelSection->section_type == 0) {
                             echo 'Proposed Mark';
@@ -71,7 +73,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <td class="col-md-1" colspan="3">
                     <?= Html::activeHiddenInput($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]item_id"); ?>
                     <?= Html::activeHiddenInput($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]peer_review_id"); ?>
-                    <?= $form->field($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]mark")->textInput(['style'=>'width:60px'])->label(false) ?>
+                    <?= $form->field($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]mark")->textInput(['style'=>'width:76px', 'class'=>'text-center'])->label(false) ?>
                 </td>
             </tr>
             <tr>

@@ -153,7 +153,9 @@ class StudentController extends Controller
 
                     $index = 0;
                     $prDetails = [];
+                    $valid = true;
 
+                    // Get Input value
                     foreach ($_POST['PeerReviewDetail'] as $indexSection => $peerReviewDetails) {
                         
                         foreach ($peerReviewDetails as $indexItem => $peerReviewDetail) {
@@ -162,12 +164,15 @@ class StudentController extends Controller
                             $modelPeerReviewDetail = new PeerReviewDetail();
                             $modelPeerReviewDetail->load($data);
                             $modelPeerReviewDetail->scenario = 'submit';
-                            
-                            $prDetails[$index] = $modelPeerReviewDetail;
-                            $modelsPeerReviewDetail[$indexSection][$index] = $modelPeerReviewDetail;
 
-                            $valid = $modelPeerReviewDetail->validate();
+                            $modelsPeerReviewDetail[$indexSection][$indexItem] = $modelPeerReviewDetail;
 
+                            // Input validation
+                            if($modelPeerReviewDetail->validate()) {
+                                $prDetails[$index] = $modelPeerReviewDetail;
+                            } else {
+                                $valid = false;
+                            }
                             $index++;
                         }
                     }
@@ -186,8 +191,6 @@ class StudentController extends Controller
                                     break;
                                 }
                             }
-
-                            
 
                             if($flag) {
                                 $peerReview = PeerReview::findOne($peerReviewID);

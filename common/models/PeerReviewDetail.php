@@ -85,11 +85,6 @@ class PeerReviewDetail extends \yii\db\ActiveRecord
         return $this->hasOne(PeerReview::className(), ['id' => 'peer_review_id']);
     }
 
-    public function getMaxMarkValue() {
-        
-        return $this->item->max_mark_value;
-    }
-
     public function validateMark($attribute, $params) {
         
         if ($this->mark > $this->item->max_mark_value) {

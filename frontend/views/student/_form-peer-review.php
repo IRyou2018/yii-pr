@@ -17,15 +17,15 @@ use yii\helpers\Html;
     <?php foreach ($modelsSection as $indexSection => $modelSection): ?>
     <table class="table table-bordered mt-2">
         <thead>
-            <tr class="text-white bg-secondary">
+            <tr class="text-white bg-dark">
                 <th scope="col" colspan="12">
                     <?= $modelSection->name ?>
                 </th>
             </tr>
-            <tr class="text-white bg-dark">
+            <tr class="text-white bg-secondary">
                 <th class="align-middle">Item/Functionality</th>
-                <th class="align-middle">Max Mark</th>
-                <th class="align-middle">Proposed Mark</th>
+                <th class="align-middle text-center">Max Mark</th>
+                <th class="align-middle text-center">Proposed Mark</th>
                 <th class="align-middle">Feedback</th>
             </tr>
         </thead>
@@ -36,13 +36,13 @@ use yii\helpers\Html;
                 <td class="col-md-2"> 
                     <?= $modelItem->name ?>
                 </td>
-                <td class="col-md-1">
+                <td class="col-md-1 text-center">
                     <?= $modelItem->max_mark_value ?>
                 </td>
                 <td class="col-md-1">
                     <?= Html::activeHiddenInput($modelsPeerReviewDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]item_id"); ?>
                     <?= Html::activeHiddenInput($modelsPeerReviewDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]peer_review_id"); ?>
-                    <?= $form->field($modelsPeerReviewDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]mark")->textInput(['maxlength' => true])->label(false) ?>
+                    <?= $form->field($modelsPeerReviewDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]mark")->textInput(['style'=>'width:70px', 'class'=>'text-center'])->label(false) ?>
                 </td>
                 <td class="col-md-7">
                     <?= $form->field($modelsPeerReviewDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]comment")->textarea(['maxlength' => true])->label(false) ?>
@@ -57,5 +57,4 @@ use yii\helpers\Html;
         <?= Html::submitButton('Submit', ['class' => 'btn btn-success']) ?>
     </div>
     <?php ActiveForm::end(); ?>
-
 </div>

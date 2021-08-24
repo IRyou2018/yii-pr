@@ -8,7 +8,7 @@ use yii\db\Migration;
  *
  * - `{{%user}}`
  * - `{{%items}}`
- * - `{{%peer_assessment}}`
+ * - `{{%peer_review}}`
  */
 class m210815_220005_create_individual_feedback_table extends Migration
 {
@@ -20,10 +20,10 @@ class m210815_220005_create_individual_feedback_table extends Migration
         $this->createTable('{{%individual_feedback}}', [
             'id' => $this->primaryKey(),
             'student_id' => $this->integer(11)->notNull(),
-            'mark' => $this->integer(3)->notNull(),
+            'mark' => $this->integer(3),
             'comment' => 'LONGTEXT',
             'item_id' => $this->integer(11)->notNull(),
-            'peer_review_id' => $this->integer(11),
+            'peer_review_id' => $this->integer(11)->notNull(),
         ]);
 
         // creates index for column `student_id`
@@ -67,12 +67,12 @@ class m210815_220005_create_individual_feedback_table extends Migration
             'peer_review_id'
         );
 
-        // add foreign key for table `{{%peer_assessment}}`
+        // add foreign key for table `{{%peer_review}}`
         $this->addForeignKey(
             '{{%fk-individual_feedback-peer_review_id}}',
             '{{%individual_feedback}}',
             'peer_review_id',
-            '{{%peer_assessment}}',
+            '{{%peer_review}}',
             'id',
             'CASCADE'
         );
@@ -107,7 +107,7 @@ class m210815_220005_create_individual_feedback_table extends Migration
             '{{%individual_feedback}}'
         );
 
-        // drops foreign key for table `{{%peer_assessment}}`
+        // drops foreign key for table `{{%peer_review}}`
         $this->dropForeignKey(
             '{{%fk-individual_feedback-peer_review_id}}',
             '{{%individual_feedback}}'

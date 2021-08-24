@@ -13,6 +13,7 @@ use Yii;
  * @property int $completed
  *
  * @property IndividualAssessment $individualAssessment
+ * @property IndividualFeedback[] $individualFeedbacks
  * @property User $markerStudent
  * @property PeerReviewDetail[] $peerReviewDetails
  */
@@ -60,6 +61,16 @@ class PeerReview extends \yii\db\ActiveRecord
     public function getIndividualAssessment()
     {
         return $this->hasOne(IndividualAssessment::className(), ['id' => 'individual_assessment_id']);
+    }
+
+    /**
+     * Gets query for [[IndividualFeedbacks]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIndividualFeedbacks()
+    {
+        return $this->hasMany(IndividualFeedback::className(), ['peer_review_id' => 'id']);
     }
 
     /**

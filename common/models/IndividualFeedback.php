@@ -9,13 +9,13 @@ use Yii;
  *
  * @property int $id
  * @property int $student_id
- * @property int $mark
+ * @property int|null $mark
  * @property string|null $comment
  * @property int $item_id
- * @property int|null $peer_review_id
+ * @property int $peer_review_id
  *
  * @property Items $item
- * @property PeerAssessment $peerReview
+ * @property PeerReview $peerReview
  * @property User $student
  */
 class IndividualFeedback extends \yii\db\ActiveRecord
@@ -34,11 +34,11 @@ class IndividualFeedback extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['student_id', 'item_id'], 'required'],
+            [['student_id', 'item_id', 'peer_review_id'], 'required'],
             [['student_id', 'mark', 'item_id', 'peer_review_id'], 'integer'],
             [['comment'], 'string'],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
-            [['peer_review_id'], 'exist', 'skipOnError' => true, 'targetClass' => PeerAssessment::className(), 'targetAttribute' => ['peer_review_id' => 'id']],
+            [['peer_review_id'], 'exist', 'skipOnError' => true, 'targetClass' => PeerReview::className(), 'targetAttribute' => ['peer_review_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_id' => 'id']],
             [['mark'], 'validateMark'],
         ];
@@ -83,7 +83,7 @@ class IndividualFeedback extends \yii\db\ActiveRecord
      */
     public function getPeerReview()
     {
-        return $this->hasOne(PeerAssessment::className(), ['id' => 'peer_review_id']);
+        return $this->hasOne(PeerReview::className(), ['id' => 'peer_review_id']);
     }
 
     /**
