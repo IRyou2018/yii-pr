@@ -1,5 +1,6 @@
 <?php
 
+use yii\data\ArrayDataProvider;
 use yii\grid\GridView;
 use yii\helpers\Html;
 use yii\helpers\Url;
@@ -16,15 +17,17 @@ use yii\helpers\Url;
             <i class="material-icons fa-2x">assignment</i> &nbsp; 
             <span class="h4 align-self-center">To be completed</span>
     </div>
-    <?php if ($unCompletedAssessment->getTotalCount() > 0) : ?>
+    <?php if (!empty($unCompletedAssessment)) : ?>
     <?= GridView::widget([
-        'dataProvider' => $unCompletedAssessment,
+        'dataProvider' => new ArrayDataProvider([
+            'allModels' => $unCompletedAssessment
+        ]),
         'tableOptions' => ['class' => 'table table-bordered'],
         'summary' => '',
         // 'hover'=>true,
         'columns' => [
             [
-                'attribute' => 'id',
+                'attribute' => 'name',
                 'label' => 'Assessment',
                 'value' => 'name',
                 'contentOptions' =>['width' => '80%'],
@@ -49,14 +52,17 @@ use yii\helpers\Url;
             <span class="h4 align-self-center">Completed</span>
     </div>
 
-    <?php if ($completedAssessment->getTotalCount() > 0) : ?>
+    <?php if (!empty($completedAssessment)) : ?>
     <?= GridView::widget([
-        'dataProvider' => $completedAssessment,
+        'dataProvider' => new ArrayDataProvider([
+            'allModels' => $completedAssessment
+        ]),
         'summary' => false,
         'tableOptions' => ['class' => 'table table-bordered'],
+        'rowOptions' => function ($model, $key, $index, $grid) { return ['data-assessment_id' => $model['assessment_id']]; },
         'columns' => [
             [
-                'attribute' => 'id',
+                'attribute' => 'name',
                 'label' => 'Assessment',
                 'value' => 'name',
                 'contentOptions' =>['width' => '80%'],
@@ -64,7 +70,7 @@ use yii\helpers\Url;
             ],
             [
                 'attribute' => 'deadline',
-                'value' => 'finished',
+                'value' => function ($data) { return 'Finished';},
                 'contentOptions' =>['width' => '20%'],
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
             ],
@@ -113,8 +119,9 @@ $this->registerJs("
 
     $('td').click(function (e) {
         var id = $(this).closest('tr').data('key');
+        var assessment_id = $(this).closest('tr').data('assessment_id');
         if(e.target == this)
-            location.href = '" . Url::to(['student/submit']) . "?id=' + id;
+            location.href = '" . Url::to(['student/submit']) . "?id=' + id + '&assessment_id=' + assessment_id;
     });
 
     $('tr:has(td)').mouseover(function() {
