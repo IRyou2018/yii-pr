@@ -353,6 +353,10 @@ class LecturerController extends Controller
         $modelPeerReview = PeerReview::findOne($id);
         $model = $modelPeerReview->individualAssessment->assessment;
 
+        // echo "<pre>";
+        // print_r($this->request);
+        // echo "</pre>";
+        // exit;
         $modelsSection = $model->sections;
         $modelsItem = [[new Items()]];
         $modelsPeerReviewDetail = [[new PeerReviewDetail()]];
@@ -381,6 +385,86 @@ class LecturerController extends Controller
                 $individualFeedback->peer_review_id = $id;
                 $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
             }
+        }
+
+        if ($this->request->isPost) {
+                
+            if (isset($_POST['IndividualFeedback'][0][0])) {
+
+                $index = 0;
+                $individualFeedbacks = [];
+                $actualMark = 0;
+                $student_id = $modelPeerReview->individualAssessment->student_id;
+
+                foreach ($_POST['IndividualFeedback'] as $indexSection => $feedbacks) {
+                    
+                    foreach ($feedbacks as $indexItem => $feedback) {
+                        
+                        $data['IndividualFeedback'] = $feedback;
+                        $modelIndividualFeedback = new IndividualFeedback();
+                        $modelIndividualFeedback->load($data);
+                        $modelIndividualFeedback->student_id = $student_id;
+                        $modelIndividualFeedback->scenario = 'submit';
+                        
+                        $individualFeedbacks[$index] = $modelIndividualFeedback;
+                        $modelsIndividualFeedback[$indexSection][$indexItem] = $modelIndividualFeedback;
+
+                        $valid = $modelIndividualFeedback->validate();
+
+                        $index++;
+                    }
+                }
+
+
+                // foreach ($modelsIndividualFeedback as $feedbacks) {
+                    
+                //     foreach ($feedbacks as $feedback) {
+
+                //         $valid = $feedback->validate();
+                //         $actualMark += $feedback->mark;
+
+                //     }
+                // }
+                
+                if($valid) {
+                    $transaction = \Yii::$app->db->beginTransaction();
+
+                    try {
+
+                        $flag = true;
+
+                        foreach ($individualFeedbacks as $index => $individualFeedback) {
+
+                            if ($flag = $individualFeedback->save(false)) {
+                            } else {
+                                break;
+                            }
+                        }
+
+                        
+                        if($flag) {
+                            $individualAssessment = $modelPeerReview->individualAssessment;
+
+                            $individualAssessment->marked = 1;
+                            $individualAssessment->mark_value = $actualMark;
+
+                            $flag = $individualAssessment->save(false);
+                        }
+
+                        if ($flag) {
+                            $transaction->commit();
+                            return $this->redirect(['dashboard']);
+                        } else {
+
+                            $transaction->rollBack();
+                        }
+                    } catch (Exception $e) {
+                        $transaction->rollBack();
+                    }
+                }
+            }
+        } else {
+            $model->loadDefaultValues();
         }
 
         return $this->render('individual-result', [

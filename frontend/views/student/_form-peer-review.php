@@ -26,7 +26,7 @@ use yii\helpers\Html;
                 <th class="align-middle">Item/Functionality</th>
                 <th class="align-middle">Max Mark</th>
                 <th class="align-middle">Proposed Mark</th>
-                <th class="align-middle">Comment</th>
+                <th class="align-middle">Feedback</th>
             </tr>
         </thead>
 

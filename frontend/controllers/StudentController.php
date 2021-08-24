@@ -164,6 +164,7 @@ class StudentController extends Controller
                             $modelPeerReviewDetail->scenario = 'submit';
                             
                             $prDetails[$index] = $modelPeerReviewDetail;
+                            $modelsPeerReviewDetail[$indexSection][$index] = $modelPeerReviewDetail;
 
                             $valid = $modelPeerReviewDetail->validate();
 

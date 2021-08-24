@@ -34,12 +34,13 @@ class IndividualFeedback extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['student_id', 'mark', 'item_id'], 'required'],
+            [['student_id', 'item_id'], 'required'],
             [['student_id', 'mark', 'item_id', 'peer_review_id'], 'integer'],
             [['comment'], 'string'],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
             [['peer_review_id'], 'exist', 'skipOnError' => true, 'targetClass' => PeerAssessment::className(), 'targetAttribute' => ['peer_review_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_id' => 'id']],
+            [['mark'], 'validateMark'],
         ];
     }
 
@@ -56,6 +57,13 @@ class IndividualFeedback extends \yii\db\ActiveRecord
             'item_id' => 'Item ID',
             'peer_review_id' => 'Peer Review ID',
         ];
+    }
+
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios['submit'] = ['mark'];
+        return $scenarios;
     }
 
     /**
@@ -86,5 +94,13 @@ class IndividualFeedback extends \yii\db\ActiveRecord
     public function getStudent()
     {
         return $this->hasOne(User::className(), ['id' => 'student_id']);
+    }
+
+    public function validateMark($attribute, $params) {
+        
+        if ($this->mark > $this->item->max_mark_value) {
+            $this->addError($attribute, 'Mark must be less than or equal to Max Mark.');
+            return false;
+        }
     }
 }

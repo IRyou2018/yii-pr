@@ -120,37 +120,45 @@ $this->params['breadcrumbs'][] = $this->title;
                     'attribute' => 'name',
                     'label' => 'Group Name',
                     'value' => 'name',
-                    'contentOptions' =>['width' => '70%'],
+                    'contentOptions' =>['width' => '77%'],
                     'headerOptions' => ['class' => 'text-light bg-secondary']
                 ],
                 [
-                    'attribute' => 'mark',
-                    'contentOptions' =>['width' => '20%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary'],
+                    'attribute' => 'marked',
+                    'contentOptions' =>['width' => '5%'],
+                    'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
                     'format' => 'html',
                     'value' => function ($model) {
                         if ($model['mark'] === null) {
-                            return '<i class="material-icons" style="color:red">clear</i>';
+                            return '<i class="material-icons mx-3" style="color:red">clear</i>';
                         } else {
-                            return '<i class="material-icons" style="color:green">done</i>'; // check icon 
+                            return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
                         }
                     },
                 ],
                 [
                     'class' => 'yii\grid\ActionColumn',
-                    'contentOptions' =>['width' => '10%'],
+                    'contentOptions' =>['width' => '18%'],
                     'headerOptions' => ['class' => 'text-light bg-secondary'],
-                    'template' => '{result}',
+                    'template' => '{manage-group}{result}',
                     'buttons'=>
                         [
+                            'manage-group' => function ($url, $model, $key)
+                            {     
+                                $options = [
+                                    'title' => Yii::t('yii', 'Manage Group'),
+                                    'class' => 'btn'
+                                ];
+                                return Html::a('Manage Group', ['manage-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                            },
                             'result' => function ($url, $model, $key)
-                                {     
-                                    $options = [
-                                        'title' => Yii::t('yii', 'Result'),
-                                        'class' => 'btn'
-                                    ];
-                                    return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
-                                }
+                            {     
+                                $options = [
+                                    'title' => Yii::t('yii', 'Result'),
+                                    'class' => 'btn'
+                                ];
+                                return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                            }
                         ],
                 ],
             ],
@@ -174,37 +182,45 @@ $this->params['breadcrumbs'][] = $this->title;
                     'attribute' => 'name',
                     'label' => 'Group Name',
                     'value' => 'name',
-                    'contentOptions' =>['width' => '70%'],
+                    'contentOptions' =>['width' => '77%'],
                     'headerOptions' => ['class' => 'text-light bg-secondary']
                 ],
                 [
-                    'attribute' => 'mark',
-                    'contentOptions' =>['width' => '20%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary'],
+                    'attribute' => 'marked',
+                    'contentOptions' =>['width' => '5%'],
+                    'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
                     'format' => 'html',
                     'value' => function ($model) {
                         if ($model['mark'] === null) {
-                            return '<i class="material-icons" style="color:red">clear</i>';
+                            return '<i class="material-icons mx-3" style="color:red">clear</i>';
                         } else {
-                            return '<i class="material-icons" style="color:green">done</i>'; // check icon 
+                            return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
                         }
                     },
                 ],
                 [
                     'class' => 'yii\grid\ActionColumn',
-                    'contentOptions' =>['width' => '10%'],
+                    'contentOptions' =>['width' => '18%'],
                     'headerOptions' => ['class' => 'text-light bg-secondary'],
-                    'template' => '{result}',
+                    'template' => '{manage-group}{result}',
                     'buttons'=>
                         [
+                            'manage-group' => function ($url, $model, $key)
+                            {     
+                                $options = [
+                                    'title' => Yii::t('yii', 'Manage Group'),
+                                    'class' => 'btn'
+                                ];
+                                return Html::a('Manage Group', ['manage-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                            },
                             'result' => function ($url, $model, $key)
-                                {     
-                                    $options = [
-                                        'title' => Yii::t('yii', 'Result'),
-                                        'class' => 'btn'
-                                    ];
-                                    return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
-                                }
+                            {     
+                                $options = [
+                                    'title' => Yii::t('yii', 'Result'),
+                                    'class' => 'btn'
+                                ];
+                                return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                            }
                         ],
                 ],
             ],
@@ -228,37 +244,45 @@ $this->params['breadcrumbs'][] = $this->title;
                     'attribute' => 'name',
                     'label' => 'Group Name',
                     'value' => 'name',
-                    'contentOptions' =>['width' => '70%'],
+                    'contentOptions' =>['width' => '77%'],
                     'headerOptions' => ['class' => 'text-light bg-secondary']
                 ],
                 [
-                    'attribute' => 'mark',
-                    'contentOptions' =>['width' => '20%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary'],
+                    'attribute' => 'marked',
+                    'contentOptions' =>['width' => '5%'],
+                    'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
                     'format' => 'html',
                     'value' => function ($model) {
                         if ($model['mark'] === null) {
-                            return '<i class="material-icons" style="color:red">clear</i>';
+                            return '<i class="material-icons mx-3" style="color:red">clear</i>';
                         } else {
-                            return '<i class="material-icons" style="color:green">done</i>'; // check icon 
+                            return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
                         }
                     },
                 ],
                 [
                     'class' => 'yii\grid\ActionColumn',
-                    'contentOptions' =>['width' => '10%'],
+                    'contentOptions' =>['width' => '18%'],
                     'headerOptions' => ['class' => 'text-light bg-secondary'],
-                    'template' => '{result}',
+                    'template' => '{manage-group}{result}',
                     'buttons'=>
                         [
+                            'manage-group' => function ($url, $model, $key)
+                            {     
+                                $options = [
+                                    'title' => Yii::t('yii', 'Manage Group'),
+                                    'class' => 'btn'
+                                ];
+                                return Html::a('Manage Group', ['manage-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                            },
                             'result' => function ($url, $model, $key)
-                                {     
-                                    $options = [
-                                        'title' => Yii::t('yii', 'Result'),
-                                        'class' => 'btn'
-                                    ];
-                                    return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
-                                }
+                            {     
+                                $options = [
+                                    'title' => Yii::t('yii', 'Result'),
+                                    'class' => 'btn'
+                                ];
+                                return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                            }
                         ],
                 ],
             ],
@@ -274,7 +298,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <?php if ($individualInfo->getTotalCount() > 0) : ?>
         <?= GridView::widget([
             'dataProvider' => $individualInfo,
-            'tableOptions' => ['class' => 'table table-bordered'],
+            'tableOptions' => ['class' => 'table'],
             'summary' => '',
             'columns' => [
                 [
@@ -283,7 +307,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     'value' => function ($model) {
                         return $model['work_student_name'];
                     },
-                    'contentOptions' =>['width' => '35%'],
+                    'contentOptions' =>['width' => '40%'],
                     'headerOptions' => ['class' => 'text-light bg-secondary']
                 ],
                 [
@@ -292,25 +316,25 @@ $this->params['breadcrumbs'][] = $this->title;
                     'value' => function ($model) {
                         return $model['marker_student_name'];
                     },
-                    'contentOptions' =>['width' => '35%'],
+                    'contentOptions' =>['width' => '40%'],
                     'headerOptions' => ['class' => 'text-light bg-secondary']
                 ],
                 [
-                    'attribute' => 'mark',
-                    'contentOptions' =>['width' => '20%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary'],
+                    'attribute' => 'marked',
+                    'contentOptions' =>['width' => '5%'],
+                    'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
                     'format' => 'html',
                     'value' => function ($model) {
                         if ($model['marked'] == 0) {
-                            return '<i class="material-icons" style="color:red">clear</i>';
+                            return '<i class="material-icons mx-3" style="color:red">clear</i>';
                         } else {
-                            return '<i class="material-icons" style="color:green">done</i>'; // check icon 
+                            return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
                         }
                     },
                 ],
                 [
                     'class' => 'yii\grid\ActionColumn',
-                    'contentOptions' =>['width' => '10%'],
+                    'contentOptions' =>['width' => '5%'],
                     'headerOptions' => ['class' => 'text-light bg-secondary'],
                     'template' => '{result}',
                     'buttons'=>
@@ -321,7 +345,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                         'title' => Yii::t('yii', 'Result'),
                                         'class' => 'btn'
                                     ];
-                                    return Html::a('Result', ['individual', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                    return Html::a('Result', ['individual-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
                                 }
                         ],
                 ],
