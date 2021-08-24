@@ -23,7 +23,7 @@ class m210815_220005_create_individual_feedback_table extends Migration
             'mark' => $this->integer(3)->notNull(),
             'comment' => 'LONGTEXT',
             'item_id' => $this->integer(11)->notNull(),
-            'peer_assessment_id' => $this->integer(11),
+            'peer_review_id' => $this->integer(11),
         ]);
 
         // creates index for column `student_id`
@@ -60,18 +60,18 @@ class m210815_220005_create_individual_feedback_table extends Migration
             'CASCADE'
         );
 
-        // creates index for column `peer_assessment_id`
+        // creates index for column `peer_review_id`
         $this->createIndex(
-            '{{%idx-individual_feedback-peer_assessment_id}}',
+            '{{%idx-individual_feedback-peer_review_id}}',
             '{{%individual_feedback}}',
-            'peer_assessment_id'
+            'peer_review_id'
         );
 
         // add foreign key for table `{{%peer_assessment}}`
         $this->addForeignKey(
-            '{{%fk-individual_feedback-peer_assessment_id}}',
+            '{{%fk-individual_feedback-peer_review_id}}',
             '{{%individual_feedback}}',
-            'peer_assessment_id',
+            'peer_review_id',
             '{{%peer_assessment}}',
             'id',
             'CASCADE'
@@ -109,13 +109,13 @@ class m210815_220005_create_individual_feedback_table extends Migration
 
         // drops foreign key for table `{{%peer_assessment}}`
         $this->dropForeignKey(
-            '{{%fk-individual_feedback-peer_assessment_id}}',
+            '{{%fk-individual_feedback-peer_review_id}}',
             '{{%individual_feedback}}'
         );
 
-        // drops index for column `peer_assessment_id`
+        // drops index for column `peer_review_id`
         $this->dropIndex(
-            '{{%idx-individual_feedback-peer_assessment_id}}',
+            '{{%idx-individual_feedback-peer_review_id}}',
             '{{%individual_feedback}}'
         );
 

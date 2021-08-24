@@ -12,10 +12,10 @@ use Yii;
  * @property int $mark
  * @property string|null $comment
  * @property int $item_id
- * @property int|null $peer_assessment_id
+ * @property int|null $peer_review_id
  *
  * @property Items $item
- * @property PeerAssessment $peerAssessment
+ * @property PeerAssessment $peerReview
  * @property User $student
  */
 class IndividualFeedback extends \yii\db\ActiveRecord
@@ -35,10 +35,10 @@ class IndividualFeedback extends \yii\db\ActiveRecord
     {
         return [
             [['student_id', 'mark', 'item_id'], 'required'],
-            [['student_id', 'mark', 'item_id', 'peer_assessment_id'], 'integer'],
+            [['student_id', 'mark', 'item_id', 'peer_review_id'], 'integer'],
             [['comment'], 'string'],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
-            [['peer_assessment_id'], 'exist', 'skipOnError' => true, 'targetClass' => PeerAssessment::className(), 'targetAttribute' => ['peer_assessment_id' => 'id']],
+            [['peer_review_id'], 'exist', 'skipOnError' => true, 'targetClass' => PeerAssessment::className(), 'targetAttribute' => ['peer_review_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_id' => 'id']],
         ];
     }
@@ -54,7 +54,7 @@ class IndividualFeedback extends \yii\db\ActiveRecord
             'mark' => 'Mark',
             'comment' => 'Comment',
             'item_id' => 'Item ID',
-            'peer_assessment_id' => 'Peer Assessment ID',
+            'peer_review_id' => 'Peer Review ID',
         ];
     }
 
@@ -69,13 +69,13 @@ class IndividualFeedback extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[PeerAssessment]].
+     * Gets query for [[PeerReview]].
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getPeerAssessment()
+    public function getPeerReview()
     {
-        return $this->hasOne(PeerAssessment::className(), ['id' => 'peer_assessment_id']);
+        return $this->hasOne(PeerAssessment::className(), ['id' => 'peer_review_id']);
     }
 
     /**

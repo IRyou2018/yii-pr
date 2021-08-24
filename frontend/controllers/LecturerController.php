@@ -5,6 +5,7 @@ namespace frontend\controllers;
 use common\models\Assessments;
 use common\models\GroupInfo;
 use common\models\IndividualAssessment;
+use common\models\IndividualFeedback;
 use common\models\Items;
 use common\models\LecturerAssessment;
 use common\models\PeerAssessment;
@@ -349,131 +350,45 @@ class LecturerController extends Controller
      */
     public function actionIndividualResult($id)
     {
-        $model = $this->findModel($id);
-        $assessment_type = $model->assessment_type;
+        $modelPeerReview = PeerReview::findOne($id);
+        $model = $modelPeerReview->individualAssessment->assessment;
 
-        $section = new Sections();
-        $modelsSection = $section->getStudentSections($id);
+        $modelsSection = $model->sections;
         $modelsItem = [[new Items()]];
         $modelsPeerReviewDetail = [[new PeerReviewDetail()]];
+        $peerReviewDetails = $modelPeerReview->peerReviewDetails;
+        $modelsIndividualFeedback = [[new IndividualFeedback()]];
 
-        // foreach ($modelsSection as $indexSection => $modelSection) {
+        foreach ($modelsSection as $indexSection => $modelSection) {
 
-        //     $items = $modelSection->items;
-        //     $modelsItem[$indexSection] = $items;
+            $items = $modelSection->items;
+            $modelsItem[$indexSection] = $items;
 
-        //     $studentModel = new StudentModel();
-        //     // Peer Assessment
-        //     if ($assessment_type == self::PEER_ASSESS) {
-
-        //         $peerAssessmentID = $studentModel->getPeerAssessmentId($id);
-
-        //         $modelsPeerAssessmentDetail = [];
-        //         foreach ($items as $index => $item) {
-        //             $modelPADetail = new PeerAssessmentDetail();
-        //             $modelPADetail->item_id = $item->id;
-        //             $modelPADetail->peer_assessment_id = $peerAssessmentID;
-        //         }
-        //     } 
-        //     // Peer Review
-        //     else if ($assessment_type == self::PEER_REVIEW) {
-
-        //         $peerReviewID = $studentModel->getPeerReviewId($id);
-
-        //         foreach ($items as $index => $item) {
-        //             $modelPRDetail = new PeerReviewDetail();
-        //             $modelPRDetail->item_id = $item->id;
-        //             $modelPRDetail->peer_review_id = $peerReviewID;
-
-        //             $modelsPeerReviewDetail[$indexSection][$index] = $modelPRDetail;
-        //         }
-        //     }
-        // }
-
-        // // Peer Assessment
-        // if ($assessment_type == self::PEER_ASSESS) {
-
-        // }
-        // // Peer Assessment
-        // else if ($assessment_type == self::PEER_REVIEW) {
+            foreach ($items as $index => $item) {
             
-        //     if ($this->request->isPost) {
-                
-        //         if (isset($_POST['PeerReviewDetail'][0][0])) {
+                if ($modelSection->section_type == 0) {
 
-        //             $index = 0;
-        //             $prDetails = [];
+                    foreach($peerReviewDetails as $peerReviewDetail) {
+                        if ($peerReviewDetail->item_id == $item->id) {
+                            $modelsPeerReviewDetail[$indexSection][$index] = $peerReviewDetail;
+                            break;
+                        }
+                    }
+                }
 
-        //             foreach ($_POST['PeerReviewDetail'] as $indexSection => $peerReviewDetails) {
-                        
-        //                 foreach ($peerReviewDetails as $indexItem => $peerReviewDetail) {
-                            
-        //                     $data['PeerReviewDetail'] = $peerReviewDetail;
-        //                     $modelPeerReviewDetail = new PeerReviewDetail();
-        //                     $modelPeerReviewDetail->load($data);
-        //                     $modelPeerReviewDetail->scenario = 'submit';
-                            
-        //                     $prDetails[$index] = $modelPeerReviewDetail;
+                $individualFeedback = new IndividualFeedback();
+                $individualFeedback->item_id = $item->id;
+                $individualFeedback->peer_review_id = $id;
+                $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
+            }
+        }
 
-        //                     $valid = $modelPeerReviewDetail->validate();
-
-        //                     $index++;
-        //                 }
-        //             }
-
-        //             if($valid) {
-        //                 $transaction = \Yii::$app->db->beginTransaction();
-
-        //                 try {
-
-        //                     $flag = true;
-
-        //                     foreach ($prDetails as $index => $peerReviewDetail) {
-
-        //                         if ($flag = $peerReviewDetail->save(false)) {
-        //                         } else {
-        //                             break;
-        //                         }
-        //                     }
-
-                            
-
-        //                     if($flag) {
-        //                         $peerReview = PeerReview::findOne($peerReviewID);
-
-        //                         $peerReview->completed = self::COMPLETED;
-
-        //                         $flag = $peerReview->save(false);
-        //                         // echo '<pre>';
-        //                         // print_r($flag);
-        //                         // // print_r($peerReviewDetail);
-        //                         // // print_r($peerReviewDetail->save(false));
-        //                         // echo '</pre>';
-        //                         // die;
-        //                     }
-
-        //                     if ($flag) {
-        //                         $transaction->commit();
-        //                         return $this->redirect(['dashboard']);
-        //                     } else {
-
-        //                         $transaction->rollBack();
-        //                     }
-        //                 } catch (Exception $e) {
-        //                     $transaction->rollBack();
-        //                 }
-        //             }
-        //         }
-        //     } else {
-        //         $model->loadDefaultValues();
-        //     }
-        // }
-
-        return $this->render('submit', [
+        return $this->render('individual-result', [
             'model' => $model,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
             'modelsPeerReviewDetail' => (empty($modelsPeerReviewDetail)) ? [[new PeerReviewDetail()]] :  $modelsPeerReviewDetail,
+            'modelsIndividualFeedback' => (empty($modelsIndividualFeedback)) ? [[new IndividualFeedback()]] :  $modelsIndividualFeedback,
         ]);
     }
 

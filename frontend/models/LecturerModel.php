@@ -113,12 +113,14 @@ class LecturerModel extends Model
     {
 
         $query = (new yii\db\Query())
-            ->select(["ia.id,
+            ->select(["pr.id,
                     ia.marked,
-                    CONCAT(user.first_name, ' ', user.last_name) as full_name"])
+                    CONCAT(u1.first_name, ' ', u1.last_name) as work_student_name,
+                    CONCAT(u2.first_name, ' ', u2.last_name) as marker_student_name"])
             ->from('peer_review as pr')
             ->join('INNER JOIN', 'individual_assessment as ia', 'pr.individual_assessment_id = ia.id')
-            ->join('LEFT OUTER JOIN', 'user', 'ia.student_id = user.id')
+            ->join('LEFT OUTER JOIN', 'user u1', 'ia.student_id = u1.id')
+            ->join('LEFT OUTER JOIN', 'user u2', 'pr.marker_student_id = u2.id')
             ->where('ia.assessment_id = :assessment_id')
             ->addParams([
                 ':assessment_id' => $id, 

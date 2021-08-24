@@ -14,6 +14,7 @@ use Yii;
  *
  * @property IndividualAssessment $individualAssessment
  * @property User $markerStudent
+ * @property PeerReviewDetail[] $peerReviewDetails
  */
 class PeerReview extends \yii\db\ActiveRecord
 {
@@ -69,5 +70,15 @@ class PeerReview extends \yii\db\ActiveRecord
     public function getMarkerStudent()
     {
         return $this->hasOne(User::className(), ['id' => 'marker_student_id']);
+    }
+
+    /**
+     * Gets query for [[PeerReviewDetails]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getPeerReviewDetails()
+    {
+        return $this->hasMany(PeerReviewDetail::className(), ['peer_review_id' => 'id']);
     }
 }

@@ -20,7 +20,7 @@ class m210802_120651_create_peer_review_table extends Migration
             'id' => $this->primaryKey(),
             'marker_student_id' => $this->integer(11)->notNull(),
             'individual_assessment_id' => $this->integer(11)->notNull(),
-            'marked' => $this->boolean(),
+            'completed' => $this->boolean(),
         ]);
 
         // creates index for column `marker_student_id`

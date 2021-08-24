@@ -278,12 +278,21 @@ $this->params['breadcrumbs'][] = $this->title;
             'summary' => '',
             'columns' => [
                 [
-                    'attribute' => 'name',
-                    'label' => 'Student Name',
+                    'attribute' => 'work_student_name',
+                    'label' => 'Work Student',
                     'value' => function ($model) {
-                        return $model['full_name'];
+                        return $model['work_student_name'];
                     },
-                    'contentOptions' =>['width' => '70%'],
+                    'contentOptions' =>['width' => '35%'],
+                    'headerOptions' => ['class' => 'text-light bg-secondary']
+                ],
+                [
+                    'attribute' => 'marker_student_name',
+                    'label' => 'Marker Student',
+                    'value' => function ($model) {
+                        return $model['marker_student_name'];
+                    },
+                    'contentOptions' =>['width' => '35%'],
                     'headerOptions' => ['class' => 'text-light bg-secondary']
                 ],
                 [
@@ -312,7 +321,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                         'title' => Yii::t('yii', 'Result'),
                                         'class' => 'btn'
                                     ];
-                                    return Html::a('Result', ['individual-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                    return Html::a('Result', ['individual', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
                                 }
                         ],
                 ],
