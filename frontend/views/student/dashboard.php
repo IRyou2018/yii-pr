@@ -19,7 +19,6 @@ use yii\helpers\Url;
     </div>
     <?php if ($unCompletedAssessment->getTotalCount() > 0) : ?>
     <?= GridView::widget([
-        'id' => 'ucRecords',
         'dataProvider' => $unCompletedAssessment,
         'tableOptions' => ['class' => 'table table-bordered'],
         'summary' => '',
@@ -53,9 +52,9 @@ use yii\helpers\Url;
 
     <?php if ($completedAssessment->getTotalCount() > 0) : ?>
     <?= GridView::widget([
-        'id' => 'cRecords',
         'dataProvider' => $completedAssessment,
         'summary' => false,
+        'tableOptions' => ['class' => 'table table-bordered'],
         'columns' => [
             [
                 'attribute' => 'id',
@@ -85,9 +84,9 @@ use yii\helpers\Url;
     </div>
     <?php if ($feedbacks->getTotalCount() > 0) : ?>
     <?= GridView::widget([
-        'id' => 'fRecords',
         'dataProvider' => $feedbacks,
         'summary' => false,
+        'tableOptions' => ['class' => 'table table-bordered'],
         'columns' => [
             [
                 'attribute' => 'name',
@@ -119,29 +118,14 @@ $this->registerJs("
             location.href = '" . Url::to(['student/submit']) . "?id=' + id;
     });
 
-    $('#ucRecords tr:has(td)').mouseover(function() {
+    $('tr:has(td)').mouseover(function() {
         $(this).addClass('highlightRow');
     });
     
-    $('#ucRecords tr').mouseout(function() {
+    $('tr').mouseout(function() {
         $(this).removeClass('highlightRow');
     });
-
-    $('#cRecords tr:has(td)').mouseover(function() {
-        $(this).addClass('highlightRow');
-    });
-    
-    $('#cRecords tr').mouseout(function() {
-        $(this).removeClass('highlightRow');
-    });
-
-    $('#fRecords tr:has(td)').mouseover(function() {
-        $(this).addClass('highlightRow');
-    });
-    
-    $('#fRecords tr').mouseout(function() {
-        $(this).removeClass('highlightRow');
-    }) 
+ 
 
 ");?>
 <?php $style= <<< CSS

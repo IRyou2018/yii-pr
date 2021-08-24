@@ -3,6 +3,7 @@
 use kartik\switchinput\SwitchInput;
 use yii\helpers\Html;
 use yii\grid\GridView;
+use yii\helpers\Url;
 use yii\widgets\Pjax;
 
 /* @var $this yii\web\View */
@@ -25,26 +26,16 @@ $this->title = 'Dashboard';
     <?php Pjax::begin() ?>
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
-        'options' => ['style' => 'max-height:20px;'
-                      ],
-        'filterModel' => $searchModel,
         'tableOptions' => ['class' => 'table table-bordered'],
-        'summary'=>'', 
         'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
             [
                 'attribute' => 'name',
-                'contentOptions' =>['width' => '60%']
+                'headerOptions' => ['class' => 'text-light bg-secondary'],
+                'contentOptions' =>['width' => '80%']
             ],
-            [
-                'attribute' =>'assessment_type',
-                'value' => 'assessmentType',
-                'filter'=> false,
-                'contentOptions' =>['width' => '15%']
-            ],
-            // 'deadline',
             [
                 'attribute' => 'active',
+                'headerOptions' => ['class' => 'text-center text-light bg-secondary'],
                 'format' => 'raw',
                 'contentOptions' =>['width' => '10%'],
                 'value' => function ($data) {
@@ -70,7 +61,20 @@ $this->title = 'Dashboard';
 
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template' => '{update},{delete}'
+                'contentOptions' =>['width' => '10%'],
+                'headerOptions' => ['class' => 'text-light bg-secondary'],
+                'template' => '{result}',
+                'buttons'=>
+                    [
+                        'result' => function ($url, $model, $key)
+                            {     
+                                $options = [
+                                    'title' => Yii::t('yii', 'Result'),
+                                    'class' => 'btn'
+                                ];
+                                return Html::a('Result', ['brief-result', 'id'=>$model->id], ['class'=>'btn btn-primary btn-sm']);
+                            }
+                    ],
             ],
         ],
     ]); ?>
@@ -79,20 +83,51 @@ $this->title = 'Dashboard';
 </div>
 
 <?php $js = <<< JS
+
     function sendRequest(status, id){
+        
         $.ajax({
             url:'/lecturer/update-active',
             method:'post',
             data:{status:status,id:id},
             success:function(data){
-                // alert(data);
+                // alert(status);
             },
             error:function(jqXhr,status,error){
-                // alert(error);
+                // alert(status);
             }
         });
     }
 JS;
 
 $this->registerJs($js, \yii\web\View::POS_READY);
+?>
+
+<?php
+$this->registerJs("
+
+    $('td').click(function (e) {
+        var id = $(this).closest('tr').data('key');
+        if(e.target == this)
+            location.href = '" . Url::to(['lecturer/assessment']) . "?id=' + id;
+    });
+    
+    $('tr:has(td)').mouseover(function() {
+        $(this).addClass('highlightRow');
+    });
+    
+    $('tr').mouseout(function() {
+        $(this).removeClass('highlightRow');
+    });
+
+");?>
+<?php $style= <<< CSS
+
+.highlightRow{
+    background-color:lightgrey;
+    cursor: pointer
+}
+
+CSS;
+$this->registerCss($style);
 ?>

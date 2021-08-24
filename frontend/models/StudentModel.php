@@ -10,26 +10,10 @@ use yii\base\Model;
  */
 class StudentModel extends Model
 {
-    public $name;
-    public $email;
-    public $subject;
-    public $body;
-    public $verifyCode;
-
-
     /**
      * {@inheritdoc}
      */
     public function rules()
-    {
-        return [
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function attributeLabels()
     {
         return [
         ];
