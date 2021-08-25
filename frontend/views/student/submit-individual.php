@@ -50,7 +50,7 @@ $this->title = $model->name;
                     </td>
                     <td class="col-md-1">
                         <?= Html::activeHiddenInput($modelsAssessmentDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]item_id"); ?>
-                        <?= Html::activeHiddenInput($modelsAssessmentDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]peer_review_id"); ?>
+                        <?= Html::activeHiddenInput($modelsAssessmentDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]marker_student_info_id"); ?>
                         <?= $form->field($modelsAssessmentDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]mark")->textInput(['style'=>'width:70px', 'class'=>'text-center'])->label(false) ?>
                     </td>
                     <td class="col-md-7">

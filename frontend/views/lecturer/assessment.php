@@ -61,9 +61,15 @@ $this->params['breadcrumbs'][] = $this->title;
             <div class="col-md-2 bg-light">
                 <?php
                     if ($model->assessment_type == 0) {
-                        echo "Peer Assessment";
+                        echo "(Group) Peer Review";
                     } else if ($model->assessment_type == 1) {
-                        echo "Peer Review";
+                        echo "(Group) Peer Assessment";
+                    } else if ($model->assessment_type == 2) {
+                        echo "(Group) Peer Review & Assessment";
+                    } else if ($model->assessment_type == 3) {
+                        echo "Self Assessment";
+                    } else if ($model->assessment_type == 4) {
+                        echo "Peer Marking";
                     }
                 ?>
             </div>
@@ -101,7 +107,7 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 
     
-    <?php if ($model->assessment_type == 0) : ?>
+    <?php if ($model->assessment_type == 0 || $model->assessment_type == 1 || $model->assessment_type == 2) : ?>
 
     <div class="container">
         <div class="row mt-4 border-dark">
@@ -289,7 +295,62 @@ $this->params['breadcrumbs'][] = $this->title;
         ]); ?>
     <?php endif; ?>
 
-    <?php elseif ($model->assessment_type == 1) : ?>
+    <?php elseif ($model->assessment_type == 3) : ?>
+        <div class="container">
+            <div class="row mt-4 border-dark">
+                <span class="title h4">Individual Mark Status</span>
+            </div>
+        </div>
+        <?php if ($individualInfo->getTotalCount() > 0) : ?>
+        <?= GridView::widget([
+            'dataProvider' => $individualInfo,
+            'tableOptions' => ['class' => 'table'],
+            'summary' => '',
+            'columns' => [
+                [
+                    'attribute' => 'work_student_name',
+                    'label' => 'Student Name',
+                    'value' => function ($model) {
+                        return $model['work_student_name'];
+                    },
+                    'contentOptions' =>['width' => '40%'],
+                    'headerOptions' => ['class' => 'text-light bg-secondary']
+                ],
+                [
+                    'attribute' => 'marked',
+                    'contentOptions' =>['width' => '5%'],
+                    'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                    'format' => 'html',
+                    'value' => function ($model) {
+                        if ($model['marked'] == 0) {
+                            return '<i class="material-icons mx-3" style="color:red">clear</i>';
+                        } else {
+                            return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
+                        }
+                    },
+                ],
+                [
+                    'class' => 'yii\grid\ActionColumn',
+                    'contentOptions' =>['width' => '5%'],
+                    'headerOptions' => ['class' => 'text-light bg-secondary'],
+                    'template' => '{result}',
+                    'buttons'=>
+                        [
+                            'result' => function ($url, $model, $key)
+                                {     
+                                    if ($model['marked'] == 0) {
+                                        return Html::a('Result', ['mark-individual', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                    } else if ($model['marked'] == 1) {
+                                        return Html::a('Result', ['individual-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                    }
+                                }
+                        ],
+                ],
+            ],
+        ]); ?>
+        <?php endif; ?>
+
+    <?php elseif ($model->assessment_type == 4) : ?>
         <div class="container">
             <div class="row mt-4 border-dark">
                 <span class="title h4">Individual Mark Status</span>
@@ -341,11 +402,11 @@ $this->params['breadcrumbs'][] = $this->title;
                         [
                             'result' => function ($url, $model, $key)
                                 {     
-                                    $options = [
-                                        'title' => Yii::t('yii', 'Result'),
-                                        'class' => 'btn'
-                                    ];
-                                    return Html::a('Result', ['individual-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                    if ($model['marked'] == 0) {
+                                        return Html::a('Result', ['mark-individual', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                    } else if ($model['marked'] == 1) {
+                                        return Html::a('Result', ['individual-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                    }
                                 }
                         ],
                 ],
@@ -353,6 +414,4 @@ $this->params['breadcrumbs'][] = $this->title;
         ]); ?>
         <?php endif; ?>
     <?php endif; ?>
-
-
 </div>

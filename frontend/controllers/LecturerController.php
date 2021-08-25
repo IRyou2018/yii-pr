@@ -353,7 +353,7 @@ class LecturerController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
-    public function actionIndividualResult($id)
+    public function actionMarkIndividual($id)
     {
         $makerInfo = MarkerStudentInfo::findOne($id);
         $model = $makerInfo->individualAssessment->assessment;
@@ -361,6 +361,7 @@ class LecturerController extends Controller
         $modelsItem = [];
         $modelsReviewDetail = [];
         $reviewDetails = $makerInfo->individualAssessmentDetails;
+        $individualFeedbacks = $makerInfo->individualFeedbacks;
         $modelsIndividualFeedback = [];
 
         foreach ($modelsSection as $indexSection => $modelSection) {
@@ -385,10 +386,19 @@ class LecturerController extends Controller
                     }
                 }
 
-                $individualFeedback = new IndividualFeedback();
-                $individualFeedback->item_id = $item->id;
-                $individualFeedback->marker_student_info_id = $id;
-                $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
+                if (!empty($individualFeedbacks)) {
+                    foreach($individualFeedbacks as $individualFeedback) {
+                        if ($individualFeedback->item_id == $item->id) {
+                            $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
+                            break;
+                        }
+                    }
+                } else {
+                    $individualFeedback = new IndividualFeedback();
+                    $individualFeedback->item_id = $item->id;
+                    $individualFeedback->marker_student_info_id = $id;
+                    $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
+                }
             }
         }
 
@@ -400,6 +410,7 @@ class LecturerController extends Controller
                 $individualFeedbacks = [new IndividualFeedback()];
                 $actualMark = 0;
                 $student_id = $makerInfo->individualAssessment->student_id;
+                $valid = true;
 
                 foreach ($_POST['IndividualFeedback'] as $indexSection => $feedbacks) {
                     
@@ -414,8 +425,8 @@ class LecturerController extends Controller
                         $modelsIndividualFeedback[$indexSection][$indexItem] = $modelIndividualFeedback;
                         
                         // Input validation
-                        if($feedback->validate()) {
-                            $actualMark += $feedback->mark;
+                        if($modelIndividualFeedback->validate()) {
+                            $actualMark += $modelIndividualFeedback->mark;
                             $individualFeedbacks[$index] = $modelIndividualFeedback;
                         } else {
                             $valid = false;
@@ -424,6 +435,7 @@ class LecturerController extends Controller
                         $index++;
                     }
                 }
+                
                 
                 if($valid) {
                     $transaction = \Yii::$app->db->beginTransaction();
@@ -452,7 +464,7 @@ class LecturerController extends Controller
 
                         if ($flag) {
                             $transaction->commit();
-                            return $this->redirect(['dashboard']);
+                            return $this->redirect(['assessment', 'id' => $model->id]);
                         } else {
 
                             $transaction->rollBack();
@@ -464,6 +476,67 @@ class LecturerController extends Controller
             }
         } else {
             $model->loadDefaultValues();
+        }
+
+        return $this->render('mark-individual', [
+            'model' => $model,
+            'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
+            'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
+            'modelsReviewDetail' => (empty($modelsReviewDetail)) ? [[new IndividualAssessmentDetail()]] :  $modelsReviewDetail,
+            'modelsIndividualFeedback' => (empty($modelsIndividualFeedback)) ? [[new IndividualFeedback()]] :  $modelsIndividualFeedback,
+        ]);
+    }
+
+    /**
+     * Creates a new Assessments model.
+     * If creation is successful, the browser will be redirected to the 'view' page.
+     * @return mixed
+     */
+    public function actionIndividualResult($id)
+    {
+        $makerInfo = MarkerStudentInfo::findOne($id);
+        $model = $makerInfo->individualAssessment->assessment;
+        $modelsSection = $model->sections;
+        $modelsItem = [];
+        $modelsReviewDetail = [];
+        $reviewDetails = $makerInfo->individualAssessmentDetails;
+        $individualFeedbacks = $makerInfo->individualFeedbacks;
+        $modelsIndividualFeedback = [];
+
+        foreach ($modelsSection as $indexSection => $modelSection) {
+
+            $items = $modelSection->items;
+            $modelsItem[$indexSection] = $items;
+
+            foreach ($items as $index => $item) {
+            
+                if ($modelSection->section_type == 0) {
+
+                    if (!empty($reviewDetails)) {
+                        foreach($reviewDetails as $reviewDetail) {
+                            if ($reviewDetail->item_id == $item->id) {
+                                $modelsReviewDetail[$indexSection][$index] = $reviewDetail;
+                                break;
+                            }
+                        }
+                    } else {
+                        $reviewDetail = new IndividualAssessmentDetail();
+                        $modelsReviewDetail[$indexSection][$index] = $reviewDetail;
+                    }
+                }
+
+                if (!empty($individualFeedbacks)) {
+                    foreach($individualFeedbacks as $individualFeedback) {
+                        if ($individualFeedback->item_id == $item->id) {
+                            $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
+                            break;
+                        }
+                    }
+                } else {
+                    $individualFeedback = new IndividualFeedback();
+                    $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
+                }
+            }
         }
 
         return $this->render('individual-result', [

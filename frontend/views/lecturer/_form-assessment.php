@@ -49,7 +49,7 @@ use yii\helpers\Url;
                     <?= $form->field($model, 'assessment_type')->dropdownList(
                         [
                             0 => '(Group) Peer Review',
-                            1 => '(Group) Peer Assessment ',
+                            1 => '(Group) Peer Assessment',
                             2 => '(Group) Peer Review & Assessment',
                             3 => 'Self Assessment',
                             4 => 'Peer Marking'
@@ -147,10 +147,12 @@ $script = <<< JS
 
     $('#downloadTemp').click(function(){
         var typeValue = $('#assType').val();
-        if (typeValue == "0") {
-            $("#downloadTemp").attr("href", "/uploads/PeerAssessmentTemplate.xlsx");
-        } else if (typeValue == "1") {
-            $("#downloadTemp").attr("href", "/uploads/PeerReviewTemplate.xlsx");
+        if (typeValue == '0' || typeValue == '1' || typeValue == '2') {
+            $("#downloadTemp").attr("href", "/uploads/GroupTemplate.xlsx");
+        } else if (typeValue == '3') {
+            $("#downloadTemp").attr("href", "/uploads/SelfAssessmentTemplate.xlsx");
+        } else if (typeValue == '4') {
+            $("#downloadTemp").attr("href", "/uploads/PeerMarkingTemplate.xlsx");
         } else {
             alert('Please select an Assessment Type.');
         }

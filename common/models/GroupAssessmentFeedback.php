@@ -40,6 +40,7 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
             [['group_student_Info_id'], 'exist', 'skipOnError' => true, 'targetClass' => GroupStudentInfo::className(), 'targetAttribute' => ['group_student_Info_id' => 'id']],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_id' => 'id']],
+            [['mark'], 'validateMark'],
         ];
     }
 
@@ -56,6 +57,13 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
             'item_id' => 'Item ID',
             'group_student_Info_id' => 'Group Student  Info ID',
         ];
+    }
+
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios['submit'] = ['mark'];
+        return $scenarios;
     }
 
     /**
@@ -86,5 +94,13 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
     public function getStudent()
     {
         return $this->hasOne(User::className(), ['id' => 'student_id']);
+    }
+
+    public function validateMark($attribute, $params) {
+        
+        if ($this->mark > $this->item->max_mark_value) {
+            $this->addError($attribute, 'Mark must be less than or equal to Max Mark.');
+            return false;
+        }
     }
 }

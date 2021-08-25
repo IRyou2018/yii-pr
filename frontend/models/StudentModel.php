@@ -37,7 +37,7 @@ class StudentModel extends Model
         $data = (new \Yii\db\Query())
             ->select('gsi.id as id, gsi.completed, assessments.id as assessment_id, assessments.assessment_type, assessments.name, assessments.deadline')
             ->from('assessments')
-            ->join('INNER JOIN', 'group_assessment as ga', 'gi.assessment_id = assessments.id')
+            ->join('INNER JOIN', 'group_assessment as ga', 'ga.assessment_id = assessments.id')
             ->join('INNER JOIN', 'group_student_info as gsi', 'gsi.group_id = ga.id')
             ->where(['assessments.active' => self::ACTIVE])
             ->andWhere('gsi.completed = :status')
