@@ -21,7 +21,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
     ],
 ]); ?>
 
-<div class="card mt-1 container-rubric"><!-- widgetBody -->
+<div class="card mt-1"><!-- widgetBody -->
     <div class="card-header text-white bg-dark">
         <div class="row">
             <div class="col-md-11">
@@ -33,37 +33,41 @@ use wbraganca\dynamicform\DynamicFormWidget;
         </div>
     </div>
     <?php foreach ($modelsRubric[$indexSection][$indexItem] as $indexRubric => $modelRubric) : ?>
-    <div class="card-body rubric border-bottom">
-        <div class="row">
-            <div class="col-md-2 bg-light">
-                <span class="align-middle">Name</span>
-            </div>
-            <div class="col-md-5">
-                <?php
-                // necessary for update action.
-                if (!$modelRubric->isNewRecord) {
-                    echo Html::activeHiddenInput($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]id");
-                }
-                ?>
-                <?= $form->field($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]level")->label(false)->textInput(['maxlength' => true]) ?>
-            </div>
-            <div class="col-md-2 bg-light">
-                <span class="align-middle">Weight</span>
-            </div>
-            <div class="col-md-2">
-                <?= $form->field($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]weight")->label(false)->textInput(['maxlength' => true]) ?>
-            </div>
-            <div class="col-md-1 text-right" rowspan="2">
-                <button type="button" class="remove-rubric btn-danger btn-xs"><i class="fas fa-minus"></i></button>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-2 bg-light align-middle">
-                <span class="align-middle">Description</span>
-            </div>
-            <div class="col-md-9">
-                <?= $form->field($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]description")->label(false)->textInput(['maxlength' => true]) ?>
-            </div>
+    <div class="card-body container-rubric border-bottom">
+        <div class="row rubric">
+            <div class="col">
+                <div class="row">
+                    <div class="col-md-2 bg-light">
+                        <span class="align-middle">Name</span>
+                    </div>
+                    <div class="col-md-5">
+                        <?php
+                        // necessary for update action.
+                        if (!$modelRubric->isNewRecord) {
+                            echo Html::activeHiddenInput($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]id");
+                        }
+                        ?>
+                        <?= $form->field($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]level")->label(false)->textInput(['maxlength' => true]) ?>
+                    </div>
+                    <div class="col-md-2 bg-light">
+                        <span class="align-middle">Weight</span>
+                    </div>
+                    <div class="col-md-2">
+                        <?= $form->field($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]weight")->label(false)->textInput(['maxlength' => true]) ?>
+                    </div>
+                    <div class="col-md-1 text-right" rowspan="2">
+                        <button type="button" class="remove-rubric btn-danger btn-xs"><i class="fas fa-minus"></i></button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2 bg-light align-middle">
+                        <span class="align-middle">Description</span>
+                    </div>
+                    <div class="col-md-9">
+                        <?= $form->field($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]description")->label(false)->textInput(['maxlength' => true]) ?>
+                    </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -176,7 +176,7 @@ class LecturerModel extends Model
         $flag = true;
 
         $i = 0;
-
+        
         // For Group Assessment
         if ($model->assessment_type == 0 || $model->assessment_type == 1 || $model->assessment_type == 2) {
 
@@ -223,19 +223,15 @@ class LecturerModel extends Model
                             $modelUser->setPassword(self::DEFAULTPASS);
                             $modelUser->generateAuthKey();
 
-                            if($modelUser->save(false)) {
+                            if($flag = $modelUser->save(false)) {
                                 $modelGroupStudentInfo->student_id = $modelUser->id;
-                            } else {
-                                $flag = false;
-                                break;
                             }
                         } else {
                             $modelGroupStudentInfo->student_id = $student->id;
                         }
 
-                        if ($modelGroupStudentInfo->save(false)) {
+                        if ($flag = $modelGroupStudentInfo->save(false)) {
                         } else {
-                            $flag = false;
                             break;
                         }
                     } else {
@@ -249,6 +245,10 @@ class LecturerModel extends Model
                         $modelGroupInfo->group_number = $group_number;
                         $modelGroupInfo->marked = 0;
 
+                        // echo '<pre>';
+                        // print_r($modelGroupInfo);
+                        // echo '</pre>';
+                        // die;
                         if ($flag = $modelGroupInfo->save(false)) {
 
                             $temp_Group_id = $modelGroupInfo->id;
@@ -274,19 +274,15 @@ class LecturerModel extends Model
                                 $modelUser->setPassword(self::DEFAULTPASS);
                                 $modelUser->generateAuthKey();
                                 
-                                if($modelUser->save(false)) {
+                                if($flag = $modelUser->save(false)) {
                                     $modelGroupStudentInfo->student_id = $modelUser->id;
-                                } else {
-                                    $flag = false;
-                                    break;
                                 }
                             } else {
                                 $modelGroupStudentInfo->student_id = $student->id;
                             }
 
-                            if ($modelGroupStudentInfo->save(false)) {
+                            if ($flag = $modelGroupStudentInfo->save(false)) {
                             } else {
-                                $flag = false;
                                 break;
                             }
                         } else {
@@ -297,7 +293,6 @@ class LecturerModel extends Model
                 }
 
                 $i++;
-
             } while ($i < count($sortedData));
         }
         // For Self Assessment
@@ -340,18 +335,15 @@ class LecturerModel extends Model
                         $modelUser->setPassword(self::DEFAULTPASS);
                         $modelUser->generateAuthKey();
                         
-                        if ($modelUser->save(false)) {
+                        if ($flag = $modelUser->save(false)) {
                             $modelIndividualAssessment->student_id = $modelUser->id;
-                        } else {
-                            $flag = false;
-                            break;
                         }
                     } else {
 
                         $modelIndividualAssessment->student_id = $student->id;
                     }
 
-                    if ($modelIndividualAssessment->save(false)) {
+                    if ($flag = $modelIndividualAssessment->save(false)) {
 
                         $student_number++;
 
@@ -360,14 +352,10 @@ class LecturerModel extends Model
                         $modelMarkerStudentInfo->completed = 0;
                         $modelMarkerStudentInfo->marker_student_id = $modelIndividualAssessment->student_id;
 
-                        if ($modelMarkerStudentInfo->save(false)) {
+                        if ($flag = $modelMarkerStudentInfo->save(false)) {
                         } else {
-                            $flag = false;
                             break;
                         }
-                    } else {
-                        $flag = false;
-                        break;
                     }
                 }
             }
@@ -419,19 +407,15 @@ class LecturerModel extends Model
                             $modelUser->setPassword(self::DEFAULTPASS);
                             $modelUser->generateAuthKey();
 
-                            if($modelUser->save(false)) {
+                            if($flag = $modelUser->save(false)) {
                                 $modelMarkerStudentInfo->marker_student_id = $modelUser->id;
-                            } else {
-                                $flag = false;
-                                break;
                             }
                         } else {
                             $modelMarkerStudentInfo->marker_student_id = $student->id;
                         }
 
-                        if ($modelMarkerStudentInfo->save(false)) {
+                        if ($flag = $modelMarkerStudentInfo->save(false)) {
                         } else {
-                            $flag = false;
                             break;
                         }
                     } else {
@@ -460,18 +444,15 @@ class LecturerModel extends Model
                             $modelUser->setPassword(self::DEFAULTPASS);
                             $modelUser->generateAuthKey();
                             
-                            if ($modelUser->save(false)) {
+                            if ($flag = $modelUser->save(false)) {
                                 $modelIndividualAssessment->student_id = $modelUser->id;
-                            } else {
-                                $flag = false;
-                                break;
                             }
                         } else {
 
                             $modelIndividualAssessment->student_id = $student->id;
                         }
 
-                        if ($modelIndividualAssessment->save(false)) {
+                        if ($flag = $modelIndividualAssessment->save(false)) {
  
                             $temp_individual_assessment_id = $modelIndividualAssessment->id;
                             $student_number++;
@@ -496,24 +477,17 @@ class LecturerModel extends Model
                                 $modelUser->setPassword(self::DEFAULTPASS);
                                 $modelUser->generateAuthKey();
 
-                                if($modelUser->save(false)) {
+                                if($flag = $modelUser->save(false)) {
                                     $modelMarkerStudentInfo->marker_student_id = $modelUser->id;
-                                } else {
-                                    $flag = false;
-                                    break;
                                 }
                             } else {
                                 $modelMarkerStudentInfo->marker_student_id = $student->id;
                             }
 
-                            if ($modelMarkerStudentInfo->save(false)) {
+                            if ($flag = $modelMarkerStudentInfo->save(false)) {
                             } else {
-                                $flag = false;
                                 break;
                             }
-                        } else {
-                            $flag = false;
-                            break;
                         }
                     }
                 }
@@ -521,7 +495,6 @@ class LecturerModel extends Model
                 $i++;
             } while ($i < count($sortedData));
         }
-
         return $flag;
     }
 
@@ -537,9 +510,8 @@ class LecturerModel extends Model
 
             $modelSection->assessment_id = $model->id;
 
-            if ($modelSection->save(false)) {
+            if ($flag = $modelSection->save(false)) {
             } else {
-                $flag = false;
                 break;
             }
 
@@ -548,9 +520,8 @@ class LecturerModel extends Model
 
                     $modelItem->section_id = $modelSection->id;
 
-                    if ($modelItem->save(false)) {
+                    if ($flag = $modelItem->save(false)) {
                     } else {
-                        $flag = false;
                         break;
                     }
 
@@ -560,9 +531,8 @@ class LecturerModel extends Model
                             if (!empty($modelRubric->level) && !empty($modelRubric->weight) && !empty($modelRubric->description)) {
                                 $modelRubric->item_id = $modelItem->id;
 
-                                if ($modelRubric->save(false)) {
+                                if ($flag = $modelRubric->save(false)) {
                                 } else {
-                                    $flag = false;
                                     break;
                                 }
                             }
@@ -590,15 +560,13 @@ class LecturerModel extends Model
                         $modelLecturerAssessment->assessment_id = $model->id;
                         $modelLecturerAssessment->lecturer_id = $coorinator;
 
-                        if ($modelLecturerAssessment->save(false)) {
+                        if ($flag = $modelLecturerAssessment->save(false)) {
                         } else {
-                            $flag = false;
                             break;
                         }
                     }
                 }
             }
         }
-        return $flag;
     }
 }

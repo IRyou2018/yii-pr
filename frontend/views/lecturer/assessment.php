@@ -18,9 +18,9 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="col-md-10">
             <p>
                 <?= Html::a('Edit Details', ['update', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
-                <?php if ($model->assessment_type == 0) : ?>
+                <?php if ($model->assessment_type == 0 || $model->assessment_type == 1 || $model->assessment_type == 2) : ?>
                     <?= Html::a('Add Group', ['add-group', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
-                <?php elseif ($model->assessment_type == 1) : ?>
+                <?php elseif ($model->assessment_type == 3 || $model->assessment_type == 4) : ?>
                     <?= Html::a('Add Student', ['add-student', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
                 <?php endif; ?>
                 <?= Html::a('Assessment Results', ['view-result', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
@@ -50,15 +50,9 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
         <div class="row mt-2">
             <div class="col-md-2 text-white bg-dark">
-                Deadline
-            </div>
-            <div class="col-md-2 bg-light">
-                <?= $model->deadline ?>
-            </div>
-            <div class="col-md-2 text-white bg-dark">
                 Assessment Type
             </div>
-            <div class="col-md-2 bg-light">
+            <div class="col-md-10 bg-light">
                 <?php
                     if ($model->assessment_type == 0) {
                         echo "(Group) Peer Review";
@@ -73,10 +67,18 @@ $this->params['breadcrumbs'][] = $this->title;
                     }
                 ?>
             </div>
+        </div>
+        <div class="row mt-2">
             <div class="col-md-2 text-white bg-dark">
-                Assessment Type
+                Deadline
             </div>
-            <div class="col-md-2 bg-light">
+            <div class="col-md-4 bg-light">
+                <?= $model->deadline ?>
+            </div>
+            <div class="col-md-2 text-white bg-dark">
+                Visibility
+            </div>
+            <div class="col-md-4 bg-light">
                 <?php
                     if ($model->active == 1) {
                         echo "Active";

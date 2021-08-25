@@ -151,38 +151,40 @@ class LecturerController extends Controller
                 $valid = $model->validate();
                 $valid = Model::validateMultiple($modelsSection) && $valid;
 
-                if (isset($_POST['Items'][0][0])) {
+                if (isset($_POST['Items'])) {
+                    
                     foreach ($_POST['Items'] as $indexSection => $items) {
                         foreach ($items as $indexItem => $item) {
                             $data['Items'] = $item;
-                            $modelItem = new Items();
+                            $modelItem = new Items;
                             $modelItem->load($data);
                             $modelsItem[$indexSection][$indexItem] = $modelItem;
-                            if ($modelItem->validate()) {
-                            } else {
-                                $valid = false;
-                            }
+                            $valid = $modelItem->validate();
                         }
                     }
                 }
 
-                if (isset($_POST['Rubrics'][0][0][0])) {
-                    foreach ($_POST['Rubrics'] as $indexSection => $items) {
-                        foreach ($items as $indexItem => $rubrics) {
+
+                if (isset($_POST['Rubrics'])) {
+                    
+                    foreach ($_POST['Rubrics'] as $indexSection => $modelsRubric) {
+                        foreach ($modelsRubric as $indexItem => $rubrics) {
                             foreach ($rubrics as $indexRubric => $rubric) {
                                 $data['Rubrics'] = $rubric;
-                                $modelRubric = new Rubrics();
+                                $modelRubric = new Rubrics;
                                 $modelRubric->load($data);
                                 $modelsRubric[$indexSection][$indexItem][$indexRubric] = $modelRubric;
-                                if ($modelRubric->validate()) {
-                                } else {
-                                    $valid = false;
-                                }
+                                $valid = $modelRubric->validate();
+                                
                             }
                         }
                     }
                 }
-
+                echo "<pre>";
+                print_r($modelsItem);
+                echo "</pre>";
+                exit;
+                
                 // Get upload file name
                 $modelUpload->file = UploadedFile::getInstance($modelUpload, 'file');
                 // Set upload path
@@ -207,17 +209,15 @@ class LecturerController extends Controller
                         'setIndexSheetByName' => true,
                     ]);
 
-
                     // Validate file format
                     $valid = $modelUpload->validateTemplateFormat($excelData, $model->assessment_type);
 
                     // Validate file Content
                     $valid = $modelUpload->validateInputContents($excelData, $model->assessment_type);
-
                 }
 
+                
                 if ($valid) {
-                    $modelLecturer = new LecturerModel();
                     $transaction = \Yii::$app->db->beginTransaction();
                     try {
                         if ($flag = $model->save(false)) {
@@ -228,10 +228,6 @@ class LecturerController extends Controller
                                 $flag = $modelLecturer->registDatafromUpload($excelData, $model);
                             }
 
-                            // echo "<pre>";
-                            // print_r($flag);
-                            // echo "</pre>";
-                            // exit;
                             if($flag) {
                                 $flag = $modelLecturer->registAssessmentInfo($model, $modelsSection, $modelsItem, $modelsRubric);
                             }
@@ -293,21 +289,13 @@ class LecturerController extends Controller
                             $modelsRubric[$indexSection][$indexItem] = $temp_Rubrics;
                             $oldRubrics = ArrayHelper::merge(ArrayHelper::index($temp_Rubrics, 'id'), $oldRubrics);
                         } else {
-                            $rubric = new Rubrics();
-                            $modelsRubric[$indexSection][$indexItem][0] = $rubric;
+                            $rubric = [new Rubrics()];
+                            $modelsRubric[$indexSection][$indexItem] = $rubric;
                         }
                     }
                 }
             }
         }
-
-        echo "<pre>";
-        print_r($modelsSection);
-        print_r($modelsItem);
-        print_r($modelsRubric);
-        echo "</pre>";
-        exit;
-
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
