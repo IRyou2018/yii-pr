@@ -3,6 +3,7 @@
 namespace frontend\models;
 
 use common\models\PeerReview;
+use common\models\User;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
@@ -30,7 +31,6 @@ class LecturerModel extends Model
      */
     public function getCoordinators($id)
     {
-
         $coorinators = (new yii\db\Query())
             ->select(["CONCAT(first_name, ' ', last_name) as name"])
             ->from('user')
@@ -42,6 +42,26 @@ class LecturerModel extends Model
                 ':user_id' => Yii::$app->user->id
                 ])
             ->all();
+
+        return $coorinators;
+    }
+
+    /**
+     * Get coordinators list.
+     *
+     * @param string assessment_id
+     * @return peer_assessment_id
+     */
+    public function getCoordinatorList()
+    {
+        $query = User::find();
+        $query->where(['status' => 10, 'type' => 0]);
+        $query->andWhere(['<>','id', Yii::$app->user->id]);
+        $query->all();
+
+        $coorinators = new ActiveDataProvider([
+            'query' => $query,
+        ]);
 
         return $coorinators;
     }
@@ -62,7 +82,7 @@ class LecturerModel extends Model
                     ga.name,
                     ga.mark"])
             ->from('group_assessment as ga')
-            ->join('INNER JOIN', 'marker_student_info as msi', 'ga.id = msi.group_id')
+            ->join('INNER JOIN', 'group_student_info as gsi', 'ga.id = gsi.group_id')
             ->where('ga.assessment_id = :assessment_id')
             ->addParams([
                 ':assessment_id' => $id, 

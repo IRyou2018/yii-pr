@@ -78,9 +78,9 @@ $this->params['breadcrumbs'][] = $this->title;
             </div>
             <div class="col-md-2 bg-light">
                 <?php
-                    if ($model->active == 0) {
+                    if ($model->active == 1) {
                         echo "Active";
-                    } else if ($model->active == 1) {
+                    } else if ($model->active == 0) {
                         echo "Inactive";
                     }
                 ?>

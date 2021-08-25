@@ -21,43 +21,52 @@ use wbraganca\dynamicform\DynamicFormWidget;
     ],
 ]); ?>
 
-<table class="table">
-    <thead>
-        <tr class="bg-light">
-            <th>Level</th>
-            <th>Weight</th>
-            <th>Description</th>
-            <th class="text-center" style="width: 60px;">
+<div class="card mt-1 container-rubric"><!-- widgetBody -->
+    <div class="card-header text-white bg-dark">
+        <div class="row">
+            <div class="col-md-11">
+            <h5>Rubrics (Optional)</h5>
+            </div>
+            <div class="col-md-1 text-right">
                 <button type="button" class="add-rubric btn-success btn-xs"><i class="fas fa-plus"></i></button>
-            </th>
-        </tr>
-    </thead>
-
-    <tbody class="container-rubric">
+            </div>
+        </div>
+    </div>
     <?php foreach ($modelsRubric[$indexSection][$indexItem] as $indexRubric => $modelRubric) : ?>
-        <tr class="rubric">
-            <td class="col-sm-2">
+    <div class="card-body rubric border-bottom">
+        <div class="row">
+            <div class="col-md-2 bg-light">
+                <span class="align-middle">Name</span>
+            </div>
+            <div class="col-md-5">
                 <?php
                 // necessary for update action.
                 if (!$modelRubric->isNewRecord) {
                     echo Html::activeHiddenInput($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]id");
                 }
                 ?>
-
                 <?= $form->field($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]level")->label(false)->textInput(['maxlength' => true]) ?>
-            </td>
-            <td class="col-sm-2">
+            </div>
+            <div class="col-md-2 bg-light">
+                <span class="align-middle">Weight</span>
+            </div>
+            <div class="col-md-2">
                 <?= $form->field($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]weight")->label(false)->textInput(['maxlength' => true]) ?>
-            </td>
-            <td class="col-sm-7">
+            </div>
+            <div class="col-md-1 text-right" rowspan="2">
+                <button type="button" class="remove-rubric btn-danger btn-xs"><i class="fas fa-minus"></i></button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-2 bg-light align-middle">
+                <span class="align-middle">Description</span>
+            </div>
+            <div class="col-md-9">
                 <?= $form->field($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]description")->label(false)->textInput(['maxlength' => true]) ?>
-            </td>
-
-            <td class="col-sm-1">
-                <button type="button" class="remove-rubric btn-danger"><i class="fas fa-minus"></i></button>
-            </td>
-        </tr>
+            </div>
+            </div>
+        </div>
+    </div>
     <?php endforeach; ?>
-    </tbody>
-</table>
+</div>
 <?php DynamicFormWidget::end(); ?>

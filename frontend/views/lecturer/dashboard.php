@@ -12,6 +12,8 @@ use yii\widgets\Pjax;
 $this->title = 'Dashboard';
 ?>
 <div class="lecturer-assessment-index">
+
+    <?= common\widgets\Alert::widget() ?>
     <div class="row">
         <div class="col-md-6 mb-3">
             <h4><?= Html::encode($this->title) ?></h4>

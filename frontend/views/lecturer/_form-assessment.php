@@ -26,7 +26,7 @@ use yii\helpers\Url;
         <div class="card-header text-white bg-dark">
             <div class="row">
                 <div class="col-md-12">
-                    <h4>Assessment</h4>
+                    <h5>Assessment</h5>
                 </div>
             </div>
         </div>
@@ -76,13 +76,7 @@ use yii\helpers\Url;
                 </div>
                 <div class="col-md-2 mt-3">
                     <?php
-                        $itemsQuery = User::find();
-                        $itemsQuery->where(['status' => 10, 'type' => 0]);
-                        $itemsQuery->andWhere(['<>','id', Yii::$app->user->id]);
-                        $itemsQuery->all();
-                        $dataProvider = new ActiveDataProvider([
-                                                            'query' => $itemsQuery,
-                                                            ]);
+                        $dataProvider = $coordinators;
                         Modal::begin([
                             'title' => 'Add coordinators',
                             'toggleButton' => ['label' => 'Add Coordinator', 'class' => 'btn btn-primary'],
@@ -92,9 +86,6 @@ use yii\helpers\Url;
                     <?= GridView::widget([
                         'dataProvider' => $dataProvider,
                         'id' => 'coordinatorList',
-                        // 'rowOptions' => function($model,$index,$key){
-                        //     return ['id' => $model['id'], 'onclick' => 'check(this)'];           
-                        // },
                         'columns' => [
                             ['class' => 'yii\grid\CheckboxColumn'],
                             // 'id',

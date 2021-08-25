@@ -20,50 +20,59 @@ use wbraganca\dynamicform\DynamicFormWidget;
     ],
 ]); ?>
 
-<table class="table table-bordered mt-2">
-    <thead>
-        <tr class="text-white bg-dark">
-            <th colspan="2"><h4>Sections</h4></th>
-            <th class="text-center" style="width: 60px;">
+<div class="card mt-2 mb-2 container-section"><!-- widgetBody -->
+    <div class="card-header text-white bg-dark">
+        <div class="row">
+            <div class="col-md-11">
+                <h5>Sections</h5>
+            </div>
+            <div class="col-md-1 text-right">
                 <button type="button" class="add-section btn-success btn-xs"><i class="fas fa-plus"></i></button>
-            </th>
-        </tr>
-    </thead>
-
-    <tbody class="container-section">
+            </div>
+        </div>
+    </div>
     <?php foreach ($modelsSection as $indexSection => $modelSection): ?>
-        <tr class="section">
-            <td class="vcenter col-md-2">
+    <div class="card-body section border-bottom">
+        <div class="row">
+            <div class="col-md-2 bg-light">
+                <span class="align-middle">Section Name</span>
+            </div>
+            <div class="col-md-5">
                 <?php
                     // necessary for update action.
-                    if (! $modelSection->isNewRecord) {
+                    if (!$modelSection->isNewRecord) {
                         echo Html::activeHiddenInput($modelSection, "[{$indexSection}]id");
                     }
                 ?>
-                
-                <?= $form->field($modelSection, "[{$indexSection}]name")->textInput(['maxlength' => true]) ?>
-
-                <?= $form->field($modelSection, "[{$indexSection}]section_type")->dropdownList(
+                <?= $form->field($modelSection, "[{$indexSection}]name")->label(false)->textInput(['maxlength' => true]) ?>
+            </div>
+            <div class="col-md-2 bg-light align-middle">
+            <span class="align-middle">Section Type</span>
+            </div>
+            <div class="col-md-2">
+                <?= $form->field($modelSection, "[{$indexSection}]section_type")->label(false)->dropdownList(
                         [
                             0 => 'For Student',
                             1 => 'Lecturer Only'
                         ],
                         ['prompt'=>'Select Section Type']
                 ) ?>
-            </td>
-            <td>
+            </div>
+            <div class="col-md-1 text-right" rowspan="2">
+                <button type="button" class="remove-section btn-danger btn-xs"><i class="fas fa-minus"></i></button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-11">
                 <?= $this->render('_form-items', [
                     'form' => $form,
                     'indexSection' => $indexSection,
                     'modelsItem' => $modelsItem,
                     'modelsRubric' => $modelsRubric,
                 ]) ?>
-            </td>
-            <td class="text-center vcenter" style="width: 60px;">
-                <button type="button" class="remove-section btn-danger btn-xs"><i class="fas fa-minus"></i></button>
-            </td>
-        </tr>
+            </div>
+        </div>
+    </div>
     <?php endforeach; ?>
-    </tbody>
-</table>
+</div>
  <?php DynamicFormWidget::end(); ?>

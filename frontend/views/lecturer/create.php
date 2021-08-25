@@ -10,8 +10,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?= $this->render('_form-assessment', [
         'model' => $model,
-        // 'modelLecturerAssessment' => $modelLecturerAssessment,
-        // 'coordinators' => $coordinators,
+        'coordinators' => $coordinators,
         'modelUpload' => $modelUpload,
         'modelsSection' => $modelsSection,
         'modelsItem' => $modelsItem,

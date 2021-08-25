@@ -39,6 +39,9 @@ use yii\web\UploadedFile;
 class LecturerController extends Controller
 {
     const DEFAULTPASS = "00000000";
+    const INACTIVE = 0;
+    const ACTIVE = 1;
+
     /**
      * @inheritDoc
      */
@@ -90,15 +93,20 @@ class LecturerController extends Controller
         $model = $this->findModel($id);
 
         if($status == "true") {
-
-            $model->active = 1;
+            $model->active = self::ACTIVE;
+            $message = 'Assessment status has been set to Visible.';
         } else {
-
-            $model->active = 0;
-
+            $model->active = self::INACTIVE;
+            $message = 'Assessment status has been set to Invisible.';
         }
 
-        $model->save();
+        if ($model->save()) {
+            Yii::$app->session->setFlash('success', $message);
+        } else {
+            Yii::$app->session->setFlash('error', 'Visibility update failed.');
+        }
+
+        return $this->redirect('dashboard');
      }
 
     /**
@@ -130,6 +138,8 @@ class LecturerController extends Controller
         $modelsItem = [[new Items()]];
         $modelsRubric = [[[new Rubrics()]]];
         $modelUpload = new Upload();
+        $modelLecturer = new LecturerModel();
+        $coordinators = $modelLecturer->getCoordinatorList();
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $modelUpload->load($this->request->post())) {
@@ -297,6 +307,7 @@ class LecturerController extends Controller
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
             'modelsRubric' => (empty($modelsRubric)) ? [[[new Rubrics()]]] : $modelsRubric,
+            'coordinators' => $coordinators,
         ]);
     }
 
@@ -330,6 +341,9 @@ class LecturerController extends Controller
                         if(!empty($temp_Rubrics[0]->id)) {
                             $modelsRubric[$indexSection][$indexItem] = $temp_Rubrics;
                             $oldRubrics = ArrayHelper::merge(ArrayHelper::index($temp_Rubrics, 'id'), $oldRubrics);
+                        } else {
+                            $rubric = [new Rubrics()];
+                            $modelsRubric[$indexSection][$indexItem] = $rubric;
                         }
                     }
                 }
@@ -821,7 +835,7 @@ class LecturerController extends Controller
                         $modelMarkerStudentInfo = new MarkerStudentInfo();
                         $modelMarkerStudentInfo->individual_assessment_id = $modelIndividualAssessment->id;
                         $modelMarkerStudentInfo->completed = 0;
-                        $modelMarkerStudentInfo->marker_student_id = $modelIndividualAssessment->istudent_idd;
+                        $modelMarkerStudentInfo->marker_student_id = $modelIndividualAssessment->student_id;
 
                         if ($flag = $modelMarkerStudentInfo->save(false)) {
                         } else {

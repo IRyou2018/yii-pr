@@ -27,13 +27,13 @@ class Upload extends Model {
         if ($assessment_type == 0 || $assessment_type == 1 || $assessment_type == 2) {
             $paKeys = ["Group Name", "Matriculation Number", "First Name", "Last Name", "Email"];
         } else if ($assessment_type == 3) {
-            $paKeys = ["Matriculation Number", "First Name", "Last Name", "Email", "Work File", "Matriculation Number(Marker Student)", "First Name(Marker Student)", "Last Name(Marker Student)", "Email(Marker Student)"];
-        } else if ($assessment_type == 4) {
             $paKeys = ["Matriculation Number", "First Name", "Last Name", "Email"];
+        } else if ($assessment_type == 4) {
+            $paKeys = ["Matriculation Number", "First Name", "Last Name", "Email", "Work File", "Matriculation Number(Marker Student)", "First Name(Marker Student)", "Last Name(Marker Student)", "Email(Marker Student)"];
         } else {
             return false;
         }
-        
+
         $dataKeys = array_keys($data[0]);
 
         return (
@@ -72,7 +72,29 @@ class Upload extends Model {
                     break;
                 }
             }
-        } else if ($assessment_type == 3) {
+        }  else if ($assessment_type == 3) {
+            foreach($data as $input){
+                $inputValue = array_values($input);
+    
+                // Empty row, skip
+                if(empty($inputValue[0])
+                    && empty($inputValue[1])
+                    && empty($inputValue[2])
+                    && empty($inputValue[3])) {
+                    
+                    continue;
+                }
+                // Partially input, error   
+                else if (empty($inputValue[0])
+                    || empty($inputValue[1])
+                    || empty($inputValue[2])
+                    || empty($inputValue[3])) {
+
+                    $valid = false;
+                    break;
+                }
+            }
+        } else if ($assessment_type == 4) {
             foreach($data as $input){
                 $inputValue = array_values($input);
     
@@ -99,28 +121,6 @@ class Upload extends Model {
                     || empty($inputValue[6])
                     || empty($inputValue[7])
                     || empty($inputValue[8])) {
-
-                    $valid = false;
-                    break;
-                }
-            }
-        }  else if ($assessment_type == 4) {
-            foreach($data as $input){
-                $inputValue = array_values($input);
-    
-                // Empty row, skip
-                if(empty($inputValue[0])
-                    && empty($inputValue[1])
-                    && empty($inputValue[2])
-                    && empty($inputValue[3])) {
-                    
-                    continue;
-                }
-                // Partially input, error   
-                else if (empty($inputValue[0])
-                    || empty($inputValue[1])
-                    || empty($inputValue[2])
-                    || empty($inputValue[3])) {
 
                     $valid = false;
                     break;
