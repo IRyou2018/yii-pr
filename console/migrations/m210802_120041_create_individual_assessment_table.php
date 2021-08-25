@@ -19,7 +19,8 @@ class m210802_120041_create_individual_assessment_table extends Migration
         $this->createTable('{{%individual_assessment}}', [
             'id' => $this->primaryKey(),
             'student_id' => $this->integer(11)->notNull(),
-            'mark' => $this->integer(3)->notNull(),
+            'mark_value' => $this->integer(3)->notNull(),
+            'student_number' => $this->integer(3)->notNull(),
             'marked' => $this->boolean(),
             'file_path' => $this->string(255),
             'assessment_id' => $this->integer(11)->notNull(),

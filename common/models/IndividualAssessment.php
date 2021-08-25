@@ -9,14 +9,14 @@ use Yii;
  *
  * @property int $id
  * @property int $student_id
- * @property int $student_number
  * @property int $mark_value
+ * @property int $student_number
  * @property int|null $marked
  * @property string|null $file_path
  * @property int $assessment_id
  *
  * @property Assessments $assessment
- * @property PeerReview[] $peerReviews
+ * @property MarkerStudentInfo[] $markerStudentInfos
  * @property User $student
  */
 class IndividualAssessment extends \yii\db\ActiveRecord
@@ -36,7 +36,7 @@ class IndividualAssessment extends \yii\db\ActiveRecord
     {
         return [
             [['student_id', 'assessment_id'], 'required'],
-            [['student_id', 'student_number', 'mark_value', 'marked', 'assessment_id'], 'integer'],
+            [['student_id', 'mark_value', 'student_number', 'marked', 'assessment_id'], 'integer'],
             [['file_path'], 'string', 'max' => 255],
             [['assessment_id'], 'exist', 'skipOnError' => true, 'targetClass' => Assessments::className(), 'targetAttribute' => ['assessment_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_id' => 'id']],
@@ -51,8 +51,8 @@ class IndividualAssessment extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'student_id' => 'Student ID',
-            'student_number' => 'Student Number', 
             'mark_value' => 'Mark Value',
+            'student_number' => 'Student Number',
             'marked' => 'Marked',
             'file_path' => 'File Path',
             'assessment_id' => 'Assessment ID',
@@ -70,13 +70,13 @@ class IndividualAssessment extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[PeerReviews]].
+     * Gets query for [[MarkerStudentInfos]].
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getPeerReviews()
+    public function getMarkerStudentInfos()
     {
-        return $this->hasMany(PeerReview::className(), ['individual_assessment_id' => 'id']);
+        return $this->hasMany(MarkerStudentInfo::className(), ['individual_assessment_id' => 'id']);
     }
 
     /**

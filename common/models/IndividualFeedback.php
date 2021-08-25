@@ -12,10 +12,10 @@ use Yii;
  * @property int|null $mark
  * @property string|null $comment
  * @property int $item_id
- * @property int $peer_review_id
+ * @property int $marker_student_info_id
  *
  * @property Items $item
- * @property PeerReview $peerReview
+ * @property MarkerStudentInfo $markerStudentInfo
  * @property User $student
  */
 class IndividualFeedback extends \yii\db\ActiveRecord
@@ -34,13 +34,12 @@ class IndividualFeedback extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['student_id', 'item_id', 'peer_review_id'], 'required'],
-            [['student_id', 'mark', 'item_id', 'peer_review_id'], 'integer'],
+            [['student_id', 'item_id', 'marker_student_info_id'], 'required'],
+            [['student_id', 'mark', 'item_id', 'marker_student_info_id'], 'integer'],
             [['comment'], 'string'],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
-            [['peer_review_id'], 'exist', 'skipOnError' => true, 'targetClass' => PeerReview::className(), 'targetAttribute' => ['peer_review_id' => 'id']],
+            [['marker_student_info_id'], 'exist', 'skipOnError' => true, 'targetClass' => MarkerStudentInfo::className(), 'targetAttribute' => ['marker_student_info_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_id' => 'id']],
-            [['mark'], 'validateMark'],
         ];
     }
 
@@ -55,15 +54,8 @@ class IndividualFeedback extends \yii\db\ActiveRecord
             'mark' => 'Mark',
             'comment' => 'Comment',
             'item_id' => 'Item ID',
-            'peer_review_id' => 'Peer Review ID',
+            'marker_student_info_id' => 'Marker Student Info ID',
         ];
-    }
-
-    public function scenarios()
-    {
-        $scenarios = parent::scenarios();
-        $scenarios['submit'] = ['mark'];
-        return $scenarios;
     }
 
     /**
@@ -77,13 +69,13 @@ class IndividualFeedback extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[PeerReview]].
+     * Gets query for [[MarkerStudentInfo]].
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getPeerReview()
+    public function getMarkerStudentInfo()
     {
-        return $this->hasOne(PeerReview::className(), ['id' => 'peer_review_id']);
+        return $this->hasOne(MarkerStudentInfo::className(), ['id' => 'marker_student_info_id']);
     }
 
     /**
@@ -94,13 +86,5 @@ class IndividualFeedback extends \yii\db\ActiveRecord
     public function getStudent()
     {
         return $this->hasOne(User::className(), ['id' => 'student_id']);
-    }
-
-    public function validateMark($attribute, $params) {
-        
-        if ($this->mark > $this->item->max_mark_value) {
-            $this->addError($attribute, 'Mark must be less than or equal to Max Mark.');
-            return false;
-        }
     }
 }

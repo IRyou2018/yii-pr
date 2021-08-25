@@ -23,6 +23,12 @@ use yii\helpers\Url;
             'allModels' => $unCompletedAssessment
         ]),
         'tableOptions' => ['class' => 'table table-bordered'],
+        'rowOptions' => function ($model, $key, $index, $grid) {
+            return [
+                'data-assessment_id' => $model['assessment_id'],
+                'data-type' => $model['assessment_type'],
+                'data-status' => $model['completed']
+            ]; },
         'summary' => '',
         // 'hover'=>true,
         'columns' => [
@@ -59,7 +65,12 @@ use yii\helpers\Url;
         ]),
         'summary' => false,
         'tableOptions' => ['class' => 'table table-bordered'],
-        'rowOptions' => function ($model, $key, $index, $grid) { return ['data-assessment_id' => $model['assessment_id']]; },
+        'rowOptions' => function ($model, $key, $index, $grid) {
+            return [
+                'data-assessment_id' => $model['assessment_id'],
+                'data-type' => $model['assessment_type'],
+                'data-status' => $model['completed']
+            ]; },
         'columns' => [
             [
                 'attribute' => 'name',
@@ -120,8 +131,26 @@ $this->registerJs("
     $('td').click(function (e) {
         var id = $(this).closest('tr').data('key');
         var assessment_id = $(this).closest('tr').data('assessment_id');
-        if(e.target == this)
-            location.href = '" . Url::to(['student/submit']) . "?id=' + id + '&assessment_id=' + assessment_id;
+        var type = $(this).closest('tr').data('type');
+        var status = $(this).closest('tr').data('status');
+        if(e.target == this) {
+            if(status == 0) {
+                if(type == 0) {
+                    location.href = '" . Url::to(['student/submit-group']) . "?id=' + id + '&assessment_id=' + assessment_id;
+                }
+                else if(type ==1) {
+                    location.href = '" . Url::to(['student/submit-individual']) . "?id=' + id + '&assessment_id=' + assessment_id;
+                }
+            }
+            else if(status == 1) {
+                if(type == 0) {
+                    location.href = '" . Url::to(['student/view-group']) . "?id=' + id + '&assessment_id=' + assessment_id;
+                }
+                else if(type ==1) {
+                    location.href = '" . Url::to(['student/view-individual']) . "?id=' + id + '&assessment_id=' + assessment_id;
+                }
+            }
+        }
     });
 
     $('tr:has(td)').mouseover(function() {

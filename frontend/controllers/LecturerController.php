@@ -3,11 +3,15 @@
 namespace frontend\controllers;
 
 use common\models\Assessments;
+use common\models\GroupAssessment;
 use common\models\GroupInfo;
+use common\models\GroupStudentInfo;
 use common\models\IndividualAssessment;
+use common\models\IndividualAssessmentDetail;
 use common\models\IndividualFeedback;
 use common\models\Items;
 use common\models\LecturerAssessment;
+use common\models\MarkerStudentInfo;
 use common\models\PeerAssessment;
 use common\models\PeerReview;
 use common\models\PeerReviewDetail;
@@ -34,6 +38,7 @@ use yii\web\UploadedFile;
  */
 class LecturerController extends Controller
 {
+    const DEFAULTPASS = "00000000";
     /**
      * @inheritDoc
      */
@@ -350,12 +355,12 @@ class LecturerController extends Controller
      */
     public function actionIndividualResult($id)
     {
-        $modelPeerReview = PeerReview::findOne($id);
-        $model = $modelPeerReview->individualAssessment->assessment;
+        $makerInfo = MarkerStudentInfo::findOne($id);
+        $model = $makerInfo->individualAssessment->assessment;
         $modelsSection = $model->sections;
         $modelsItem = [];
-        $modelsPeerReviewDetail = [];
-        $peerReviewDetails = $modelPeerReview->peerReviewDetails;
+        $modelsReviewDetail = [];
+        $reviewDetails = $makerInfo->individualAssessmentDetails;
         $modelsIndividualFeedback = [];
 
         foreach ($modelsSection as $indexSection => $modelSection) {
@@ -367,29 +372,25 @@ class LecturerController extends Controller
             
                 if ($modelSection->section_type == 0) {
 
-                    if (!empty($peerReviewDetails)) {
-                        foreach($peerReviewDetails as $peerReviewDetail) {
-                            if ($peerReviewDetail->item_id == $item->id) {
-                                $modelsPeerReviewDetail[$indexSection][$index] = $peerReviewDetail;
+                    if (!empty($reviewDetails)) {
+                        foreach($reviewDetails as $reviewDetail) {
+                            if ($reviewDetail->item_id == $item->id) {
+                                $modelsReviewDetail[$indexSection][$index] = $reviewDetail;
                                 break;
                             }
                         }
                     } else {
-                        $peerReviewDetail = new PeerReviewDetail();
-                        $modelsPeerReviewDetail[$indexSection][$index] = $peerReviewDetail;
+                        $reviewDetail = new IndividualAssessmentDetail();
+                        $modelsReviewDetail[$indexSection][$index] = $reviewDetail;
                     }
                 }
 
                 $individualFeedback = new IndividualFeedback();
                 $individualFeedback->item_id = $item->id;
-                $individualFeedback->peer_review_id = $id;
+                $individualFeedback->marker_student_info_id = $id;
                 $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
             }
         }
-        // echo "<pre>";
-        // print_r(!empty($modelsPeerReviewDetail));
-        // echo "</pre>";
-        // exit;
 
         if ($this->request->isPost) {
                 
@@ -398,7 +399,7 @@ class LecturerController extends Controller
                 $index = 0;
                 $individualFeedbacks = [new IndividualFeedback()];
                 $actualMark = 0;
-                $student_id = $modelPeerReview->individualAssessment->student_id;
+                $student_id = $makerInfo->individualAssessment->student_id;
 
                 foreach ($_POST['IndividualFeedback'] as $indexSection => $feedbacks) {
                     
@@ -423,19 +424,6 @@ class LecturerController extends Controller
                         $index++;
                     }
                 }
-
-                $valid = true;
-                foreach ($modelsIndividualFeedback as $feedbacks) {
-                    
-                    foreach ($feedbacks as $feedback) {
-
-                        if($feedback->validate()) {
-                            $actualMark += $feedback->mark;
-                        } else {
-                            $valid = false;
-                        }
-                    }
-                }
                 
                 if($valid) {
                     $transaction = \Yii::$app->db->beginTransaction();
@@ -454,7 +442,7 @@ class LecturerController extends Controller
 
                         
                         if($flag) {
-                            $individualAssessment = $modelPeerReview->individualAssessment;
+                            $individualAssessment = $makerInfo->individualAssessment;
 
                             $individualAssessment->marked = 1;
                             $individualAssessment->mark_value = $actualMark;
@@ -482,7 +470,7 @@ class LecturerController extends Controller
             'model' => $model,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
-            'modelsPeerReviewDetail' => (empty($modelsPeerReviewDetail)) ? [[new PeerReviewDetail()]] :  $modelsPeerReviewDetail,
+            'modelsReviewDetail' => (empty($modelsReviewDetail)) ? [[new IndividualAssessmentDetail()]] :  $modelsReviewDetail,
             'modelsIndividualFeedback' => (empty($modelsIndividualFeedback)) ? [[new IndividualFeedback()]] :  $modelsIndividualFeedback,
         ]);
     }
@@ -502,7 +490,7 @@ class LecturerController extends Controller
     }
 
     /**
-     * Displays a single Branches model.
+     * Displays a assessment info.
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
@@ -513,7 +501,7 @@ class LecturerController extends Controller
         $modelLecturer = new LecturerModel();
         $coorinators = $modelLecturer->getCoordinators($id);
 
-        if ($model->assessment_type == 0) {
+        if ($model->assessment_type == 0 || $model->assessment_type == 1 || $model->assessment_type == 2) {
             $groupInfo = $modelLecturer->getGroupInfo($id);
 
             return $this->render('assessment', [
@@ -521,7 +509,7 @@ class LecturerController extends Controller
                 'groupInfo' => $groupInfo,
                 'coorinators' => $coorinators,
             ]);
-        } else if ($model->assessment_type == 1) {
+        } else if ($model->assessment_type == 3 || $model->assessment_type == 4) {
 
             $individualInfo = $modelLecturer->getStudentMarkStatus($id);
 
@@ -587,8 +575,8 @@ class LecturerController extends Controller
 
         $i = 0;
         
-        // For peer assessment (Group)
-        if ($model->assessment_type == 0) {
+        // For Group Assessment
+        if ($model->assessment_type == 0 || $model->assessment_type == 1 || $model->assessment_type == 2) {
 
             $sortedData = $this->arraySort($excelData, 'Group Name', SORT_ASC);
 
@@ -617,10 +605,10 @@ class LecturerController extends Controller
                         //Get student info by email
                         $student = $modelUser->findByEmail($sortedData[$i]['Email']);
 
-                        $modelPeerAssessment = new PeerAssessment();
-                        $modelPeerAssessment->group_id = $temp_Group_id;
-                        $modelPeerAssessment->marked = 0;
-                        $modelPeerAssessment->completed = 0;
+                        $modelGroupStudentInfo = new GroupStudentInfo();
+                        $modelGroupStudentInfo->group_id = $temp_Group_id;
+                        $modelGroupStudentInfo->marked = 0;
+                        $modelGroupStudentInfo->completed = 0;
 
                         // If student not exist, regist
                         if (empty($student)) {
@@ -630,16 +618,17 @@ class LecturerController extends Controller
                             $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
                             $modelUser->email = $sortedData[$i]['Email'];
                             $modelUser->type = '1';
+                            $modelUser->setPassword(self::DEFAULTPASS);
                             $modelUser->generateAuthKey();
 
                             if($flag = $modelUser->save(false)) {
-                                $modelPeerAssessment->student_id = $modelUser->id;
+                                $modelGroupStudentInfo->student_id = $modelUser->id;
                             }
                         } else {
-                            $modelPeerAssessment->student_id = $student->id;
+                            $modelGroupStudentInfo->student_id = $student->id;
                         }
 
-                        if ($flag = $modelPeerAssessment->save(false)) {
+                        if ($flag = $modelGroupStudentInfo->save(false)) {
                         } else {
                             break;
                         }
@@ -647,7 +636,7 @@ class LecturerController extends Controller
                         // Regist new gourp
                         $temp_Group_name = $sortedData[$i]['Group Name'];;
 
-                        $modelGroupInfo = new GroupInfo();
+                        $modelGroupInfo = new GroupAssessment();
 
                         $modelGroupInfo->name = $temp_Group_name;
                         $modelGroupInfo->assessment_id = $model->id;
@@ -668,10 +657,10 @@ class LecturerController extends Controller
                             //Get student info by email
                             $student = $modelUser->findByEmail($sortedData[$i]['Email']);
 
-                            $modelPeerAssessment = new PeerAssessment();
-                            $modelPeerAssessment->group_id = $temp_Group_id;
-                            $modelPeerAssessment->marked = 0;
-                            $modelPeerAssessment->completed = 0;
+                            $modelGroupStudentInfo = new GroupStudentInfo();
+                            $modelGroupStudentInfo->group_id = $temp_Group_id;
+                            $modelGroupStudentInfo->marked = 0;
+                            $modelGroupStudentInfo->completed = 0;
                             
                             // If student not exist, regist
                             if (empty($student)) {
@@ -680,16 +669,17 @@ class LecturerController extends Controller
                                 $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
                                 $modelUser->email = $sortedData[$i]['Email'];
                                 $modelUser->type = '1';
+                                $modelUser->setPassword(self::DEFAULTPASS);
                                 $modelUser->generateAuthKey();
                                 
                                 if($flag = $modelUser->save(false)) {
-                                    $modelPeerAssessment->student_id = $modelUser->id;
+                                    $modelGroupStudentInfo->student_id = $modelUser->id;
                                 }
                             } else {
-                                $modelPeerAssessment->student_id = $student->id;
+                                $modelGroupStudentInfo->student_id = $student->id;
                             }
 
-                            if ($flag = $modelPeerAssessment->save(false)) {
+                            if ($flag = $modelGroupStudentInfo->save(false)) {
                             } else {
                                 break;
                             }
@@ -703,8 +693,73 @@ class LecturerController extends Controller
                 $i++;
             } while ($i < count($sortedData));
         }
-        // For peer review (Individual)
-        else if ($model->assessment_type == 1) {
+        // For Self Assessment
+        else if ($model->assessment_type == 3) {
+
+            $temp_student_email = '';
+            $temp_individual_assessment_id = '';
+            $student_number = 1;
+
+            foreach ($excelData as $data) {
+                // Skip empty row
+                if (
+                    empty($data['First Name'])
+                    && empty($data['Last Name'])
+                    && empty($data['Matriculation Number'])
+                    && empty($data['Email'])
+                ) {
+                    continue;
+                } else {
+                    $temp_student_email = $data['Email'];
+
+                    $modelUser = new User();
+
+                    //Get student info by email
+                    $student = $modelUser->findByEmail($temp_student_email);
+
+                    $modelIndividualAssessment = new IndividualAssessment();
+                    $modelIndividualAssessment->assessment_id = $model->id;
+                    $modelIndividualAssessment->student_number = $student_number;
+                    $modelIndividualAssessment->marked = 0;
+
+                    // If student not exist, regist
+                    if (empty($student)) {
+
+                        $modelUser->first_name = $data['First Name'];
+                        $modelUser->last_name = $data['Last Name'];
+                        $modelUser->matric_number = $data['Matriculation Number'];
+                        $modelUser->email = $data['Email'];
+                        $modelUser->type = '1';
+                        $modelUser->setPassword(self::DEFAULTPASS);
+                        $modelUser->generateAuthKey();
+                        
+                        if ($flag = $modelUser->save(false)) {
+                            $modelIndividualAssessment->student_id = $modelUser->id;
+                        }
+                    } else {
+
+                        $modelIndividualAssessment->student_id = $student->id;
+                    }
+
+                    if ($flag = $modelIndividualAssessment->save(false)) {
+
+                        $student_number++;
+
+                        $modelMarkerStudentInfo = new MarkerStudentInfo();
+                        $modelMarkerStudentInfo->individual_assessment_id = $modelIndividualAssessment->id;
+                        $modelMarkerStudentInfo->completed = 0;
+                        $modelMarkerStudentInfo->marker_student_id = $modelIndividualAssessment->istudent_idd;
+
+                        if ($flag = $modelMarkerStudentInfo->save(false)) {
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        else if ($model->assessment_type == 4) {
             $sortedData = $this->arraySort($excelData, 'Email', SORT_ASC);
             $temp_student_email = '';
             $temp_individual_assessment_id = '';
@@ -735,9 +790,9 @@ class LecturerController extends Controller
                         //Get student info by email
                         $student = $modelUser->findByEmail($sortedData[$i]['Email(Marker Student)']);
 
-                        $modelPeerReview = new PeerReview();
-                        $modelPeerReview->individual_assessment_id = $temp_individual_assessment_id;
-                        $modelPeerReview->completed = 0;
+                        $modelMarkerStudentInfo = new MarkerStudentInfo();
+                        $modelMarkerStudentInfo->individual_assessment_id = $temp_individual_assessment_id;
+                        $modelMarkerStudentInfo->completed = 0;
 
                         // If student not exist, regist
                         if (empty($student)) {
@@ -747,16 +802,17 @@ class LecturerController extends Controller
                             $modelUser->matric_number = $sortedData[$i]['Matriculation Number(Marker Student)'];
                             $modelUser->email = $sortedData[$i]['Email(Marker Student)'];
                             $modelUser->type = '1';
+                            $modelUser->setPassword(self::DEFAULTPASS);
                             $modelUser->generateAuthKey();
 
                             if($flag = $modelUser->save(false)) {
-                                $modelPeerReview->marker_student_id = $modelUser->id;
+                                $modelMarkerStudentInfo->marker_student_id = $modelUser->id;
                             }
                         } else {
-                            $modelPeerReview->marker_student_id = $student->id;
+                            $modelMarkerStudentInfo->marker_student_id = $student->id;
                         }
 
-                        if ($flag = $modelPeerReview->save(false)) {
+                        if ($flag = $modelMarkerStudentInfo->save(false)) {
                         } else {
                             break;
                         }
@@ -783,6 +839,7 @@ class LecturerController extends Controller
                             $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
                             $modelUser->email = $sortedData[$i]['Email'];
                             $modelUser->type = '1';
+                            $modelUser->setPassword(self::DEFAULTPASS);
                             $modelUser->generateAuthKey();
                             
                             if ($flag = $modelUser->save(false)) {
@@ -803,9 +860,9 @@ class LecturerController extends Controller
                             // Get student info by email
                             $student = $modelUser->findByEmail($sortedData[$i]['Email(Marker Student)']);
 
-                            $modelPeerReview = new PeerReview();
-                            $modelPeerReview->individual_assessment_id = $temp_individual_assessment_id;
-                            $modelPeerReview->completed = 0;
+                            $modelMarkerStudentInfo = new MarkerStudentInfo();
+                            $modelMarkerStudentInfo->individual_assessment_id = $temp_individual_assessment_id;
+                            $modelMarkerStudentInfo->completed = 0;
 
                             // Student not exists, regist new student.
                             if (empty($student)) {
@@ -815,16 +872,17 @@ class LecturerController extends Controller
                                 $modelUser->matric_number = $sortedData[$i]['Matriculation Number(Marker Student)'];
                                 $modelUser->email = $sortedData[$i]['Email(Marker Student)'];
                                 $modelUser->type = '1';
+                                $modelUser->setPassword(self::DEFAULTPASS);
                                 $modelUser->generateAuthKey();
 
                                 if($flag = $modelUser->save(false)) {
-                                    $modelPeerReview->marker_student_id = $modelUser->id;
+                                    $modelMarkerStudentInfo->marker_student_id = $modelUser->id;
                                 }
                             } else {
-                                $modelPeerReview->marker_student_id = $student->id;
+                                $modelMarkerStudentInfo->marker_student_id = $student->id;
                             }
 
-                            if ($flag = $modelPeerReview->save(false)) {
+                            if ($flag = $modelMarkerStudentInfo->save(false)) {
                             } else {
                                 break;
                             }

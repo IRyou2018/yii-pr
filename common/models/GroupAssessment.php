@@ -5,26 +5,26 @@ namespace common\models;
 use Yii;
 
 /**
- * This is the model class for table "group_info".
+ * This is the model class for table "group_assessment".
  *
  * @property int $id
  * @property string $name
- * @property int $group_number
+ * @property int|null $group_number
  * @property string|null $mark
  * @property int|null $marked
  * @property int|null $assessment_id
  *
  * @property Assessments $assessment
- * @property PeerAssessment[] $peerAssessments
+ * @property GroupStudentInfo[] $groupStudentInfos
  */
-class GroupInfo extends \yii\db\ActiveRecord
+class GroupAssessment extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'group_info';
+        return 'group_assessment';
     }
 
     /**
@@ -49,7 +49,7 @@ class GroupInfo extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'name' => 'Name',
-            'group_number' => 'Group Number',
+            'number' => 'Number',
             'mark' => 'Mark',
             'marked' => 'Marked',
             'assessment_id' => 'Assessment ID',
@@ -67,12 +67,12 @@ class GroupInfo extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[PeerAssessments]].
+     * Gets query for [[GroupStudentInfos]].
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getPeerAssessments()
+    public function getGroupStudentInfos()
     {
-        return $this->hasMany(PeerAssessment::className(), ['group_id' => 'id']);
+        return $this->hasMany(GroupStudentInfo::className(), ['group_id' => 'id']);
     }
 }

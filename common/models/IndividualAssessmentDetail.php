@@ -5,25 +5,25 @@ namespace common\models;
 use Yii;
 
 /**
- * This is the model class for table "peer_review_detail".
+ * This is the model class for table "individual_assessment_detail".
  *
  * @property int $id
  * @property int $item_id
  * @property int $mark
- * @property string|null $comment
- * @property int|null $peer_review_id
+ * @property string $comment
+ * @property int|null $marker_student_info_id
  *
  * @property Items $item
- * @property PeerReview $peerReview
+ * @property MarkerStudentInfo $markerStudentInfo
  */
-class PeerReviewDetail extends \yii\db\ActiveRecord
+class IndividualAssessmentDetail extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'peer_review_detail';
+        return 'individual_assessment_detail';
     }
 
     /**
@@ -32,14 +32,11 @@ class PeerReviewDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['item_id', 'mark', 'comment'], 'required',
-                'message'=>'Please enter a value for {attribute}.'
-            ],
-            [['item_id', 'mark', 'peer_review_id'], 'integer'],
+            [['item_id', 'mark', 'comment'], 'required'],
+            [['item_id', 'mark', 'marker_student_info_id'], 'integer'],
             [['comment'], 'string'],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
-            [['peer_review_id'], 'exist', 'skipOnError' => true, 'targetClass' => PeerReview::className(), 'targetAttribute' => ['peer_review_id' => 'id']],
+            [['marker_student_info_id'], 'exist', 'skipOnError' => true, 'targetClass' => MarkerStudentInfo::className(), 'targetAttribute' => ['marker_student_info_id' => 'id']],
             [['mark'], 'validateMark'],
         ];
     }
@@ -52,9 +49,9 @@ class PeerReviewDetail extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'item_id' => 'Item ID',
-            'mark' => 'Proposed Mark',
+            'mark' => 'Mark',
             'comment' => 'Comment',
-            'peer_review_id' => 'Peer Review ID',
+            'marker_student_info_id' => 'Marker Student Info ID',
         ];
     }
 
@@ -76,13 +73,13 @@ class PeerReviewDetail extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[PeerReview]].
+     * Gets query for [[MarkerStudentInfo]].
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getPeerReview()
+    public function getMarkerStudentInfo()
     {
-        return $this->hasOne(PeerReview::className(), ['id' => 'peer_review_id']);
+        return $this->hasOne(MarkerStudentInfo::className(), ['id' => 'marker_student_info_id']);
     }
 
     public function validateMark($attribute, $params) {

@@ -58,16 +58,16 @@ class LecturerModel extends Model
         $groupsInfo = (new yii\db\Query())
             ->select(["COUNT(*) as toalCount,
                     Sum(completed) as completeCount,
-                    gi.id,
-                    gi.name,
-                    gi.mark"])
-            ->from('group_info as gi')
-            ->join('INNER JOIN', 'peer_assessment as pa', 'gi.id = pa.group_id')
-            ->where('gi.assessment_id = :assessment_id')
+                    ga.id,
+                    ga.name,
+                    ga.mark"])
+            ->from('group_assessment as ga')
+            ->join('INNER JOIN', 'marker_student_info as msi', 'ga.id = msi.group_id')
+            ->where('ga.assessment_id = :assessment_id')
             ->addParams([
                 ':assessment_id' => $id, 
                 ])
-            ->groupBy('gi.id', 'gi.mark')
+            ->groupBy('ga.id', 'ga.mark')
             ->all();
 
         $inconsistent = [];
@@ -113,14 +113,14 @@ class LecturerModel extends Model
     {
 
         $query = (new yii\db\Query())
-            ->select(["pr.id,
+            ->select(["msi.id,
                     ia.marked,
                     CONCAT(u1.first_name, ' ', u1.last_name) as work_student_name,
                     CONCAT(u2.first_name, ' ', u2.last_name) as marker_student_name"])
-            ->from('peer_review as pr')
-            ->join('INNER JOIN', 'individual_assessment as ia', 'pr.individual_assessment_id = ia.id')
+            ->from('marker_student_info as msi')
+            ->join('INNER JOIN', 'individual_assessment as ia', 'msi.individual_assessment_id = ia.id')
             ->join('LEFT OUTER JOIN', 'user u1', 'ia.student_id = u1.id')
-            ->join('LEFT OUTER JOIN', 'user u2', 'pr.marker_student_id = u2.id')
+            ->join('LEFT OUTER JOIN', 'user u2', 'msi.marker_student_id = u2.id')
             ->where('ia.assessment_id = :assessment_id')
             ->addParams([
                 ':assessment_id' => $id, 
@@ -132,54 +132,5 @@ class LecturerModel extends Model
         ]);
 
         return $individualInfo;
-    }
-
-    /**
-     * Get peer coordinators.
-     *
-     * @param string assessment_id
-     * @return peer_assessment_id
-     */
-    public function getIncomplete($id)
-    {
-
-        $coorinators = (new yii\db\Query())
-            ->select(["CONCAT(first_name, ' ', last_name) as name"])
-            ->from('user')
-            ->join('INNER JOIN', 'lecturer_assessment as ls', 'ls.lecturer_id = user.id')
-            ->where('ls.lecturer_id <> :user_id')
-            ->andWhere('ls.assessment_id = :assessment_id')
-            ->addParams([
-                ':assessment_id' => $id, 
-                ':user_id' => Yii::$app->user->id
-                ])
-            ->all();
-
-        return $coorinators;
-    }
-
-    /**
-     * Get peer review id.
-     *
-     * @param string assessment_id
-     * @return peer_assessment_id
-     */
-    public function getPeerReviewId($id)
-    {
-
-        $peerReviewID = (new \Yii\db\Query())
-                    ->select('peer_review.id')
-                    ->from('peer_review')
-                    ->join('INNER JOIN', 'individual_assessment', 'peer_review.individual_assessment_id = individual_assessment.id')
-                    ->join('INNER JOIN', 'assessments', 'individual_assessment.assessment_id = assessments.id')
-                    ->where('assessments.id = :assessment_id')
-                    ->andWhere('peer_review.marker_student_id = :user_id')
-                    ->addParams([
-                        ':assessment_id' => $id, 
-                        ':user_id' => Yii::$app->user->id
-                        ])
-                    ->scalar();
-
-        return $peerReviewID;
     }
 }

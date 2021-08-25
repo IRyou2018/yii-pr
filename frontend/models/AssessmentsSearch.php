@@ -120,105 +120,105 @@ class AssessmentsSearch extends Assessments
         return $dataProvider;
     }
 
-    /**
-     * Get uncompleted assessment list
-     *
-     * @param array $params
-     *
-     * @return ActiveDataProvider
-     */
-    public function searchUncompleted()
-    {
-        $query = Assessments::find()
-            ->join('INNER JOIN', 'group_info as gi', 'gi.assessment_id = assessments.id')
-            ->join('INNER JOIN', 'peer_assessment as ps', 'ps.group_id = gi.id')
-            ->where([
-                'assessments.active' => self::ACTIVE,
-                'ps.completed' => self::UNCOMPLETE,
-                'ps.student_id' => Yii::$app->user->id])
-            ->union(
-                Assessments::find()
-                ->join('INNER JOIN', 'individual_assessment as ia', 'ia.assessment_id = assessments.id')
-                ->join('INNER JOIN', 'peer_review as pr', 'pr.individual_assessment_id = ia.id')
-                ->where([
-                    'assessments.active' => self::ACTIVE,
-                    'pr.completed' => self::UNCOMPLETE,
-                    'pr.marker_student_id' => Yii::$app->user->id])
-            );
+    // /**
+    //  * Get uncompleted assessment list
+    //  *
+    //  * @param array $params
+    //  *
+    //  * @return ActiveDataProvider
+    //  */
+    // public function searchUncompleted()
+    // {
+    //     $query = Assessments::find()
+    //         ->join('INNER JOIN', 'group_info as gi', 'gi.assessment_id = assessments.id')
+    //         ->join('INNER JOIN', 'peer_assessment as ps', 'ps.group_id = gi.id')
+    //         ->where([
+    //             'assessments.active' => self::ACTIVE,
+    //             'ps.completed' => self::UNCOMPLETE,
+    //             'ps.student_id' => Yii::$app->user->id])
+    //         ->union(
+    //             Assessments::find()
+    //             ->join('INNER JOIN', 'individual_assessment as ia', 'ia.assessment_id = assessments.id')
+    //             ->join('INNER JOIN', 'peer_review as pr', 'pr.individual_assessment_id = ia.id')
+    //             ->where([
+    //                 'assessments.active' => self::ACTIVE,
+    //                 'pr.completed' => self::UNCOMPLETE,
+    //                 'pr.marker_student_id' => Yii::$app->user->id])
+    //         );
 
-        $dataProvider = new ActiveDataProvider([
-            'query' => $query,
-            'sort' =>false
-        ]);
+    //     $dataProvider = new ActiveDataProvider([
+    //         'query' => $query,
+    //         'sort' =>false
+    //     ]);
 
-        return $dataProvider;
-    }
+    //     return $dataProvider;
+    // }
 
-    /**
-     * Get completed assessment list
-     *
-     * @param array $params
-     *
-     * @return ActiveDataProvider
-     */
-    public function searchCompleted()
-    {
-        $query = Assessments::find()
-            ->join('INNER JOIN', 'group_info as gi', 'gi.assessment_id = assessments.id')
-            ->join('INNER JOIN', 'peer_assessment as ps', 'ps.group_id = gi.id')
-            ->where([
-                'assessments.active' => self::ACTIVE,
-                'ps.completed' => self::COMPLETE,
-                'ps.student_id' => Yii::$app->user->id])
-            ->union(
-                Assessments::find()
-                ->join('INNER JOIN', 'individual_assessment as ia', 'ia.assessment_id = assessments.id')
-                ->join('INNER JOIN', 'peer_review as pr', 'pr.individual_assessment_id = ia.id')
-                ->where([
-                    'assessments.active' => self::ACTIVE,
-                    'pr.completed' => self::COMPLETE,
-                    'pr.marker_student_id' => Yii::$app->user->id])
-            );
+    // /**
+    //  * Get completed assessment list
+    //  *
+    //  * @param array $params
+    //  *
+    //  * @return ActiveDataProvider
+    //  */
+    // public function searchCompleted()
+    // {
+    //     $query = Assessments::find()
+    //         ->join('INNER JOIN', 'group_assessment as ga', 'ga.assessment_id = assessments.id')
+    //         ->join('INNER JOIN', 'marker_student_info as msi', 'msi.group_id = ga.id')
+    //         ->where([
+    //             'assessments.active' => self::ACTIVE,
+    //             'msi.completed' => self::COMPLETE,
+    //             'msi.student_id' => Yii::$app->user->id])
+    //         ->union(
+    //             Assessments::find()
+    //             ->join('INNER JOIN', 'individual_assessment as ia', 'ia.assessment_id = assessments.id')
+    //             ->join('INNER JOIN', 'marker_student_info as msi', 'msi.individual_assessment_id = ia.id')
+    //             ->where([
+    //                 'assessments.active' => self::ACTIVE,
+    //                 'msi.completed' => self::COMPLETE,
+    //                 'msi.marker_student_id' => Yii::$app->user->id])
+    //         );
 
-        $dataProvider = new ActiveDataProvider([
-            'query' => $query,
-            'sort' => false
-        ]);
+    //     $dataProvider = new ActiveDataProvider([
+    //         'query' => $query,
+    //         'sort' => false
+    //     ]);
 
-        return $dataProvider;
-    }
+    //     return $dataProvider;
+    // }
 
-    /**
-     * Get feedbacks
-     *
-     * @param array $params
-     *
-     * @return ActiveDataProvider
-     */
-    public function searchFeedbacks()
-    {
-        $query = Assessments::find()
-            ->join('INNER JOIN', 'group_info as gi', 'gi.assessment_id = assessments.id')
-            ->join('INNER JOIN', 'peer_assessment as ps', 'ps.group_id = gi.id')
-            ->where([
-                'assessments.active' => self::ACTIVE,
-                'ps.completed' => self::COMPLETE,
-                'ps.student_id' => Yii::$app->user->id])
-            ->union(
-                Assessments::find()
-                ->join('INNER JOIN', 'individual_assessment as ia', 'ia.assessment_id = assessments.id')
-                ->join('INNER JOIN', 'peer_review as pr', 'pr.individual_assessment_id = ia.id')
-                ->where([
-                    'assessments.active' => self::ACTIVE,
-                    'pr.completed' => self::COMPLETE,
-                    'pr.marker_student_id' => Yii::$app->user->id])
-            );
+    // /**
+    //  * Get feedbacks
+    //  *
+    //  * @param array $params
+    //  *
+    //  * @return ActiveDataProvider
+    //  */
+    // public function searchFeedbacks()
+    // {
+    //     $query = Assessments::find()
+    //         ->join('INNER JOIN', 'group_info as gi', 'gi.assessment_id = assessments.id')
+    //         ->join('INNER JOIN', 'peer_assessment as ps', 'ps.group_id = gi.id')
+    //         ->where([
+    //             'assessments.active' => self::ACTIVE,
+    //             'ps.completed' => self::COMPLETE,
+    //             'ps.student_id' => Yii::$app->user->id])
+    //         ->union(
+    //             Assessments::find()
+    //             ->join('INNER JOIN', 'individual_assessment as ia', 'ia.assessment_id = assessments.id')
+    //             ->join('INNER JOIN', 'peer_review as pr', 'pr.individual_assessment_id = ia.id')
+    //             ->where([
+    //                 'assessments.active' => self::ACTIVE,
+    //                 'pr.completed' => self::COMPLETE,
+    //                 'pr.marker_student_id' => Yii::$app->user->id])
+    //         );
 
-        $dataProvider = new ActiveDataProvider([
-            'query' => $query,
-            'sort' => false
-        ]);
+    //     $dataProvider = new ActiveDataProvider([
+    //         'query' => $query,
+    //         'sort' => false
+    //     ]);
 
-        return $dataProvider;
-    }
+    //     return $dataProvider;
+    // }
 }

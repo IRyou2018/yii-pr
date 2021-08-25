@@ -60,10 +60,10 @@ $this->params['breadcrumbs'][] = $this->title;
                     <?= $modelItem->max_mark_value ?>
                 </td>
                 <td class="col-md-1 text-center">
-                    <?= $modelsPeerReviewDetail[$indexSection][$indexItem]->mark ?>
+                    <?= $modelsReviewDetail[$indexSection][$indexItem]->mark ?>
                 </td>
                 <td class="col-md-7">
-                    <?= $modelsPeerReviewDetail[$indexSection][$indexItem]->comment ?>
+                    <?= $modelsReviewDetail[$indexSection][$indexItem]->comment ?>
                 </td>
             </tr>
             <tr>

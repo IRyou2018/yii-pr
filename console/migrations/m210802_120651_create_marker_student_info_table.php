@@ -3,20 +3,20 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%peer_review}}`.
+ * Handles the creation of table `{{%marker_student_info}}`.
  * Has foreign keys to the tables:
  *
  * - `{{%user}}`
  * - `{{%individual_assessment}}`
  */
-class m210802_120651_create_peer_review_table extends Migration
+class m210802_120651_create_marker_student_info_table extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->createTable('{{%peer_review}}', [
+        $this->createTable('{{%marker_student_info}}', [
             'id' => $this->primaryKey(),
             'marker_student_id' => $this->integer(11)->notNull(),
             'individual_assessment_id' => $this->integer(11)->notNull(),
@@ -25,15 +25,15 @@ class m210802_120651_create_peer_review_table extends Migration
 
         // creates index for column `marker_student_id`
         $this->createIndex(
-            '{{%idx-peer_review-marker_student_id}}',
-            '{{%peer_review}}',
+            '{{%idx-marker_student_info-marker_student_id}}',
+            '{{%marker_student_info}}',
             'marker_student_id'
         );
 
         // add foreign key for table `{{%user}}`
         $this->addForeignKey(
-            '{{%fk-peer_review-marker_student_id}}',
-            '{{%peer_review}}',
+            '{{%fk-marker_student_info-marker_student_id}}',
+            '{{%marker_student_info}}',
             'marker_student_id',
             '{{%user}}',
             'id',
@@ -42,15 +42,15 @@ class m210802_120651_create_peer_review_table extends Migration
 
         // creates index for column `individual_assessment_id`
         $this->createIndex(
-            '{{%idx-peer_review-individual_assessment_id}}',
-            '{{%peer_review}}',
+            '{{%idx-marker_student_info-individual_assessment_id}}',
+            '{{%marker_student_info}}',
             'individual_assessment_id'
         );
 
         // add foreign key for table `{{%individual_assessment}}`
         $this->addForeignKey(
-            '{{%fk-peer_review-individual_assessment_id}}',
-            '{{%peer_review}}',
+            '{{%fk-marker_student_info-individual_assessment_id}}',
+            '{{%marker_student_info}}',
             'individual_assessment_id',
             '{{%individual_assessment}}',
             'id',
@@ -65,28 +65,28 @@ class m210802_120651_create_peer_review_table extends Migration
     {
         // drops foreign key for table `{{%user}}`
         $this->dropForeignKey(
-            '{{%fk-peer_review-marker_student_id}}',
-            '{{%peer_review}}'
+            '{{%fk-marker_student_info-marker_student_id}}',
+            '{{%marker_student_info}}'
         );
 
         // drops index for column `marker_student_id`
         $this->dropIndex(
-            '{{%idx-peer_review-marker_student_id}}',
-            '{{%peer_review}}'
+            '{{%idx-marker_student_info-marker_student_id}}',
+            '{{%marker_student_info}}'
         );
 
         // drops foreign key for table `{{%individual_assessment}}`
         $this->dropForeignKey(
-            '{{%fk-peer_review-individual_assessment_id}}',
-            '{{%peer_review}}'
+            '{{%fk-marker_student_info-individual_assessment_id}}',
+            '{{%marker_student_info}}'
         );
 
         // drops index for column `individual_assessment_id`
         $this->dropIndex(
-            '{{%idx-peer_review-individual_assessment_id}}',
-            '{{%peer_review}}'
+            '{{%idx-marker_student_info-individual_assessment_id}}',
+            '{{%marker_student_info}}'
         );
 
-        $this->dropTable('{{%peer_review}}');
+        $this->dropTable('{{%marker_student_info}}');
     }
 }

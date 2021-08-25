@@ -3,34 +3,36 @@
 namespace frontend\controllers;
 
 use common\models\Assessments;
+use common\models\GroupAssessment;
+use common\models\GroupAssessmentDetail;
+use common\models\GroupInfo;
+use common\models\GroupStudentInfo;
+use common\models\IndividualAssessmentDetail;
 use common\models\Items;
-use common\models\PeerAssessment;
-use common\models\PeerAssessmentDetail;
-use common\models\PeerReview;
-use common\models\PeerReviewDetail;
+use common\models\MarkerStudentInfo;
 use common\models\Rubrics;
 use common\models\Sections;
 use Exception;
 use frontend\models\AssessmentsSearch;
 use frontend\models\StudentModel;
-use frontend\models\Upload;
-use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use yii\helpers\ArrayHelper;
 
 /**
  * LecturerController
  */
 class StudentController extends Controller
 {
-    const PEER_ASSESS = 0;
-    const PEER_REVIEW = 1;
+    const GROUP = 0;
+    const INDIVIDUAL = 1;
 
     const UNCOMPLETE = 0;
     const COMPLETED = 1;
+
+    const GROUP_ITEM = 0;
+    const INDIVIDUAL_ITEM = 1;
     /**
      * @inheritDoc
      */
@@ -97,207 +99,259 @@ class StudentController extends Controller
     }
 
     /**
-     * Creates a new Assessments model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
+     * Mark Individual Assessment
      * @return mixed
      */
-    public function actionSubmit($id, $assessment_id)
+    public function actionSubmitIndividual($id, $assessment_id)
     {
         $model = $this->findModel($assessment_id);
-        $assessment_type = $model->assessment_type;
 
         $section = new Sections();
         $modelsSection = $section->getStudentSections($assessment_id);
         $modelsItem = [[new Items()]];
-        $modelsPeerAssessmentDetail = [];
-        $modelsPeerReviewDetail = [];
+        $modelsAssessmentDetail = [];
 
         foreach ($modelsSection as $indexSection => $modelSection) {
 
             $items = $modelSection->items;
             $modelsItem[$indexSection] = $items;
 
-            $studentModel = new StudentModel();
-            // Peer Assessment
-            if ($assessment_type == self::PEER_ASSESS) {
+            foreach ($items as $index => $item) {
+                $assessmentDetail = new IndividualAssessmentDetail();
+                $assessmentDetail->item_id = $item->id;
+                $assessmentDetail->marker_student_info_id = $id;
 
-                foreach ($items as $index => $item) {
-                    $modelPADetail = new PeerAssessmentDetail();
-                    $modelPADetail->item_id = $item->id;
-                    $modelPADetail->peer_assessment_id = $id;
-
-                    $modelsPeerAssessmentDetail[$indexSection][$index] = $modelPADetail;
-                }
-            } 
-            // Peer Review
-            else if ($assessment_type == self::PEER_REVIEW) {
-
-                foreach ($items as $index => $item) {
-                    $modelPRDetail = new PeerReviewDetail();
-                    $modelPRDetail->item_id = $item->id;
-                    $modelPRDetail->peer_review_id = $id;
-
-                    $modelsPeerReviewDetail[$indexSection][$index] = $modelPRDetail;
-                }
+                $modelsAssessmentDetail[$indexSection][$index] = $assessmentDetail;
             }
         }
-
-        // Peer Assessment
-        if ($assessment_type == self::PEER_ASSESS) {
-            if ($this->request->isPost) {
-                
-                if (isset($_POST['PeerAssessmentDetail'][0][0])) {
-
-                    $index = 0;
-                    $paDetails = [];
-                    $valid = true;
-
-                    // Get Input value
-                    foreach ($_POST['PeerAssessmentDetail'] as $indexSection => $peerAssessmentDetails) {
-                        
-                        foreach ($peerAssessmentDetails as $indexItem => $peerAssessmentDetail) {
-                            
-                            $data['PeerAssessmentDetail'] = $peerAssessmentDetail;
-                            $peerAssessmentDetail = new PeerAssessmentDetail();
-                            $peerAssessmentDetail->load($data);
-                            $peerAssessmentDetail->scenario = 'submit';
-
-                            $modelsPeerAssessmentDetail[$indexSection][$indexItem] = $peerAssessmentDetail;
-
-                            // Input validation
-                            if($peerAssessmentDetail->validate()) {
-                                $paDetails[$index] = $peerAssessmentDetail;
-                            } else {
-                                $valid = false;
-                            }
-                            $index++;
-                        }
-                    }
-
-                    if($valid) {
-                        $transaction = \Yii::$app->db->beginTransaction();
-
-                        try {
-
-                            $flag = true;
-
-                            foreach ($paDetails as $peerAssessmentDetail) {
-
-                                if ($flag = $peerAssessmentDetail->save(false)) {
-                                } else {
-                                    break;
-                                }
-                            }
-
-                            if($flag) {
-                                $peerAssessment = PeerAssessment::findOne($id);
-
-                                $peerAssessment->completed = self::COMPLETED;
-
-                                $flag = $peerAssessment->save(false);
-                            }
-
-                            if ($flag) {
-                                $transaction->commit();
-                                return $this->redirect(['dashboard']);
-                            } else {
-
-                                $transaction->rollBack();
-                            }
-                        } catch (Exception $e) {
-                            $transaction->rollBack();
-                        }
-                    }
-                }
-            } else {
-                $model->loadDefaultValues();
-            }
-        }
-        // Peer Assessment
-        else if ($assessment_type == self::PEER_REVIEW) {
             
-            if ($this->request->isPost) {
-                
-                if (isset($_POST['PeerReviewDetail'][0][0])) {
+        if ($this->request->isPost) {
+            
+            if (isset($_POST['IndividualAssessmentDetail'][0][0])) {
 
-                    $index = 0;
-                    $prDetails = [];
-                    $valid = true;
+                $index = 0;
+                $reviewDetails = [];
+                $valid = true;
 
-                    // Get Input value
-                    foreach ($_POST['PeerReviewDetail'] as $indexSection => $peerReviewDetails) {
+                // Get Input value
+                foreach ($_POST['IndividualAssessmentDetail'] as $indexSection => $individualAssessmentDetails) {
+                    
+                    foreach ($individualAssessmentDetails as $indexItem => $individualAssessmentDetail) {
                         
-                        foreach ($peerReviewDetails as $indexItem => $peerReviewDetail) {
-                            
-                            $data['PeerReviewDetail'] = $peerReviewDetail;
-                            $modelPeerReviewDetail = new PeerReviewDetail();
-                            $modelPeerReviewDetail->load($data);
-                            $modelPeerReviewDetail->scenario = 'submit';
+                        $data['IndividualAssessmentDetail'] = $individualAssessmentDetail;
+                        $modelAssessmentDetail = new IndividualAssessmentDetail();
+                        $modelAssessmentDetail->load($data);
+                        $modelAssessmentDetail->scenario = 'submit';
 
-                            $modelsPeerReviewDetail[$indexSection][$indexItem] = $modelPeerReviewDetail;
+                        $modelsAssessmentDetail[$indexSection][$indexItem] = $modelAssessmentDetail;
 
-                            // Input validation
-                            if($modelPeerReviewDetail->validate()) {
-                                $prDetails[$index] = $modelPeerReviewDetail;
-                            } else {
-                                $valid = false;
-                            }
-                            $index++;
+                        // Input validation
+                        if($modelAssessmentDetail->validate()) {
+                            $reviewDetails[$index] = $modelAssessmentDetail;
+                        } else {
+                            $valid = false;
                         }
-                    }
-
-                    if($valid) {
-                        $transaction = \Yii::$app->db->beginTransaction();
-
-                        try {
-
-                            $flag = true;
-
-                            foreach ($prDetails as $index => $peerReviewDetail) {
-
-                                if ($flag = $peerReviewDetail->save(false)) {
-                                } else {
-                                    break;
-                                }
-                            }
-
-                            if($flag) {
-                                $peerReview = PeerReview::findOne($id);
-
-                                $peerReview->completed = self::COMPLETED;
-
-                                $flag = $peerReview->save(false);
-                                // echo '<pre>';
-                                // print_r($flag);
-                                // // print_r($peerReviewDetail);
-                                // // print_r($peerReviewDetail->save(false));
-                                // echo '</pre>';
-                                // die;
-                            }
-
-                            if ($flag) {
-                                $transaction->commit();
-                                return $this->redirect(['dashboard']);
-                            } else {
-
-                                $transaction->rollBack();
-                            }
-                        } catch (Exception $e) {
-                            $transaction->rollBack();
-                        }
+                        $index++;
                     }
                 }
-            } else {
-                $model->loadDefaultValues();
+
+                if($valid) {
+                    $transaction = \Yii::$app->db->beginTransaction();
+
+                    try {
+
+                        $flag = true;
+
+                        foreach ($reviewDetails as $index => $reviewDetail) {
+
+                            if ($flag = $reviewDetail->save(false)) {
+                            } else {
+                                break;
+                            }
+                        }
+                        
+                        if($flag) {
+                            $markerInfo = MarkerStudentInfo::findOne($id);
+
+                            $markerInfo->completed = self::COMPLETED;
+
+                            $flag = $markerInfo->save(false);
+                        }
+
+                        if ($flag) {
+                            $transaction->commit();
+                            return $this->redirect(['dashboard']);
+                        } else {
+
+                            $transaction->rollBack();
+                        }
+                    } catch (Exception $e) {
+                        $transaction->rollBack();
+                    }
+                }
             }
+        } else {
+            $model->loadDefaultValues();
         }
 
-        return $this->render('submit', [
+        return $this->render('submit-individual', [
             'model' => $model,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
-            'modelsPeerAssessmentDetail' => (empty($modelsPeerAssessmentDetail)) ? [[[new PeerAssessmentDetail()]]] :  $modelsPeerAssessmentDetail,
-            'modelsPeerReviewDetail' => (empty($modelsPeerReviewDetail)) ? [[new PeerReviewDetail()]] :  $modelsPeerReviewDetail,
+            'modelsAssessmentDetail' => (empty($modelsAssessmentDetail)) ? [[new IndividualAssessmentDetail()]] :  $modelsAssessmentDetail,
+        ]);
+    }
+
+    /**
+     * View Individual Assessment
+     * @return mixed
+     */
+    public function actionViewIndividual($id, $assessment_id)
+    {
+        $model = $this->findModel($assessment_id);
+
+        $section = new Sections();
+        $modelsSection = $section->getStudentSections($assessment_id);
+        $modelsItem = [[new Items()]];
+        $modelsAssessmentDetail = [];
+
+        $individualMarkResults = MarkerStudentInfo::findOne($id)->individualAssessmentDetails;
+
+        foreach ($modelsSection as $indexSection => $modelSection) {
+
+            $items = $modelSection->items;
+            $modelsItem[$indexSection] = $items;
+
+            foreach ($items as $index => $item) {
+
+                foreach ($individualMarkResults as $individualMark) {
+
+                    if ($item->id == $individualMark->item_id) {
+                        $modelsAssessmentDetail[$indexSection][$index] = $individualMark;
+                    }
+                }
+            }
+        }
+
+        return $this->render('view-individual', [
+            'model' => $model,
+            'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
+            'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
+            'modelsAssessmentDetail' => (empty($modelsAssessmentDetail)) ? [[new IndividualAssessmentDetail()]] :  $modelsAssessmentDetail,
+        ]);
+    }
+
+    /**
+     * Creates a new Assessments model.
+     * If creation is successful, the browser will be redirected to the 'view' page.
+     * @return mixed
+     */
+    public function actionSubmitGroup($id, $assessment_id)
+    {
+        $model = $this->findModel($assessment_id);
+
+        $section = new Sections();
+        $modelsSection = $section->getStudentSections($assessment_id);
+        $modelsItem = [[new Items()]];
+        $modelsGroupAssessmentDetail = [];
+
+        foreach ($modelsSection as $indexSection => $modelSection) {
+
+            $items = $modelSection->items;
+            $modelsItem[$indexSection] = $items;
+
+            $group_id = GroupStudentInfo::findOne($id)->group_id;
+            $groupStudents = GroupAssessment::findOne($group_id)->groupStudentInfos;
+
+            foreach ($items as $index => $item) {
+
+                if ($item->item_type == self::INDIVIDUAL_ITEM) {
+
+                }
+                foreach($groupStudents as $indexStudent => $groupStudent) {
+                    $modelGroupDetail = new GroupAssessmentDetail();
+                    $modelGroupDetail->item_id = $item->id;
+                    $modelGroupDetail->group_student_Info_id = $id;
+
+                    $modelsGroupAssessmentDetail[$indexSection][$index] = $modelGroupDetail;
+                }
+            }
+        }
+
+        if ($this->request->isPost) {
+            
+            if (isset($_POST['GroupAssessmentDetail'][0][0])) {
+
+                $index = 0;
+                $groupDetails = [];
+                $valid = true;
+
+                // Get Input value
+                foreach ($_POST['GroupAssessmentDetail'] as $indexSection => $groupAssessmentDetails) {
+                    
+                    foreach ($groupAssessmentDetails as $indexItem => $groupAssessmentDetail) {
+                        
+                        $data['GroupAssessmentDetail'] = $groupAssessmentDetail;
+                        $groupDetail = new GroupAssessmentDetail();
+                        $groupDetail->load($data);
+                        $groupDetail->scenario = 'submit';
+
+                        $modelsGroupAssessmentDetail[$indexSection][$indexItem] = $groupDetail;
+
+                        // Input validation
+                        if($groupDetail->validate()) {
+                            $groupDetails[$index] = $groupDetail;
+                        } else {
+                            $valid = false;
+                        }
+                        $index++;
+                    }
+                }
+
+                if($valid) {
+                    $transaction = \Yii::$app->db->beginTransaction();
+
+                    try {
+
+                        $flag = true;
+
+                        foreach ($groupDetails as $groupDetail) {
+
+                            if ($flag = $groupDetail->save(false)) {
+                            } else {
+                                break;
+                            }
+                        }
+
+                        if($flag) {
+                            $modelGroupStudent = GroupStudentInfo::findOne($id);
+
+                            $modelGroupStudent->completed = self::COMPLETED;
+
+                            $flag = $modelGroupStudent->save(false);
+                        }
+
+                        if ($flag) {
+                            $transaction->commit();
+                            return $this->redirect(['dashboard']);
+                        } else {
+
+                            $transaction->rollBack();
+                        }
+                    } catch (Exception $e) {
+                        $transaction->rollBack();
+                    }
+                }
+            }
+        } else {
+            $model->loadDefaultValues();
+        }
+
+        return $this->render('submit-group', [
+            'model' => $model,
+            'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
+            'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
+            'modelsGroupAssessmentDetail' => (empty($modelsGroupAssessmentDetail)) ? [[[new GroupAssessmentDetail()]]] :  $modelsGroupAssessmentDetail,
         ]);
     }
 

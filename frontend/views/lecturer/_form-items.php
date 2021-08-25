@@ -47,7 +47,13 @@ use wbraganca\dynamicform\DynamicFormWidget;
 
                 <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]max_mark_value")->textInput(['maxlength' => true]) ?>
 
-                <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]item_type")->textInput(['maxlength' => true]) ?>
+                <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]item_type")->dropdownList(
+                        [
+                            0 => 'Individual Item',
+                            1 => 'Group Item'
+                        ],
+                        ['prompt'=>'Select Item Type']
+                ) ?>
             </td>
             <td>
                 <?= $this->render('_form-rubrics', [

@@ -48,8 +48,11 @@ use yii\helpers\Url;
                 <div class="col-md-6">
                     <?= $form->field($model, 'assessment_type')->dropdownList(
                         [
-                            0 => 'Peer Assessment', 
-                            1 => 'Peer Review'
+                            0 => '(Group) Peer Review',
+                            1 => '(Group) Peer Assessment ',
+                            2 => '(Group) Peer Review & Assessment',
+                            3 => 'Self Assessment',
+                            4 => 'Peer Marking'
                         ],
                         ['prompt'=>'Select Assessment Type', 'id' => 'assType']
                     ) ?>

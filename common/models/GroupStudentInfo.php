@@ -5,26 +5,28 @@ namespace common\models;
 use Yii;
 
 /**
- * This is the model class for table "peer_assessment".
+ * This is the model class for table "group_student_info".
  *
  * @property int $id
  * @property int $student_id
  * @property int|null $completed
- * @property string|null $mark
+ * @property int|null $mark
  * @property int|null $marked
  * @property int $group_id
  *
- * @property GroupInfo $group
+ * @property GroupAssessment $group
+ * @property GroupAssessmentDetail[] $groupAssessmentDetails
+ * @property GroupAssessmentFeedback[] $groupAssessmentFeedbacks
  * @property User $student
  */
-class PeerAssessment extends \yii\db\ActiveRecord
+class GroupStudentInfo extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'peer_assessment';
+        return 'group_student_info';
     }
 
     /**
@@ -34,9 +36,8 @@ class PeerAssessment extends \yii\db\ActiveRecord
     {
         return [
             [['student_id', 'group_id'], 'required'],
-            [['student_id', 'completed', 'marked', 'group_id'], 'integer'],
-            [['mark'], 'string', 'max' => 5],
-            [['group_id'], 'exist', 'skipOnError' => true, 'targetClass' => GroupInfo::className(), 'targetAttribute' => ['group_id' => 'id']],
+            [['student_id', 'completed', 'mark', 'marked', 'group_id'], 'integer'],
+            [['group_id'], 'exist', 'skipOnError' => true, 'targetClass' => GroupAssessment::className(), 'targetAttribute' => ['group_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_id' => 'id']],
         ];
     }
@@ -63,7 +64,27 @@ class PeerAssessment extends \yii\db\ActiveRecord
      */
     public function getGroup()
     {
-        return $this->hasOne(GroupInfo::className(), ['id' => 'group_id']);
+        return $this->hasOne(GroupAssessment::className(), ['id' => 'group_id']);
+    }
+
+    /**
+     * Gets query for [[GroupAssessmentDetails]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getGroupAssessmentDetails()
+    {
+        return $this->hasMany(GroupAssessmentDetail::className(), ['group_student_Info_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[GroupAssessmentFeedbacks]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getGroupAssessmentFeedbacks()
+    {
+        return $this->hasMany(GroupAssessmentFeedback::className(), ['group_student_Info_id' => 'id']);
     }
 
     /**

@@ -43,7 +43,13 @@ use wbraganca\dynamicform\DynamicFormWidget;
                 
                 <?= $form->field($modelSection, "[{$indexSection}]name")->textInput(['maxlength' => true]) ?>
 
-                <?= $form->field($modelSection, "[{$indexSection}]section_type")->textInput(['maxlength' => true]) ?>
+                <?= $form->field($modelSection, "[{$indexSection}]section_type")->dropdownList(
+                        [
+                            0 => 'For Student',
+                            1 => 'Lecturer Only'
+                        ],
+                        ['prompt'=>'Select Section Type']
+                ) ?>
             </td>
             <td>
                 <?= $this->render('_form-items', [

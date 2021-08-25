@@ -12,10 +12,10 @@ use Yii;
  * @property int $mark
  * @property string|null $comment
  * @property int $item_id
- * @property int|null $peer_assessment_id
+ * @property int|null $group_student_Info_id
  *
+ * @property GroupStudentInfo $groupStudentInfo
  * @property Items $item
- * @property PeerAssessment $peerAssessment
  * @property User $student
  */
 class GroupAssessmentFeedback extends \yii\db\ActiveRecord
@@ -35,10 +35,10 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
     {
         return [
             [['student_id', 'mark', 'item_id'], 'required'],
-            [['student_id', 'mark', 'item_id', 'peer_assessment_id'], 'integer'],
+            [['student_id', 'mark', 'item_id', 'group_student_Info_id'], 'integer'],
             [['comment'], 'string'],
+            [['group_student_Info_id'], 'exist', 'skipOnError' => true, 'targetClass' => GroupStudentInfo::className(), 'targetAttribute' => ['group_student_Info_id' => 'id']],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
-            [['peer_assessment_id'], 'exist', 'skipOnError' => true, 'targetClass' => PeerAssessment::className(), 'targetAttribute' => ['peer_assessment_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_id' => 'id']],
         ];
     }
@@ -54,8 +54,18 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
             'mark' => 'Mark',
             'comment' => 'Comment',
             'item_id' => 'Item ID',
-            'peer_assessment_id' => 'Peer Assessment ID',
+            'group_student_Info_id' => 'Group Student  Info ID',
         ];
+    }
+
+    /**
+     * Gets query for [[GroupStudentInfo]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getGroupStudentInfo()
+    {
+        return $this->hasOne(GroupStudentInfo::className(), ['id' => 'group_student_Info_id']);
     }
 
     /**
@@ -66,16 +76,6 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
     public function getItem()
     {
         return $this->hasOne(Items::className(), ['id' => 'item_id']);
-    }
-
-    /**
-     * Gets query for [[PeerAssessment]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getPeerAssessment()
-    {
-        return $this->hasOne(PeerAssessment::className(), ['id' => 'peer_assessment_id']);
     }
 
     /**

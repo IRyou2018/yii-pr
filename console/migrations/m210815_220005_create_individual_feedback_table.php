@@ -8,7 +8,7 @@ use yii\db\Migration;
  *
  * - `{{%user}}`
  * - `{{%items}}`
- * - `{{%peer_review}}`
+ * - `{{%marker_student_info}}`
  */
 class m210815_220005_create_individual_feedback_table extends Migration
 {
@@ -23,7 +23,7 @@ class m210815_220005_create_individual_feedback_table extends Migration
             'mark' => $this->integer(3),
             'comment' => 'LONGTEXT',
             'item_id' => $this->integer(11)->notNull(),
-            'peer_review_id' => $this->integer(11)->notNull(),
+            'marker_student_info_id' => $this->integer(11)->notNull(),
         ]);
 
         // creates index for column `student_id`
@@ -60,19 +60,19 @@ class m210815_220005_create_individual_feedback_table extends Migration
             'CASCADE'
         );
 
-        // creates index for column `peer_review_id`
+        // creates index for column `marker_student_info_id`
         $this->createIndex(
-            '{{%idx-individual_feedback-peer_review_id}}',
+            '{{%idx-individual_feedback-marker_student_info_id}}',
             '{{%individual_feedback}}',
-            'peer_review_id'
+            'marker_student_info_id'
         );
 
-        // add foreign key for table `{{%peer_review}}`
+        // add foreign key for table `{{%marker_student_info}}`
         $this->addForeignKey(
-            '{{%fk-individual_feedback-peer_review_id}}',
+            '{{%fk-individual_feedback-marker_student_info_id}}',
             '{{%individual_feedback}}',
-            'peer_review_id',
-            '{{%peer_review}}',
+            'marker_student_info_id',
+            '{{%marker_student_info}}',
             'id',
             'CASCADE'
         );
@@ -107,15 +107,15 @@ class m210815_220005_create_individual_feedback_table extends Migration
             '{{%individual_feedback}}'
         );
 
-        // drops foreign key for table `{{%peer_review}}`
+        // drops foreign key for table `{{%marker_student_info}}`
         $this->dropForeignKey(
-            '{{%fk-individual_feedback-peer_review_id}}',
+            '{{%fk-individual_feedback-marker_student_info_id}}',
             '{{%individual_feedback}}'
         );
 
-        // drops index for column `peer_review_id`
+        // drops index for column `marker_student_info_id`
         $this->dropIndex(
-            '{{%idx-individual_feedback-peer_review_id}}',
+            '{{%idx-individual_feedback-marker_student_info_id}}',
             '{{%individual_feedback}}'
         );
 

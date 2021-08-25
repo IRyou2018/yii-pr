@@ -5,26 +5,26 @@ namespace common\models;
 use Yii;
 
 /**
- * This is the model class for table "peer_review".
+ * This is the model class for table "marker_student_info".
  *
  * @property int $id
  * @property int $marker_student_id
  * @property int $individual_assessment_id
- * @property int $completed
+ * @property int|null $completed
  *
  * @property IndividualAssessment $individualAssessment
+ * @property IndividualAssessmentDetail[] $individualAssessmentDetails
  * @property IndividualFeedback[] $individualFeedbacks
  * @property User $markerStudent
- * @property PeerReviewDetail[] $peerReviewDetails
  */
-class PeerReview extends \yii\db\ActiveRecord
+class MarkerStudentInfo extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'peer_review';
+        return 'marker_student_info';
     }
 
     /**
@@ -64,13 +64,23 @@ class PeerReview extends \yii\db\ActiveRecord
     }
 
     /**
+     * Gets query for [[IndividualAssessmentDetails]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIndividualAssessmentDetails()
+    {
+        return $this->hasMany(IndividualAssessmentDetail::className(), ['marker_student_info_id' => 'id']);
+    }
+
+    /**
      * Gets query for [[IndividualFeedbacks]].
      *
      * @return \yii\db\ActiveQuery
      */
     public function getIndividualFeedbacks()
     {
-        return $this->hasMany(IndividualFeedback::className(), ['peer_review_id' => 'id']);
+        return $this->hasMany(IndividualFeedback::className(), ['marker_student_info_id' => 'id']);
     }
 
     /**
@@ -81,15 +91,5 @@ class PeerReview extends \yii\db\ActiveRecord
     public function getMarkerStudent()
     {
         return $this->hasOne(User::className(), ['id' => 'marker_student_id']);
-    }
-
-    /**
-     * Gets query for [[PeerReviewDetails]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getPeerReviewDetails()
-    {
-        return $this->hasMany(PeerReviewDetail::className(), ['peer_review_id' => 'id']);
     }
 }
