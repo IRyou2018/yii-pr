@@ -11,11 +11,9 @@ $this->title = $model->name;
 // $this->params['breadcrumbs'][] = $this->title;
 // \yii\web\YiiAsset::register($this);
 ?>
-<div class="assessments-view">
+<div class="submit-individual">
 
     <h2><?= Html::encode($this->title) ?></h2>
-
-    <div class="assessments-view">
 
     <?php $form = ActiveForm::begin([
         'id' => 'dynamic-form',
@@ -67,6 +65,5 @@ $this->title = $model->name;
         <?= Html::submitButton('Submit', ['class' => 'btn btn-success']) ?>
     </div>
     <?php ActiveForm::end(); ?>
-</div>
 
 </div>

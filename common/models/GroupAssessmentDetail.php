@@ -35,7 +35,7 @@ class GroupAssessmentDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['work_student_id', 'mark', 'contribution', 'item_id'], 'required'],
+            [['mark', 'contribution', 'item_id'], 'required'],
             [['work_student_id', 'mark', 'contribution', 'item_id', 'group_student_Info_id'], 'integer'],
             [['comment'], 'string'],
             [['group_student_Info_id'], 'exist', 'skipOnError' => true, 'targetClass' => GroupStudentInfo::className(), 'targetAttribute' => ['group_student_Info_id' => 'id']],
@@ -100,6 +100,10 @@ class GroupAssessmentDetail extends \yii\db\ActiveRecord
 
     public function validateMark($attribute, $params) {
         
+        echo "<pre>";
+        print_r($_POST);
+        echo "</pre>";
+        exit;
         if ($this->mark > $this->item->max_mark_value) {
             $this->addError($attribute, 'Mark must be less than or equal to Max Mark.');
             return false;

@@ -31,8 +31,9 @@ class StudentController extends Controller
     const UNCOMPLETE = 0;
     const COMPLETED = 1;
 
-    const GROUP_ITEM = 0;
-    const INDIVIDUAL_ITEM = 1;
+    const INDIVIDUAL_ITEM = 0;
+    const GROUP_ITEM = 1;
+
     /**
      * @inheritDoc
      */
@@ -232,12 +233,12 @@ class StudentController extends Controller
                 }
             }
         }
-
+        
         return $this->render('view-individual', [
             'model' => $model,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
-            'modelsAssessmentDetail' => (empty($modelsAssessmentDetail)) ? [[new IndividualAssessmentDetail()]] :  $modelsAssessmentDetail,
+            'modelsAssessmentDetail' => (empty($modelsAssessmentDetail)) ? [[[new IndividualAssessmentDetail()]]] :  $modelsAssessmentDetail,
         ]);
     }
 
@@ -254,6 +255,7 @@ class StudentController extends Controller
         $modelsSection = $section->getStudentSections($assessment_id);
         $modelsItem = [[new Items()]];
         $modelsGroupAssessmentDetail = [];
+        $countGroupMember = 0;
 
         foreach ($modelsSection as $indexSection => $modelSection) {
 
@@ -261,50 +263,61 @@ class StudentController extends Controller
             $modelsItem[$indexSection] = $items;
 
             $group_id = GroupStudentInfo::findOne($id)->group_id;
+
             $groupStudents = GroupAssessment::findOne($group_id)->groupStudentInfos;
+
+            $countGroupMember = count($groupStudents);
 
             foreach ($items as $index => $item) {
 
                 if ($item->item_type == self::INDIVIDUAL_ITEM) {
-
-                }
-                foreach($groupStudents as $indexStudent => $groupStudent) {
-                    $modelGroupDetail = new GroupAssessmentDetail();
-                    $modelGroupDetail->item_id = $item->id;
-                    $modelGroupDetail->group_student_Info_id = $id;
-
-                    $modelsGroupAssessmentDetail[$indexSection][$index] = $modelGroupDetail;
+                    foreach($groupStudents as $indexStudent => $groupStudent) {
+                        $modelGroupDetail = new GroupAssessmentDetail();
+                        $modelGroupDetail->item_id = $item->id;
+                        $modelGroupDetail->group_student_Info_id = $id;
+                        $modelGroupDetail->work_student_id = $groupStudent->student_id;
+    
+                        $modelsGroupAssessmentDetail[$indexSection][$index][$indexStudent] = $modelGroupDetail;
+                    }
                 }
             }
         }
-
+        
+        // echo "<pre>";
+        // print_r($modelsGroupAssessmentDetail);
+        // print_r(count($groupStudents));
+        // echo "</pre>";
+        // exit;
         if ($this->request->isPost) {
             
-            if (isset($_POST['GroupAssessmentDetail'][0][0])) {
+            if (isset($_POST['GroupAssessmentDetail'][0][0][0])) {
 
                 $index = 0;
                 $groupDetails = [];
                 $valid = true;
 
                 // Get Input value
-                foreach ($_POST['GroupAssessmentDetail'] as $indexSection => $groupAssessmentDetails) {
+                foreach ($_POST['GroupAssessmentDetail'] as $indexSection => $groupDetailsSection) {
                     
-                    foreach ($groupAssessmentDetails as $indexItem => $groupAssessmentDetail) {
-                        
-                        $data['GroupAssessmentDetail'] = $groupAssessmentDetail;
-                        $groupDetail = new GroupAssessmentDetail();
-                        $groupDetail->load($data);
-                        $groupDetail->scenario = 'submit';
+                    foreach ($groupDetailsSection as $indexItem => $groupDetailsItem) {
+                    
+                        foreach ($groupDetailsItem as $index => $groupDetailStudent) {
+                            
+                            $data['GroupAssessmentDetail'] = $groupDetailStudent;
+                            $groupDetail = new GroupAssessmentDetail();
+                            $groupDetail->load($data);
+                            $groupDetail->scenario = 'submit';
 
-                        $modelsGroupAssessmentDetail[$indexSection][$indexItem] = $groupDetail;
+                            $modelsGroupAssessmentDetail[$indexSection][$indexItem] = $groupDetail;
 
-                        // Input validation
-                        if($groupDetail->validate()) {
-                            $groupDetails[$index] = $groupDetail;
-                        } else {
-                            $valid = false;
+                            // Input validation
+                            if($groupDetail->validate()) {
+                                $groupDetails[$index] = $groupDetail;
+                            } else {
+                                $valid = false;
+                            }
+                            $index++;
                         }
-                        $index++;
                     }
                 }
 
@@ -349,6 +362,7 @@ class StudentController extends Controller
 
         return $this->render('submit-group', [
             'model' => $model,
+            'countGroupMember' => $countGroupMember,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
             'modelsGroupAssessmentDetail' => (empty($modelsGroupAssessmentDetail)) ? [[[new GroupAssessmentDetail()]]] :  $modelsGroupAssessmentDetail,

@@ -20,7 +20,8 @@ use yii\behaviors\TimestampBehavior;
  * @property int $updated_by
  *
  * @property User $createdBy
- * @property GroupInfo[] $groupInfos
+ * @property GroupAssessment[] $groupAssessments
+ * @property IndividualAssessment[] $individualAssessments
  * @property LecturerAssessment[] $lecturerAssessments
  * @property Sections[] $sections
  * @property User $updatedBy
@@ -92,14 +93,24 @@ class Assessments extends \yii\db\ActiveRecord
         return $this->hasOne(User::className(), ['id' => 'created_by']);
     } 
  
-    /** 
-     * Gets query for [[GroupInfos]]. 
-     * 
-     * @return \yii\db\ActiveQuery 
-     */ 
-    public function getGroupInfos() 
-    { 
-        return $this->hasMany(GroupInfo::className(), ['assessment_id' => 'id']); 
+    /**
+    * Gets query for [[GroupAssessments]].
+    *
+    * @return \yii\db\ActiveQuery
+    */
+    public function getGroupAssessments()
+    {
+        return $this->hasMany(GroupAssessment::className(), ['assessment_id' => 'id']);
+    }
+
+    /**
+    * Gets query for [[IndividualAssessments]].
+    *
+    * @return \yii\db\ActiveQuery
+    */
+    public function getIndividualAssessments()
+    {
+        return $this->hasMany(IndividualAssessment::className(), ['assessment_id' => 'id']);
     }
 
     /**

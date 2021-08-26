@@ -13,6 +13,10 @@ use Yii;
  * @property int $item_type
  * @property int $section_id
  *
+ * @property GroupAssessmentDetail[] $groupAssessmentDetails
+ * @property GroupAssessmentFeedback[] $groupAssessmentFeedbacks
+ * @property IndividualAssessmentDetail[] $individualAssessmentDetails
+ * @property IndividualFeedback[] $individualFeedbacks
  * @property Rubrics[] $rubrics
  * @property Sections $section
  */
@@ -51,6 +55,46 @@ class Items extends \yii\db\ActiveRecord
             'item_type' => 'Item Type',
             'section_id' => 'Section ID',
         ];
+    }
+
+    /**
+     * Gets query for [[GroupAssessmentDetails]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getGroupAssessmentDetails()
+    {
+        return $this->hasMany(GroupAssessmentDetail::className(), ['item_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[GroupAssessmentFeedbacks]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getGroupAssessmentFeedbacks()
+    {
+        return $this->hasMany(GroupAssessmentFeedback::className(), ['item_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[IndividualAssessmentDetails]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIndividualAssessmentDetails()
+    {
+        return $this->hasMany(IndividualAssessmentDetail::className(), ['item_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[IndividualFeedbacks]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIndividualFeedbacks()
+    {
+        return $this->hasMany(IndividualFeedback::className(), ['item_id' => 'id']);
     }
 
     /**
