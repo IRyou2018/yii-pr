@@ -100,10 +100,6 @@ class GroupAssessmentDetail extends \yii\db\ActiveRecord
 
     public function validateMark($attribute, $params) {
         
-        echo "<pre>";
-        print_r($_POST);
-        echo "</pre>";
-        exit;
         if ($this->mark > $this->item->max_mark_value) {
             $this->addError($attribute, 'Mark must be less than or equal to Max Mark.');
             return false;

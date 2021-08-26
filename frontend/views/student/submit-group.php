@@ -43,7 +43,7 @@ $this->title = $model->name;
                         Max Mark
                     </div>
                     <div class="col-md-2">
-                        <?= $modelItem->max_mark_value ?>
+                        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<?= $modelItem->max_mark_value ?>
                     </div>
                 </div>
                 <div class="row mb-1">

@@ -4,23 +4,17 @@ namespace frontend\controllers;
 
 use common\models\Assessments;
 use common\models\GroupAssessment;
-use common\models\GroupInfo;
 use common\models\GroupStudentInfo;
-use common\models\IndividualAssessment;
 use common\models\IndividualAssessmentDetail;
 use common\models\IndividualFeedback;
 use common\models\Items;
-use common\models\LecturerAssessment;
 use common\models\MarkerStudentInfo;
-use common\models\PeerAssessment;
-use common\models\PeerReview;
-use common\models\PeerReviewDetail;
 use common\models\Rubrics;
 use common\models\Sections;
 use common\models\User;
 use Exception;
 use frontend\models\AssessmentsSearch;
-use frontend\models\CoordinatorsSearch;
+
 use frontend\models\GroupStudent;
 use frontend\models\LecturerModel;
 use frontend\models\Model;
@@ -633,7 +627,7 @@ class LecturerController extends Controller
     {
         $this->findModel($id)->delete();
 
-        return $this->redirect(['index']);
+        return $this->redirect(['dashboard']);
     }
 
     /**
