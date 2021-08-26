@@ -20,6 +20,22 @@ use yii\helpers\ArrayHelper;
 class LecturerModel extends Model
 {
     const DEFAULTPASS = "00000000";
+    const UNMARK = 0;
+
+    const LECTURER = 0;
+    const STUDENT = 1;
+
+    const INACTIVE = 0;
+    const ACTIVE = 1;
+
+    const UNCOMPLETE = 0;
+    const COMPLETE = 1;
+
+    const G_PEER_REVIEW = 0;
+    const G_PEER_ASSESSMENT = 1;
+    const G_PEER_R_A = 2;
+    const SELF_ASSESSMENT = 3;
+    const PEER_MARKING = 4;
     
     /**
      * {@inheritdoc}
@@ -54,6 +70,84 @@ class LecturerModel extends Model
     }
 
     /**
+     * Get coordinators.
+     *
+     * @param int assessment_id
+     * @return coorinators
+     */
+    public function getMaxGroupNumber($id)
+    {
+        $max_group_number = (new yii\db\Query())
+            ->select(["Max(group_number) as max_group_number"])
+            ->from('group_assessment')
+            ->join('INNER JOIN', 'assessments', 'group_assessment.assessment_id = assessments.id')
+            ->where('assessments.id = :id')
+            ->addParams([
+                ':id' => $id
+                ])
+            ->one();
+        return $max_group_number['max_group_number'] + 1;
+    }
+
+    /**
+     * Get coordinators.
+     *
+     * @param int assessment_id
+     * @return boolean
+     */
+    public function registGroupInfo($group, $groupStudents)
+    {
+        $flag = true;
+        if ($group->save(false)) {
+
+            $group_id = $group->id;
+
+            foreach ($groupStudents as $groupStudent) {
+                $modelUser = new User();
+
+                //Get student info by email
+                $student = $modelUser->findByEmail($groupStudent->email);
+
+                $modelGroupStudentInfo = new GroupStudentInfo();
+                $modelGroupStudentInfo->group_id = $group_id;
+                $modelGroupStudentInfo->marked = 0;
+                $modelGroupStudentInfo->completed = 0;
+
+                // If student not exist, regist
+                if (empty($student)) {
+
+                    $modelUser->first_name = $groupStudent->first_name;
+                    $modelUser->last_name = $groupStudent->last_name;
+                    $modelUser->matric_number = $groupStudent->matric_number;
+                    $modelUser->email = $groupStudent->email;
+                    $modelUser->type = self::STUDENT;
+                    $modelUser->setPassword(self::DEFAULTPASS);
+                    $modelUser->generateAuthKey();
+
+                    if($modelUser->save(false)) {
+                        $modelGroupStudentInfo->student_id = $modelUser->id;
+                    } else {
+                        $flag = false;
+                        break;
+                    }
+                } else {
+                    $modelGroupStudentInfo->student_id = $student->id;
+                }
+
+                if ($modelGroupStudentInfo->save(false)) {
+                } else {
+                    $flag = false;
+                    break;
+                }
+            }
+
+        } else {
+            $flag = false;
+        }
+        return $flag;
+    }
+
+    /**
      * Get coordinators list.
      *
      * @param int assessment_id
@@ -62,12 +156,13 @@ class LecturerModel extends Model
     public function getCoordinatorList()
     {
         $query = User::find();
-        $query->where(['status' => 10, 'type' => 0]);
+        $query->where(['status' => 10, 'type' => self::LECTURER]);
         $query->andWhere(['<>','id', Yii::$app->user->id]);
         $query->all();
 
         $coorinators = new ActiveDataProvider([
             'query' => $query,
+            'sort' => false
         ]);
 
         return $coorinators;
@@ -171,6 +266,59 @@ class LecturerModel extends Model
         return $array;
     }
 
+    public function getStudentId($firstName, $lastName, $matricNumber, $email)
+    {
+        $studentId = '';
+        $modelUser = new User();
+
+        //Get student info by email
+        $student = $modelUser->findByEmail($email);
+
+        // If student not exist, regist
+        if (empty($student)) {
+
+            $modelUser->first_name = $firstName;
+            $modelUser->last_name = $lastName;
+            $modelUser->matric_number = $matricNumber;
+            $modelUser->email = $email;
+            $modelUser->type = self::STUDENT;
+            $modelUser->setPassword(self::DEFAULTPASS);
+            $modelUser->generateAuthKey();
+
+            if($modelUser->save(false)) {
+                $studentId = $modelUser->id;
+            }
+        } else {
+            $studentId = $student->id;
+        }
+
+        return $studentId;
+    }
+
+    public function registGroupStudentInfo($firstName, $lastName, $matricNumber, $email, $groupId)
+    {
+        $flag = true;
+
+        $studentId = $this->getStudentId($firstName, $lastName, $matricNumber, $email);
+
+        if (!empty($studentId)) {
+            $modelGroupStudentInfo = new GroupStudentInfo();
+            $modelGroupStudentInfo->group_id = $groupId;
+            $modelGroupStudentInfo->marked = self::UNMARK;
+            $modelGroupStudentInfo->completed = self::UNCOMPLETE;
+            $modelGroupStudentInfo->student_id = $studentId;
+
+            if ($modelGroupStudentInfo->save(false)) {
+            } else {
+                $flag = false;
+            }
+        } else {
+            $flag = false;
+        }
+
+        return $flag;
+    }
+
     public function registDatafromUpload($excelData, $model)
     {
         $flag = true;
@@ -178,7 +326,9 @@ class LecturerModel extends Model
         $i = 0;
 
         // For Group Assessment
-        if ($model->assessment_type == 0 || $model->assessment_type == 1 || $model->assessment_type == 2) {
+        if ($model->assessment_type == self::G_PEER_REVIEW
+            || $model->assessment_type == self::G_PEER_ASSESSMENT
+            || $model->assessment_type == self::G_PEER_R_A) {
 
             $sortedData = $this->arraySort($excelData, 'Group Name', SORT_ASC);
 
@@ -202,93 +352,44 @@ class LecturerModel extends Model
                     // For same group add Student to group
                     if (!empty($temp_Group_name) && $sortedData[$i]['Group Name'] == $temp_Group_name) {
 
-                        $modelUser = new User();
+                        $flag = $this->registGroupStudentInfo($sortedData[$i]['First Name'],
+                            $sortedData[$i]['Last Name'],
+                            $sortedData[$i]['Last Name'],
+                            $sortedData[$i]['Email'],
+                            $temp_Group_id);
 
-                        //Get student info by email
-                        $student = $modelUser->findByEmail($sortedData[$i]['Email']);
-
-                        $modelGroupStudentInfo = new GroupStudentInfo();
-                        $modelGroupStudentInfo->group_id = $temp_Group_id;
-                        $modelGroupStudentInfo->marked = 0;
-                        $modelGroupStudentInfo->completed = 0;
-
-                        // If student not exist, regist
-                        if (empty($student)) {
-
-                            $modelUser->first_name = $sortedData[$i]['First Name'];
-                            $modelUser->last_name = $sortedData[$i]['Last Name'];
-                            $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
-                            $modelUser->email = $sortedData[$i]['Email'];
-                            $modelUser->type = '1';
-                            $modelUser->setPassword(self::DEFAULTPASS);
-                            $modelUser->generateAuthKey();
-
-                            if($modelUser->save(false)) {
-                                $modelGroupStudentInfo->student_id = $modelUser->id;
-                            } else {
-                                $flag = false;
-                                break;
-                            }
+                        if($flag) {
                         } else {
-                            $modelGroupStudentInfo->student_id = $student->id;
-                        }
-
-                        if ($modelGroupStudentInfo->save(false)) {
-                        } else {
-                            $flag = false;
                             break;
                         }
+                        
                     } else {
-                        // Regist new gourp
+                        // Regist new Group Assessment
                         $temp_Group_name = $sortedData[$i]['Group Name'];;
 
-                        $modelGroupInfo = new GroupAssessment();
+                        $modelGroupAssessment = new GroupAssessment();
 
-                        $modelGroupInfo->name = $temp_Group_name;
-                        $modelGroupInfo->assessment_id = $model->id;
-                        $modelGroupInfo->group_number = $group_number;
-                        $modelGroupInfo->marked = 0;
+                        $modelGroupAssessment->name = $temp_Group_name;
+                        $modelGroupAssessment->assessment_id = $model->id;
+                        $modelGroupAssessment->group_number = $group_number;
+                        $modelGroupAssessment->marked = self::UNMARK;
 
-                        if ($flag = $modelGroupInfo->save(false)) {
+                        if ($flag = $modelGroupAssessment->save(false)) {
 
-                            $temp_Group_id = $modelGroupInfo->id;
+                            $temp_Group_id = $modelGroupAssessment->id;
                             $group_number++;
 
-                            $modelUser = new User();
+                            $flag = $this->registGroupStudentInfo($sortedData[$i]['First Name'],
+                                $sortedData[$i]['Last Name'],
+                                $sortedData[$i]['Last Name'],
+                                $sortedData[$i]['Email'],
+                                $temp_Group_id);
 
-                            //Get student info by email
-                            $student = $modelUser->findByEmail($sortedData[$i]['Email']);
-
-                            $modelGroupStudentInfo = new GroupStudentInfo();
-                            $modelGroupStudentInfo->group_id = $temp_Group_id;
-                            $modelGroupStudentInfo->marked = 0;
-                            $modelGroupStudentInfo->completed = 0;
-                            
-                            // If student not exist, regist
-                            if (empty($student)) {
-                                $modelUser->first_name = $sortedData[$i]['First Name'];
-                                $modelUser->last_name = $sortedData[$i]['Last Name'];
-                                $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
-                                $modelUser->email = $sortedData[$i]['Email'];
-                                $modelUser->type = '1';
-                                $modelUser->setPassword(self::DEFAULTPASS);
-                                $modelUser->generateAuthKey();
-                                
-                                if($modelUser->save(false)) {
-                                    $modelGroupStudentInfo->student_id = $modelUser->id;
-                                } else {
-                                    $flag = false;
-                                    break;
-                                }
+                            if($flag) {
                             } else {
-                                $modelGroupStudentInfo->student_id = $student->id;
-                            }
-
-                            if ($modelGroupStudentInfo->save(false)) {
-                            } else {
-                                $flag = false;
                                 break;
                             }
+                    
                         } else {
                             $flag = false;
                             break;
@@ -301,10 +402,8 @@ class LecturerModel extends Model
             } while ($i < count($sortedData));
         }
         // For Self Assessment
-        else if ($model->assessment_type == 3) {
+        else if ($model->assessment_type == self::SELF_ASSESSMENT) {
 
-            $temp_student_email = '';
-            $temp_individual_assessment_id = '';
             $student_number = 1;
 
             foreach ($excelData as $data) {
@@ -317,63 +416,47 @@ class LecturerModel extends Model
                 ) {
                     continue;
                 } else {
-                    $temp_student_email = $data['Email'];
 
-                    $modelUser = new User();
-
-                    //Get student info by email
-                    $student = $modelUser->findByEmail($temp_student_email);
-
-                    $modelIndividualAssessment = new IndividualAssessment();
-                    $modelIndividualAssessment->assessment_id = $model->id;
-                    $modelIndividualAssessment->student_number = $student_number;
-                    $modelIndividualAssessment->marked = 0;
+                    $studentId = $this->getStudentId(
+                                    $data['First Name'],
+                                    $data['Last Name'],
+                                    $data['Matriculation Number'],
+                                    $data['Email']);
 
                     // If student not exist, regist
-                    if (empty($student)) {
+                    if (!empty($studentId)) {
 
-                        $modelUser->first_name = $data['First Name'];
-                        $modelUser->last_name = $data['Last Name'];
-                        $modelUser->matric_number = $data['Matriculation Number'];
-                        $modelUser->email = $data['Email'];
-                        $modelUser->type = '1';
-                        $modelUser->setPassword(self::DEFAULTPASS);
-                        $modelUser->generateAuthKey();
-                        
-                        if ($modelUser->save(false)) {
-                            $modelIndividualAssessment->student_id = $modelUser->id;
+                        $modelIndividualAssessment = new IndividualAssessment();
+                        $modelIndividualAssessment->assessment_id = $model->id;
+                        $modelIndividualAssessment->student_number = $student_number;
+                        $modelIndividualAssessment->marked = self::UNMARK;
+                        $modelIndividualAssessment->student_id = $studentId;
+
+                        if ($modelIndividualAssessment->save(false)) {
+
+                            $student_number++;
+    
+                            $modelMarkerStudentInfo = new MarkerStudentInfo();
+                            $modelMarkerStudentInfo->individual_assessment_id = $modelIndividualAssessment->id;
+                            $modelMarkerStudentInfo->completed = self::UNCOMPLETE;
+                            $modelMarkerStudentInfo->marker_student_id = $modelIndividualAssessment->student_id;
+    
+                            if ($modelMarkerStudentInfo->save(false)) {
+                            } else {
+                                $flag = false;
+                                break;
+                            }
                         } else {
                             $flag = false;
                             break;
                         }
-                    } else {
-
-                        $modelIndividualAssessment->student_id = $student->id;
-                    }
-
-                    if ($modelIndividualAssessment->save(false)) {
-
-                        $student_number++;
-
-                        $modelMarkerStudentInfo = new MarkerStudentInfo();
-                        $modelMarkerStudentInfo->individual_assessment_id = $modelIndividualAssessment->id;
-                        $modelMarkerStudentInfo->completed = 0;
-                        $modelMarkerStudentInfo->marker_student_id = $modelIndividualAssessment->student_id;
-
-                        if ($modelMarkerStudentInfo->save(false)) {
-                        } else {
-                            $flag = false;
-                            break;
-                        }
-                    } else {
-                        $flag = false;
-                        break;
                     }
                 }
             }
         }
 
-        else if ($model->assessment_type == 4) {
+        else if ($model->assessment_type == self::PEER_MARKING) {
+
             $sortedData = $this->arraySort($excelData, 'Email', SORT_ASC);
             $temp_student_email = '';
             $temp_individual_assessment_id = '';
@@ -399,112 +482,17 @@ class LecturerModel extends Model
                     // For same work student, regist peer review (Marker Student)
                     if (!empty($temp_student_email) && $sortedData[$i]['Email'] == $temp_student_email) {
                         
-                        $modelUser = new User();
+                        $markerStudentId = $this->getStudentId(
+                            $sortedData[$i]['First Name(Marker Student)'],
+                            $sortedData[$i]['Last Name(Marker Student)'],
+                            $sortedData[$i]['Matriculation Number(Marker Student)'],
+                            $sortedData[$i]['Email(Marker Student)']);
 
-                        //Get student info by email
-                        $student = $modelUser->findByEmail($sortedData[$i]['Email(Marker Student)']);
-
-                        $modelMarkerStudentInfo = new MarkerStudentInfo();
-                        $modelMarkerStudentInfo->individual_assessment_id = $temp_individual_assessment_id;
-                        $modelMarkerStudentInfo->completed = 0;
-
-                        // If student not exist, regist
-                        if (empty($student)) {
-                            
-                            $modelUser->first_name = $sortedData[$i]['First Name(Marker Student)'];
-                            $modelUser->last_name = $sortedData[$i]['Last Name(Marker Student)'];
-                            $modelUser->matric_number = $sortedData[$i]['Matriculation Number(Marker Student)'];
-                            $modelUser->email = $sortedData[$i]['Email(Marker Student)'];
-                            $modelUser->type = '1';
-                            $modelUser->setPassword(self::DEFAULTPASS);
-                            $modelUser->generateAuthKey();
-
-                            if($modelUser->save(false)) {
-                                $modelMarkerStudentInfo->marker_student_id = $modelUser->id;
-                            } else {
-                                $flag = false;
-                                break;
-                            }
-                        } else {
-                            $modelMarkerStudentInfo->marker_student_id = $student->id;
-                        }
-
-                        if ($modelMarkerStudentInfo->save(false)) {
-                        } else {
-                            $flag = false;
-                            break;
-                        }
-                    } else {
-                        
-                        $temp_student_email = $sortedData[$i]['Email'];
-
-                        $modelUser = new User();
-
-                        //Get student info by email
-                        $student = $modelUser->findByEmail($temp_student_email);
-
-                        $modelIndividualAssessment = new IndividualAssessment();
-                        $modelIndividualAssessment->file_path = $sortedData[$i]['Work File'];
-                        $modelIndividualAssessment->assessment_id = $model->id;
-                        $modelIndividualAssessment->student_number = $student_number;
-                        $modelIndividualAssessment->marked = 0;
-
-                        // If student not exist, regist
-                        if (empty($student)) {
-
-                            $modelUser->first_name = $sortedData[$i]['First Name'];
-                            $modelUser->last_name = $sortedData[$i]['Last Name'];
-                            $modelUser->matric_number = $sortedData[$i]['Matriculation Number'];
-                            $modelUser->email = $sortedData[$i]['Email'];
-                            $modelUser->type = '1';
-                            $modelUser->setPassword(self::DEFAULTPASS);
-                            $modelUser->generateAuthKey();
-                            
-                            if ($modelUser->save(false)) {
-                                $modelIndividualAssessment->student_id = $modelUser->id;
-                            } else {
-                                $flag = false;
-                                break;
-                            }
-                        } else {
-
-                            $modelIndividualAssessment->student_id = $student->id;
-                        }
-
-                        if ($modelIndividualAssessment->save(false)) {
- 
-                            $temp_individual_assessment_id = $modelIndividualAssessment->id;
-                            $student_number++;
-
-                            $modelUser = new User();
-
-                            // Get student info by email
-                            $student = $modelUser->findByEmail($sortedData[$i]['Email(Marker Student)']);
-
+                        if (!empty($studentId)) {
                             $modelMarkerStudentInfo = new MarkerStudentInfo();
                             $modelMarkerStudentInfo->individual_assessment_id = $temp_individual_assessment_id;
-                            $modelMarkerStudentInfo->completed = 0;
-
-                            // Student not exists, regist new student.
-                            if (empty($student)) {
-                                
-                                $modelUser->first_name = $sortedData[$i]['First Name(Marker Student)'];
-                                $modelUser->last_name = $sortedData[$i]['Last Name(Marker Student)'];
-                                $modelUser->matric_number = $sortedData[$i]['Matriculation Number(Marker Student)'];
-                                $modelUser->email = $sortedData[$i]['Email(Marker Student)'];
-                                $modelUser->type = '1';
-                                $modelUser->setPassword(self::DEFAULTPASS);
-                                $modelUser->generateAuthKey();
-
-                                if($modelUser->save(false)) {
-                                    $modelMarkerStudentInfo->marker_student_id = $modelUser->id;
-                                } else {
-                                    $flag = false;
-                                    break;
-                                }
-                            } else {
-                                $modelMarkerStudentInfo->marker_student_id = $student->id;
-                            }
+                            $modelMarkerStudentInfo->completed = self::UNCOMPLETE;
+                            $modelMarkerStudentInfo->marker_student_id = $markerStudentId;
 
                             if ($modelMarkerStudentInfo->save(false)) {
                             } else {
@@ -515,9 +503,60 @@ class LecturerModel extends Model
                             $flag = false;
                             break;
                         }
+
+                    } else {
+                        
+                        $temp_student_email = $sortedData[$i]['Email'];
+
+                        $studentId = $this->getStudentId(
+                            $sortedData[$i]['First Name'],
+                            $sortedData[$i]['Last Name'],
+                            $sortedData[$i]['Matriculation Number'],
+                            $sortedData[$i]['Email']);
+
+                        // If student not exist, regist
+                        if (!empty($studentId)) {
+
+                            $modelIndividualAssessment = new IndividualAssessment();
+                            $modelIndividualAssessment->file_path = $sortedData[$i]['Work File'];
+                            $modelIndividualAssessment->assessment_id = $model->id;
+                            $modelIndividualAssessment->marked = self::UNMARK;
+                            $modelIndividualAssessment->student_id = $studentId;
+
+                            if ($modelIndividualAssessment->save(false)) {
+
+                                $temp_individual_assessment_id = $modelIndividualAssessment->id;
+                                $student_number++;
+
+                                $markerStudentId = $this->getStudentId(
+                                    $sortedData[$i]['First Name(Marker Student)'],
+                                    $sortedData[$i]['Last Name(Marker Student)'],
+                                    $sortedData[$i]['Matriculation Number(Marker Student)'],
+                                    $sortedData[$i]['Email(Marker Student)']);
+
+                                if (!empty($studentId)) {
+                                    $modelMarkerStudentInfo = new MarkerStudentInfo();
+                                    $modelMarkerStudentInfo->individual_assessment_id = $temp_individual_assessment_id;
+                                    $modelMarkerStudentInfo->completed = self::UNCOMPLETE;
+                                    $modelMarkerStudentInfo->marker_student_id = $markerStudentId;
+
+                                    if ($modelMarkerStudentInfo->save(false)) {
+                                    } else {
+                                        $flag = false;
+                                        break;
+                                    }
+                                } else {
+                                    $flag = false;
+                                    break;
+                                }
+
+                            } else {
+                                $flag = false;
+                                break;
+                            }
+                        }
                     }
                 }
-
                 $i++;
             } while ($i < count($sortedData));
         }

@@ -1,6 +1,11 @@
 <?php
 
+use common\models\Rubrics;
+use common\models\User;
 use yii\bootstrap4\ActiveForm;
+use yii\bootstrap4\Modal;
+use yii\data\ActiveDataProvider;
+use yii\grid\GridView;
 use yii\helpers\Html;
 use yii\widgets\DetailView;
 
@@ -43,7 +48,45 @@ $this->title = $model->name;
                 <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
                 <tr>
                     <td class="col-md-2"> 
-                        <?= $modelItem->name ?>
+                        <?php
+                            $query = Rubrics::find()
+                                ->where('item_id = :id')
+                                ->addParams([':id' => $modelItem->id]);
+                            $dataProvider = new ActiveDataProvider([
+                                'query' => $query,
+                                'sort' => false,
+                            ]);
+                            Modal::begin([
+                                'title' => 'Rubrics',
+                                'toggleButton' => ['label' => $modelItem->name, 'tag' => 'a'],
+                            ]);
+                        ?>
+
+                        <?= GridView::widget([
+                            'dataProvider' => $dataProvider,
+                            'id' => 'rubricsList',
+                            'tableOptions' => ['class' => 'table table-bordered'],
+                            'summary' => false,
+                            'columns' => [
+                                [
+                                    'attribute' => 'level',
+                                    'label' => 'Name',
+                                    'value' => 'level',
+                                    'headerOptions' => ['class' => 'text-light bg-primary']
+                                ],
+                                [
+                                    'attribute' => 'weight',
+                                    'value' => 'weight',
+                                    'headerOptions' => ['class' => 'text-light bg-primary']
+                                ],
+                                [
+                                    'attribute' => 'description',
+                                    'value' => 'description',
+                                    'headerOptions' => ['class' => 'text-light bg-primary']
+                                ]
+                            ],
+                        ]); ?>
+                        <?php Modal::end(); ?>
                     </td>
                     <td class="col-md-1 text-center">
                         <?= $modelItem->max_mark_value ?>

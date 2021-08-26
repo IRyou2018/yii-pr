@@ -21,6 +21,7 @@ use common\models\User;
 use Exception;
 use frontend\models\AssessmentsSearch;
 use frontend\models\CoordinatorsSearch;
+use frontend\models\GroupStudent;
 use frontend\models\LecturerModel;
 use frontend\models\Model;
 use frontend\models\Upload;
@@ -41,6 +42,7 @@ class LecturerController extends Controller
     const DEFAULTPASS = "00000000";
     const INACTIVE = 0;
     const ACTIVE = 1;
+    const STUDENT = 1;
 
     /**
      * @inheritDoc
@@ -70,7 +72,7 @@ class LecturerController extends Controller
     }
 
     /**
-     * Displays a single Assessments model.
+     * Displays current year Assessments.
      * @param int $id ID
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
@@ -78,11 +80,131 @@ class LecturerController extends Controller
     public function actionDashboard()
     {
         $searchModel = new AssessmentsSearch();
-        $dataProvider = $searchModel->searchByLecturerID($this->request->queryParams);
+        $dataProvider = $searchModel->getCurrentYearAssessment();
 
         return $this->render('dashboard', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    /**
+     * Displays archived Assessments.
+     * @param int $id ID
+     * @return mixed
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    public function actionArchived()
+    {
+        $searchModel = new AssessmentsSearch();
+        $dataProvider = $searchModel->getArchivedAssessment();
+
+        return $this->render('archived', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    /**
+     * Add Group to Assessments.
+     * @param int $id ID
+     * @return mixed
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    public function actionAddGroup($id)
+    {
+        $model = Assessments::findOne($id);
+        $group = new GroupAssessment();
+        $group->assessment_id = $id;
+        $groupStudents = [new GroupStudent()];
+
+        
+        if ($this->request->isPost) {
+            if ($group->load($this->request->post())) {
+
+                $groupStudents = Model::createMultiple(GroupStudent::classname());
+                Model::loadMultiple($groupStudents, Yii::$app->request->post());
+                
+                $modelLecturer = new LecturerModel();
+                $group_number = $modelLecturer->getMaxGroupNumber($id);
+                $group->group_number = $group_number;
+                $group->marked = 0;
+
+                $valid = $group->validate();
+                
+                $valid = Model::validateMultiple($groupStudents) && $valid;
+                
+                if ($valid) {
+                    $transaction = \Yii::$app->db->beginTransaction();
+                    try {
+
+                        $flag = true;
+                        if ($group->save(false)) {
+
+                            $group_id = $group->id;
+
+                            foreach ($groupStudents as $groupStudent) {
+                                $modelUser = new User();
+
+                                //Get student info by email
+                                $student = $modelUser->findByEmail($groupStudent->email);
+
+                                $modelGroupStudentInfo = new GroupStudentInfo();
+                                $modelGroupStudentInfo->group_id = $group_id;
+                                $modelGroupStudentInfo->marked = 0;
+                                $modelGroupStudentInfo->completed = 0;
+        
+                                // If student not exist, regist
+                                if (empty($student)) {
+        
+                                    $modelUser->first_name = $groupStudent->first_name;
+                                    $modelUser->last_name = $groupStudent->last_name;
+                                    $modelUser->matric_number = $groupStudent->matric_number;
+                                    $modelUser->email = $groupStudent->email;
+                                    $modelUser->type = self::STUDENT;
+                                    $modelUser->setPassword(self::DEFAULTPASS);
+                                    $modelUser->generateAuthKey();
+       
+                                    if($modelUser->save(false)) {
+                                        $modelGroupStudentInfo->student_id = $modelUser->id;
+                                    } else {
+                                        $flag = false;
+                                        break;
+                                    }
+                                } else {
+                                    $modelGroupStudentInfo->student_id = $student->id;
+                                }
+        
+                                if ($modelGroupStudentInfo->save(false)) {
+                                } else {
+                                    $flag = false;
+                                    break;
+                                }
+                            }
+
+                        } else {
+                            $flag = false;
+                        }
+
+                        if ($flag) {
+                            $transaction->commit();
+
+                            return $this->redirect(['assessment', 'id' => $id]);
+                        } else {
+
+                            $transaction->rollBack();
+                        }
+                    } catch (Exception $e) {
+                        $transaction->rollBack();
+                    }
+                }
+            }
+        }
+
+        return $this->renderAjax('add-group', [
+            'model' => $model,
+            'group' => $group,
+            'groupStudents' => $groupStudents,
         ]);
     }
 
@@ -94,37 +216,20 @@ class LecturerController extends Controller
 
         if($status == "true") {
             $model->active = self::ACTIVE;
-            $message = 'Assessment status has been set to Visible.';
+            $message = 'Assessment: ' . $model->name . ' status has been set to Visible.';
         } else {
             $model->active = self::INACTIVE;
-            $message = 'Assessment status has been set to Invisible.';
+            $message = 'Assessment: ' . $model->name . ' status has been set to Invisible.';
         }
 
         if ($model->save()) {
             Yii::$app->session->setFlash('success', $message);
         } else {
-            Yii::$app->session->setFlash('error', 'Visibility update failed.');
+            Yii::$app->session->setFlash('error', 'Assessment: ' . $model->name . 'status update was failed.');
         }
 
         return $this->redirect('dashboard');
      }
-
-    /**
-     * Displays a single Assessments model.
-     * @param int $id ID
-     * @return mixed
-     * @throws NotFoundHttpException if the model cannot be found
-     */
-    public function actionArchived()
-    {
-        $searchModel = new AssessmentsSearch();
-        $dataProvider = $searchModel->searchByLecturerID($this->request->queryParams);
-
-        return $this->render('archived', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
-    }
 
     /**
      * Creates a new Assessments model.
@@ -228,10 +333,6 @@ class LecturerController extends Controller
                                 $flag = $modelLecturer->registDatafromUpload($excelData, $model);
                             }
 
-                            // echo "<pre>";
-                            // print_r($flag);
-                            // echo "</pre>";
-                            // exit;
                             if($flag) {
                                 $flag = $modelLecturer->registAssessmentInfo($model, $modelsSection, $modelsItem, $modelsRubric);
                             }

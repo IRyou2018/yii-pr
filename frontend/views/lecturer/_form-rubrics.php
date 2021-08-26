@@ -34,7 +34,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
     </div>
     <?php foreach ($modelsRubric[$indexSection][$indexItem] as $indexRubric => $modelRubric) : ?>
     <div class="card-body container-rubric border-bottom">
-        <div class="row rubric">
+        <div class="row rubric mt-2">
             <div class="col">
                 <div class="row">
                     <div class="col-md-2 bg-light">

@@ -34,7 +34,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
     </div>
     <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem) : ?>
     <div class="card-body container-item border-bottom">
-        <div class="row item">
+        <div class="row item mt-2">
             <div class="col">
                 <div class="row">
                     <div class="col-md-2 bg-light">
@@ -69,7 +69,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
                                     0 => 'Individual Item',
                                     1 => 'Group Item'
                                 ],
-                                ['prompt'=>'Select Item Type']
+                                ['prompt'=>'Select Item Type', 'id' => 'itemType'],
                         ) ?>
                     </div>
                 </div>
