@@ -2,6 +2,11 @@
 
 namespace frontend\models;
 
+use common\models\GroupAssessment;
+use common\models\GroupStudentInfo;
+use common\models\IndividualAssessment;
+use common\models\LecturerAssessment;
+use common\models\MarkerStudentInfo;
 use common\models\PeerReview;
 use common\models\User;
 use Yii;
@@ -14,6 +19,24 @@ use yii\helpers\ArrayHelper;
  */
 class LecturerModel extends Model
 {
+    const DEFAULTPASS = "00000000";
+    const UNMARK = 0;
+
+    const LECTURER = 0;
+    const STUDENT = 1;
+
+    const INACTIVE = 0;
+    const ACTIVE = 1;
+
+    const UNCOMPLETE = 0;
+    const COMPLETE = 1;
+
+    const G_PEER_REVIEW = 0;
+    const G_PEER_ASSESSMENT = 1;
+    const G_PEER_R_A = 2;
+    const SELF_ASSESSMENT = 3;
+    const PEER_MARKING = 4;
+    
     /**
      * {@inheritdoc}
      */
@@ -26,8 +49,8 @@ class LecturerModel extends Model
     /**
      * Get coordinators.
      *
-     * @param string assessment_id
-     * @return peer_assessment_id
+     * @param int assessment_id
+     * @return coorinators
      */
     public function getCoordinators($id)
     {
@@ -47,20 +70,99 @@ class LecturerModel extends Model
     }
 
     /**
+     * Get coordinators.
+     *
+     * @param int assessment_id
+     * @return coorinators
+     */
+    public function getMaxGroupNumber($id)
+    {
+        $max_group_number = (new yii\db\Query())
+            ->select(["Max(group_number) as max_group_number"])
+            ->from('group_assessment')
+            ->join('INNER JOIN', 'assessments', 'group_assessment.assessment_id = assessments.id')
+            ->where('assessments.id = :id')
+            ->addParams([
+                ':id' => $id
+                ])
+            ->one();
+        return $max_group_number['max_group_number'] + 1;
+    }
+
+    /**
+     * Get coordinators.
+     *
+     * @param int assessment_id
+     * @return boolean
+     */
+    public function registGroupInfo($group, $groupStudents)
+    {
+        $flag = true;
+        if ($group->save(false)) {
+
+            $group_id = $group->id;
+
+            foreach ($groupStudents as $groupStudent) {
+                $modelUser = new User();
+
+                //Get student info by email
+                $student = $modelUser->findByEmail($groupStudent->email);
+
+                $modelGroupStudentInfo = new GroupStudentInfo();
+                $modelGroupStudentInfo->group_id = $group_id;
+                $modelGroupStudentInfo->marked = 0;
+                $modelGroupStudentInfo->completed = 0;
+
+                // If student not exist, regist
+                if (empty($student)) {
+
+                    $modelUser->first_name = $groupStudent->first_name;
+                    $modelUser->last_name = $groupStudent->last_name;
+                    $modelUser->matric_number = $groupStudent->matric_number;
+                    $modelUser->email = $groupStudent->email;
+                    $modelUser->type = self::STUDENT;
+                    $modelUser->setPassword(self::DEFAULTPASS);
+                    $modelUser->generateAuthKey();
+
+                    if($modelUser->save(false)) {
+                        $modelGroupStudentInfo->student_id = $modelUser->id;
+                    } else {
+                        $flag = false;
+                        break;
+                    }
+                } else {
+                    $modelGroupStudentInfo->student_id = $student->id;
+                }
+
+                if ($modelGroupStudentInfo->save(false)) {
+                } else {
+                    $flag = false;
+                    break;
+                }
+            }
+
+        } else {
+            $flag = false;
+        }
+        return $flag;
+    }
+
+    /**
      * Get coordinators list.
      *
-     * @param string assessment_id
-     * @return peer_assessment_id
+     * @param int assessment_id
+     * @return coorinators
      */
     public function getCoordinatorList()
     {
         $query = User::find();
-        $query->where(['status' => 10, 'type' => 0]);
+        $query->where(['status' => 10, 'type' => self::LECTURER]);
         $query->andWhere(['<>','id', Yii::$app->user->id]);
         $query->all();
 
         $coorinators = new ActiveDataProvider([
             'query' => $query,
+            'sort' => false
         ]);
 
         return $coorinators;
@@ -69,8 +171,8 @@ class LecturerModel extends Model
     /**
      * Get group info.
      *
-     * @param string assessment_id
-     * @return peer_assessment_id
+     * @param int assessment_id
+     * @return array group name and marking stauts
      */
     public function getGroupInfo($id)
     {
@@ -126,8 +228,8 @@ class LecturerModel extends Model
     /**
      * Get peer coordinators.
      *
-     * @param string assessment_id
-     * @return peer_assessment_id
+     * @param int assessment_id
+     * @return array student name and marking status
      */
     public function getStudentMarkStatus($id)
     {
@@ -152,5 +254,390 @@ class LecturerModel extends Model
         ]);
 
         return $individualInfo;
+    }
+
+    public function arraySort($array, $keys, $sort = SORT_DESC)
+    {
+        $keysValue = [];
+        foreach ($array as $k => $v) {
+            $keysValue[$k] = $v[$keys];
+        }
+        array_multisort($keysValue, $sort, $array);
+        return $array;
+    }
+
+    public function getStudentId($firstName, $lastName, $matricNumber, $email)
+    {
+        $studentId = '';
+        $modelUser = new User();
+
+        //Get student info by email
+        $student = $modelUser->findByEmail($email);
+
+        // If student not exist, regist
+        if (empty($student)) {
+
+            $modelUser->first_name = $firstName;
+            $modelUser->last_name = $lastName;
+            $modelUser->matric_number = $matricNumber;
+            $modelUser->email = $email;
+            $modelUser->type = self::STUDENT;
+            $modelUser->setPassword(self::DEFAULTPASS);
+            $modelUser->generateAuthKey();
+
+            if($modelUser->save(false)) {
+                $studentId = $modelUser->id;
+            }
+        } else {
+            $studentId = $student->id;
+        }
+
+        return $studentId;
+    }
+
+    public function registGroupStudentInfo($firstName, $lastName, $matricNumber, $email, $groupId)
+    {
+        $flag = true;
+
+        $studentId = $this->getStudentId($firstName, $lastName, $matricNumber, $email);
+
+        if (!empty($studentId)) {
+            $modelGroupStudentInfo = new GroupStudentInfo();
+            $modelGroupStudentInfo->group_id = $groupId;
+            $modelGroupStudentInfo->marked = self::UNMARK;
+            $modelGroupStudentInfo->completed = self::UNCOMPLETE;
+            $modelGroupStudentInfo->student_id = $studentId;
+
+            if ($modelGroupStudentInfo->save(false)) {
+            } else {
+                $flag = false;
+            }
+        } else {
+            $flag = false;
+        }
+
+        return $flag;
+    }
+
+    public function registDatafromUpload($excelData, $model)
+    {
+        $flag = true;
+
+        $i = 0;
+
+        // For Group Assessment
+        if ($model->assessment_type == self::G_PEER_REVIEW
+            || $model->assessment_type == self::G_PEER_ASSESSMENT
+            || $model->assessment_type == self::G_PEER_R_A) {
+
+            $sortedData = $this->arraySort($excelData, 'Group Name', SORT_ASC);
+
+            $temp_Group_name = '';
+            $temp_Group_id = '';
+            $group_number = 1;
+
+            do {
+                // Skip empty row
+                if (
+                    empty($sortedData[$i]['Group Name'])
+                    && empty($sortedData[$i]['First Name'])
+                    && empty($sortedData[$i]['Last Name'])
+                    && empty($sortedData[$i]['Matriculation Number'])
+                    && empty($sortedData[$i]['Email'])
+                ) {
+
+                    continue;
+                } else {
+
+                    // For same group add Student to group
+                    if (!empty($temp_Group_name) && $sortedData[$i]['Group Name'] == $temp_Group_name) {
+
+                        $flag = $this->registGroupStudentInfo($sortedData[$i]['First Name'],
+                            $sortedData[$i]['Last Name'],
+                            $sortedData[$i]['Last Name'],
+                            $sortedData[$i]['Email'],
+                            $temp_Group_id);
+
+                        if($flag) {
+                        } else {
+                            break;
+                        }
+                        
+                    } else {
+                        // Regist new Group Assessment
+                        $temp_Group_name = $sortedData[$i]['Group Name'];;
+
+                        $modelGroupAssessment = new GroupAssessment();
+
+                        $modelGroupAssessment->name = $temp_Group_name;
+                        $modelGroupAssessment->assessment_id = $model->id;
+                        $modelGroupAssessment->group_number = $group_number;
+                        $modelGroupAssessment->marked = self::UNMARK;
+
+                        if ($flag = $modelGroupAssessment->save(false)) {
+
+                            $temp_Group_id = $modelGroupAssessment->id;
+                            $group_number++;
+
+                            $flag = $this->registGroupStudentInfo($sortedData[$i]['First Name'],
+                                $sortedData[$i]['Last Name'],
+                                $sortedData[$i]['Last Name'],
+                                $sortedData[$i]['Email'],
+                                $temp_Group_id);
+
+                            if($flag) {
+                            } else {
+                                break;
+                            }
+                    
+                        } else {
+                            $flag = false;
+                            break;
+                        }
+                    }
+                }
+
+                $i++;
+
+            } while ($i < count($sortedData));
+        }
+        // For Self Assessment
+        else if ($model->assessment_type == self::SELF_ASSESSMENT) {
+
+            $student_number = 1;
+
+            foreach ($excelData as $data) {
+                // Skip empty row
+                if (
+                    empty($data['First Name'])
+                    && empty($data['Last Name'])
+                    && empty($data['Matriculation Number'])
+                    && empty($data['Email'])
+                ) {
+                    continue;
+                } else {
+
+                    $studentId = $this->getStudentId(
+                                    $data['First Name'],
+                                    $data['Last Name'],
+                                    $data['Matriculation Number'],
+                                    $data['Email']);
+
+                    // If student not exist, regist
+                    if (!empty($studentId)) {
+
+                        $modelIndividualAssessment = new IndividualAssessment();
+                        $modelIndividualAssessment->assessment_id = $model->id;
+                        $modelIndividualAssessment->student_number = $student_number;
+                        $modelIndividualAssessment->marked = self::UNMARK;
+                        $modelIndividualAssessment->student_id = $studentId;
+
+                        if ($modelIndividualAssessment->save(false)) {
+
+                            $student_number++;
+    
+                            $modelMarkerStudentInfo = new MarkerStudentInfo();
+                            $modelMarkerStudentInfo->individual_assessment_id = $modelIndividualAssessment->id;
+                            $modelMarkerStudentInfo->completed = self::UNCOMPLETE;
+                            $modelMarkerStudentInfo->marker_student_id = $modelIndividualAssessment->student_id;
+    
+                            if ($modelMarkerStudentInfo->save(false)) {
+                            } else {
+                                $flag = false;
+                                break;
+                            }
+                        } else {
+                            $flag = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        else if ($model->assessment_type == self::PEER_MARKING) {
+
+            $sortedData = $this->arraySort($excelData, 'Email', SORT_ASC);
+            $temp_student_email = '';
+            $temp_individual_assessment_id = '';
+            $student_number = 1;
+
+            do {
+                // Skip empty row
+                if (
+                    empty($sortedData[$i]['First Name'])
+                    && empty($sortedData[$i]['Last Name'])
+                    && empty($sortedData[$i]['Matriculation Number'])
+                    && empty($sortedData[$i]['Email'])
+                    && empty($sortedData[$i]['Work File'])
+                    && empty($sortedData[$i]['First Name(Marker Student)'])
+                    && empty($sortedData[$i]['Last Name(Marker Student)'])
+                    && empty($sortedData[$i]['Matriculation Number(Marker Student)'])
+                    && empty($sortedData[$i]['Email(Marker Student)'])
+                ) {
+                    
+                    continue;
+                } else {
+                    
+                    // For same work student, regist peer review (Marker Student)
+                    if (!empty($temp_student_email) && $sortedData[$i]['Email'] == $temp_student_email) {
+                        
+                        $markerStudentId = $this->getStudentId(
+                            $sortedData[$i]['First Name(Marker Student)'],
+                            $sortedData[$i]['Last Name(Marker Student)'],
+                            $sortedData[$i]['Matriculation Number(Marker Student)'],
+                            $sortedData[$i]['Email(Marker Student)']);
+
+                        if (!empty($studentId)) {
+                            $modelMarkerStudentInfo = new MarkerStudentInfo();
+                            $modelMarkerStudentInfo->individual_assessment_id = $temp_individual_assessment_id;
+                            $modelMarkerStudentInfo->completed = self::UNCOMPLETE;
+                            $modelMarkerStudentInfo->marker_student_id = $markerStudentId;
+
+                            if ($modelMarkerStudentInfo->save(false)) {
+                            } else {
+                                $flag = false;
+                                break;
+                            }
+                        } else {
+                            $flag = false;
+                            break;
+                        }
+
+                    } else {
+                        
+                        $temp_student_email = $sortedData[$i]['Email'];
+
+                        $studentId = $this->getStudentId(
+                            $sortedData[$i]['First Name'],
+                            $sortedData[$i]['Last Name'],
+                            $sortedData[$i]['Matriculation Number'],
+                            $sortedData[$i]['Email']);
+
+                        // If student not exist, regist
+                        if (!empty($studentId)) {
+
+                            $modelIndividualAssessment = new IndividualAssessment();
+                            $modelIndividualAssessment->file_path = $sortedData[$i]['Work File'];
+                            $modelIndividualAssessment->assessment_id = $model->id;
+                            $modelIndividualAssessment->marked = self::UNMARK;
+                            $modelIndividualAssessment->student_id = $studentId;
+
+                            if ($modelIndividualAssessment->save(false)) {
+
+                                $temp_individual_assessment_id = $modelIndividualAssessment->id;
+                                $student_number++;
+
+                                $markerStudentId = $this->getStudentId(
+                                    $sortedData[$i]['First Name(Marker Student)'],
+                                    $sortedData[$i]['Last Name(Marker Student)'],
+                                    $sortedData[$i]['Matriculation Number(Marker Student)'],
+                                    $sortedData[$i]['Email(Marker Student)']);
+
+                                if (!empty($studentId)) {
+                                    $modelMarkerStudentInfo = new MarkerStudentInfo();
+                                    $modelMarkerStudentInfo->individual_assessment_id = $temp_individual_assessment_id;
+                                    $modelMarkerStudentInfo->completed = self::UNCOMPLETE;
+                                    $modelMarkerStudentInfo->marker_student_id = $markerStudentId;
+
+                                    if ($modelMarkerStudentInfo->save(false)) {
+                                    } else {
+                                        $flag = false;
+                                        break;
+                                    }
+                                } else {
+                                    $flag = false;
+                                    break;
+                                }
+
+                            } else {
+                                $flag = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                $i++;
+            } while ($i < count($sortedData));
+        }
+
+        return $flag;
+    }
+
+    public function registAssessmentInfo($model, $modelsSection, $modelsItem, $modelsRubric)
+    {
+        $flag = true;
+
+        foreach ($modelsSection as $indexSection => $modelSection) {
+
+            if ($flag === false) {
+                break;
+            }
+
+            $modelSection->assessment_id = $model->id;
+
+            if ($modelSection->save(false)) {
+            } else {
+                $flag = false;
+                break;
+            }
+
+            if (isset($modelsItem[$indexSection]) && is_array($modelsItem[$indexSection])) {
+                foreach ($modelsItem[$indexSection] as $indexItem => $modelItem) {
+
+                    $modelItem->section_id = $modelSection->id;
+
+                    if ($modelItem->save(false)) {
+                    } else {
+                        $flag = false;
+                        break;
+                    }
+
+                    if (isset($modelsRubric[$indexSection][$indexItem]) && is_array($modelsRubric[$indexSection][$indexItem])) {
+                        foreach ($modelsRubric[$indexSection][$indexItem] as $indexRubric => $modelRubric) {
+
+                            if (!empty($modelRubric->level) && !empty($modelRubric->weight) && !empty($modelRubric->description)) {
+                                $modelRubric->item_id = $modelItem->id;
+
+                                if ($modelRubric->save(false)) {
+                                } else {
+                                    $flag = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($flag) {
+
+            $modelLecturerAssessment = new LecturerAssessment();
+
+            $modelLecturerAssessment->assessment_id = $model->id;
+            $modelLecturerAssessment->lecturer_id = Yii::$app->user->id;
+
+            if ($flag = $modelLecturerAssessment->save(false)) {
+
+                $coordinatorList = Yii::$app->request->post('selection');
+
+                if (!empty($coordinatorList)) {
+                    foreach ($coordinatorList as $coorinator) {
+
+                        $modelLecturerAssessment = new LecturerAssessment();
+                        $modelLecturerAssessment->assessment_id = $model->id;
+                        $modelLecturerAssessment->lecturer_id = $coorinator;
+
+                        if ($modelLecturerAssessment->save(false)) {
+                        } else {
+                            $flag = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return $flag;
     }
 }

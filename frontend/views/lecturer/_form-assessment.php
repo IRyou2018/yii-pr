@@ -54,7 +54,7 @@ use yii\helpers\Url;
                             3 => 'Self Assessment',
                             4 => 'Peer Marking'
                         ],
-                        ['prompt'=>'Select Assessment Type', 'id' => 'assType']
+                        ['prompt'=>'Select Assessment Type', 'id' => 'assType'],
                     ) ?>
                 </div>
                 <div class="col-md-6">
@@ -86,11 +86,23 @@ use yii\helpers\Url;
                     <?= GridView::widget([
                         'dataProvider' => $dataProvider,
                         'id' => 'coordinatorList',
+                        'tableOptions' => ['class' => 'table table-bordered'],
+                        'summary' => false,
                         'columns' => [
-                            ['class' => 'yii\grid\CheckboxColumn'],
-                            // 'id',
-                            'first_name',
-                            'last_name',
+                            [
+                                'class' => 'yii\grid\CheckboxColumn',
+                                'headerOptions' => ['class' => 'text-light bg-primary']
+                            ],
+                            [
+                                'attribute' => 'first_name',
+                                'value' => 'first_name',
+                                'headerOptions' => ['class' => 'text-light bg-primary']
+                            ],
+                            [
+                                'attribute' => 'last_name',
+                                'value' => 'last_name',
+                                'headerOptions' => ['class' => 'text-light bg-primary']
+                            ]
                         ],
                     ]); ?>
                     <?php Modal::end(); ?>
@@ -118,6 +130,11 @@ use yii\helpers\Url;
 <?php
 $script = <<< JS
 
+    $('#assType').change(function(){
+        // alert($(this).val());
+        alert($('#itemType').val());
+    });
+
     $('#selection_all').click(function(){
         $('input[name=selection_all]').click();
 
@@ -125,15 +142,6 @@ $script = <<< JS
 
     $('#Create').click(function(){
     var selection = $('#coordinatorList').yiiGridView('getSelectedRows');
-    });
-
-    $('#downloadTemplate').click(function(){
-        var typeValue = $('#assType').val();
-        if (typeValue) {
-            alert(typeValue);
-        } else {
-            alert('AAA');
-        }
     });
 
     $('#downloadTemp').click(function(){

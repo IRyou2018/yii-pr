@@ -29,11 +29,17 @@ $this->title = 'Dashboard';
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'tableOptions' => ['class' => 'table table-bordered'],
+        'summary' => false,
         'columns' => [
             [
                 'attribute' => 'name',
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
-                'contentOptions' =>['width' => '80%']
+                'contentOptions' =>['width' => '67%']
+            ],
+            [
+                'attribute' => 'deadline',
+                'headerOptions' => ['class' => 'text-center text-light bg-secondary'],
+                'contentOptions' =>['width' => '16%']
             ],
             [
                 'attribute' => 'active',
@@ -47,13 +53,12 @@ $this->title = 'Dashboard';
                             'pluginEvents' => [
                                 'switchChange.bootstrapSwitch' => "function(e){sendRequest(e.currentTarget.checked, $data->id);}"
                             ],
-                    
                             'pluginOptions' => [
                                 'size' => 'small',
                                 'onColor' => 'primary',
                                 'offColor' => 'primary',
                                 'onText' => 'ON',
-                                'offText' => 'OFF'
+                                'offText' => 'OFF',
                             ],
                             'value' => $data->active
                         ]
@@ -63,7 +68,7 @@ $this->title = 'Dashboard';
 
             [
                 'class' => 'yii\grid\ActionColumn',
-                'contentOptions' =>['width' => '10%'],
+                'contentOptions' =>['width' => '7%'],
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
                 'template' => '{result}',
                 'buttons'=>

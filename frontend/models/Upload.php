@@ -30,11 +30,21 @@ class Upload extends Model {
             $paKeys = ["Matriculation Number", "First Name", "Last Name", "Email"];
         } else if ($assessment_type == 4) {
             $paKeys = ["Matriculation Number", "First Name", "Last Name", "Email", "Work File", "Matriculation Number(Marker Student)", "First Name(Marker Student)", "Last Name(Marker Student)", "Email(Marker Student)"];
-        } else {
-            return false;
         }
 
         $dataKeys = array_keys($data[0]);
+
+        
+        if(is_array($paKeys) 
+        && is_array($dataKeys) 
+        && count($paKeys) == count($dataKeys) 
+        && array_diff($paKeys, $dataKeys) === array_diff($dataKeys, $paKeys)) {
+            $valid = true;
+        } else {
+            $valid = false;
+            $this->addError('file', 'Uploaded template format error.');
+        }
+         
 
         return (
             is_array($paKeys) 
@@ -126,8 +136,11 @@ class Upload extends Model {
                     break;
                 }
             }
-        } else {
-            return false;
+        }
+        
+        if($valid) {
+        }else {
+            $this->addError('file', 'Input values are missing in upload file.');
         }
 
         return $valid;

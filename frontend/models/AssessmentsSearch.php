@@ -82,24 +82,30 @@ class AssessmentsSearch extends Assessments
     }
 
     /**
-     * Creates data provider instance with search query applied
+     * Search for current year Assessments.
      *
-     * @param array $params
+     * @param 
      *
      * @return ActiveDataProvider
      */
-    public function searchByLecturerID($params)
+    public function getCurrentYearAssessment()
     {
+        $year = date("Y",strtotime("-1 year"));
+        $date = "$year-09-01 00:00:00";
+
         $query = Assessments::find()
             ->join('INNER JOIN', 'lecturer_assessment as la', 'la.assessment_id = assessments.id')
-            ->where(['la.lecturer_id' => Yii::$app->user->id,]);
+            ->where('la.lecturer_id = :user')
+            ->andWhere('assessments.deadline >= :date')
+            ->addParams([
+                ':user' => Yii::$app->user->id,
+                ':date' => $date,
+            ]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'sort' =>false
         ]);
-
-        $this->load($params);
 
         if (!$this->validate()) {
             // uncomment the following line if you do not want to return any records when validation fails
@@ -107,117 +113,65 @@ class AssessmentsSearch extends Assessments
             return $dataProvider;
         }
 
+        return $dataProvider;
+    }
 
-        $query->andFilterWhere([
-            'id' => $this->id,
-            'assessment_type' => $this->assessment_type,
-            'deadline' => $this->deadline,
-            'active' => $this->active,
+    /**
+     * Search for current year Assessments.
+     *
+     * @param 
+     *
+     * @return ActiveDataProvider
+     */
+    public function getArchivedAssessment()
+    {
+        $year = date("Y",strtotime("-1 year"));
+        $date = "$year-09-01 00:00:00";
+
+        $query = Assessments::find()
+            ->join('INNER JOIN', 'lecturer_assessment as la', 'la.assessment_id = assessments.id')
+            ->where('la.lecturer_id = :user')
+            ->andWhere('assessments.deadline < :date')
+            ->addParams([
+                ':user' => Yii::$app->user->id,
+                ':date' => $date,
+            ]);
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'sort' =>false
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name]);
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
 
         return $dataProvider;
     }
 
-    // /**
-    //  * Get uncompleted assessment list
-    //  *
-    //  * @param array $params
-    //  *
-    //  * @return ActiveDataProvider
-    //  */
-    // public function searchUncompleted()
-    // {
-    //     $query = Assessments::find()
-    //         ->join('INNER JOIN', 'group_info as gi', 'gi.assessment_id = assessments.id')
-    //         ->join('INNER JOIN', 'peer_assessment as ps', 'ps.group_id = gi.id')
-    //         ->where([
-    //             'assessments.active' => self::ACTIVE,
-    //             'ps.completed' => self::UNCOMPLETE,
-    //             'ps.student_id' => Yii::$app->user->id])
-    //         ->union(
-    //             Assessments::find()
-    //             ->join('INNER JOIN', 'individual_assessment as ia', 'ia.assessment_id = assessments.id')
-    //             ->join('INNER JOIN', 'peer_review as pr', 'pr.individual_assessment_id = ia.id')
-    //             ->where([
-    //                 'assessments.active' => self::ACTIVE,
-    //                 'pr.completed' => self::UNCOMPLETE,
-    //                 'pr.marker_student_id' => Yii::$app->user->id])
-    //         );
-
-    //     $dataProvider = new ActiveDataProvider([
-    //         'query' => $query,
-    //         'sort' =>false
-    //     ]);
-
-    //     return $dataProvider;
-    // }
-
-    // /**
-    //  * Get completed assessment list
-    //  *
-    //  * @param array $params
-    //  *
-    //  * @return ActiveDataProvider
-    //  */
-    // public function searchCompleted()
-    // {
-    //     $query = Assessments::find()
-    //         ->join('INNER JOIN', 'group_assessment as ga', 'ga.assessment_id = assessments.id')
-    //         ->join('INNER JOIN', 'marker_student_info as msi', 'msi.group_id = ga.id')
-    //         ->where([
-    //             'assessments.active' => self::ACTIVE,
-    //             'msi.completed' => self::COMPLETE,
-    //             'msi.student_id' => Yii::$app->user->id])
-    //         ->union(
-    //             Assessments::find()
-    //             ->join('INNER JOIN', 'individual_assessment as ia', 'ia.assessment_id = assessments.id')
-    //             ->join('INNER JOIN', 'marker_student_info as msi', 'msi.individual_assessment_id = ia.id')
-    //             ->where([
-    //                 'assessments.active' => self::ACTIVE,
-    //                 'msi.completed' => self::COMPLETE,
-    //                 'msi.marker_student_id' => Yii::$app->user->id])
-    //         );
-
-    //     $dataProvider = new ActiveDataProvider([
-    //         'query' => $query,
-    //         'sort' => false
-    //     ]);
-
-    //     return $dataProvider;
-    // }
-
     /**
-     * Get feedbacks
+     * Search for current year Assessments.
      *
-     * @param array $params
+     * @param 
      *
      * @return ActiveDataProvider
      */
     public function searchFeedbacks()
     {
         $query = Assessments::find();
-            // ->join('INNER JOIN', 'group_info as gi', 'gi.assessment_id = assessments.id')
-            // ->join('INNER JOIN', 'peer_assessment as ps', 'ps.group_id = gi.id')
-            // ->where([
-            //     'assessments.active' => self::ACTIVE,
-            //     'ps.completed' => self::COMPLETE,
-            //     'ps.student_id' => Yii::$app->user->id])
-            // ->union(
-            //     Assessments::find()
-            //     ->join('INNER JOIN', 'individual_assessment as ia', 'ia.assessment_id = assessments.id')
-            //     ->join('INNER JOIN', 'peer_review as pr', 'pr.individual_assessment_id = ia.id')
-            //     ->where([
-            //         'assessments.active' => self::ACTIVE,
-            //         'pr.completed' => self::COMPLETE,
-            //         'pr.marker_student_id' => Yii::$app->user->id])
-            // );
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => false
+            'sort' =>false
         ]);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
 
         return $dataProvider;
     }

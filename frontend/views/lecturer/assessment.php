@@ -1,8 +1,10 @@
 <?php
 
+use yii\bootstrap4\Modal;
 use yii\data\ArrayDataProvider;
 use yii\grid\GridView;
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\widgets\DetailView;
 
 /* @var $this yii\web\View */
@@ -17,13 +19,22 @@ $this->params['breadcrumbs'][] = $this->title;
     <div class="row">
         <div class="col-md-10">
             <p>
+                <?= Html::a('Assessment Results', ['view-result', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
                 <?= Html::a('Edit Details', ['update', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
-                <?php if ($model->assessment_type == 0) : ?>
-                    <?= Html::a('Add Group', ['add-group', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
-                <?php elseif ($model->assessment_type == 1) : ?>
+                <?php if ($model->assessment_type == 0 || $model->assessment_type == 1 || $model->assessment_type == 2) : ?>
+                    <?= Html::button('Add Group', ['value' => Url::to(['add-group', 'id' => $model->id]), 'class' => 'btn btn-primary btn-sm', 'id' => 'modalButton']) ?>
+                    <?php
+                        Modal::begin([
+                            'title' => '<h4>Add Group</h4>',
+                            'id' => 'modal',
+                            'size' => 'modal-lg',
+                        ]);
+                        echo "<div id='modalContent'></div>";
+                        Modal::end();
+                    ?>
+                <?php elseif ($model->assessment_type == 3 || $model->assessment_type == 4) : ?>
                     <?= Html::a('Add Student', ['add-student', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
                 <?php endif; ?>
-                <?= Html::a('Assessment Results', ['view-result', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
             </p>
         </div>
         <div class="col-md-2 ml-auto">
@@ -50,15 +61,9 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
         <div class="row mt-2">
             <div class="col-md-2 text-white bg-dark">
-                Deadline
-            </div>
-            <div class="col-md-2 bg-light">
-                <?= $model->deadline ?>
-            </div>
-            <div class="col-md-2 text-white bg-dark">
                 Assessment Type
             </div>
-            <div class="col-md-2 bg-light">
+            <div class="col-md-10 bg-light">
                 <?php
                     if ($model->assessment_type == 0) {
                         echo "(Group) Peer Review";
@@ -73,10 +78,18 @@ $this->params['breadcrumbs'][] = $this->title;
                     }
                 ?>
             </div>
+        </div>
+        <div class="row mt-2">
             <div class="col-md-2 text-white bg-dark">
-                Assessment Type
+                Deadline
             </div>
-            <div class="col-md-2 bg-light">
+            <div class="col-md-4 bg-light">
+                <?= $model->deadline ?>
+            </div>
+            <div class="col-md-2 text-white bg-dark">
+                Visibility
+            </div>
+            <div class="col-md-4 bg-light">
                 <?php
                     if ($model->active == 1) {
                         echo "Active";
@@ -415,3 +428,43 @@ $this->params['breadcrumbs'][] = $this->title;
         <?php endif; ?>
     <?php endif; ?>
 </div>
+
+<?php
+$this->registerJsFile(
+    '@web/js/lecturer/assessment.js',
+    ['depends' => [\yii\web\JqueryAsset::class]]
+);
+?>
+<?php
+$script = <<< JS
+
+// here you write all your javascript stuff
+
+$('form#{$model->formName()}').on('beforeSubmit', function(e)
+{
+    var \$form = $(this);
+    $.post(
+        \$form.attr("action"), // serialize Yii2 form
+        \$form.serialize()
+    )
+        .done(function(result) {
+            console.log(result);
+            // if(result.message == 'Success')
+            if(result == 1)
+            {
+                $(\$form).trigger("reset");
+                // $(document).find('#secondmodal').modal('hide');
+                $.pjax.reload({container:'#branchesGrid'});
+            } else {
+                
+                $("#message").html(result);
+            }
+        }).fail(function() {
+            console.log("server error");
+        });
+    return false;
+});
+
+JS;
+$this->registerJs($script);
+?>
