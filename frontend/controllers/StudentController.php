@@ -287,11 +287,11 @@ class StudentController extends Controller
 
                             $contribution = 0;
                             if($countGroupMember % 2 != 0) {
-                                $contribution = 100-(round(100/$countGroupMember,0,PHP_ROUND_HALF_DOWN) * $countGroupMember - 1);
+                                $contribution = 100-(round(100/$countGroupMember,0,PHP_ROUND_HALF_DOWN)*($countGroupMember-1));
                             } else {
                                 $contribution = round(100/$countGroupMember,0,PHP_ROUND_HALF_DOWN);
                             }
-
+                            
                             $modelGroupDetail->contribution = $contribution;
                         }
     

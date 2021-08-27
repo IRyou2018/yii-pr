@@ -38,7 +38,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         Max Mark
                     </div>
                     <div class="col-md-2">
-                        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<?= $modelItem->max_mark_value ?>
+                        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<?= $modelItem->max_mark_value ?>
                     </div>
                     <?php if ($model->assessment_type == 2) : ?>
                     <div class="col-md-2 text-white bg-secondary">
@@ -77,7 +77,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         <?= Html::activeHiddenInput($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]group_student_Info_id"); ?>
                         <?= Html::activeHiddenInput($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]work_student_id"); ?>
                         <?php if ($model->assessment_type == 0 || $model->assessment_type == 2) : ?>
-                            <?= $form->field($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]contribution")->textInput(['style'=>'width:70px', 'class'=>'text-center'])->label(false) ?>
+                            <?= $form->field($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]contribution")->textInput(['style'=>'width:70px', 'class'=>'text-center', 'type' => 'number'])->label(false) ?>
                         <?php elseif ($model->assessment_type == 1) : ?>
                             <?= $form->field($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]mark")->textInput(['style'=>'width:70px', 'class'=>'text-center'])->label(false) ?>
                         <?php endif; ?>
@@ -100,3 +100,14 @@ $this->params['breadcrumbs'][] = $this->title;
     <?php ActiveForm::end(); ?>
 
 </div>
+
+<?php $style= <<< CSS
+
+input[type=number]::-webkit-inner-spin-button {
+  cursor: pointer;
+}
+
+CSS;
+$this->registerCss($style);
+?>
+
