@@ -56,7 +56,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             ]);
                             Modal::begin([
                                 'title' => 'Rubrics',
-                                'toggleButton' => ['label' => $modelItem->name, 'tag' => 'a'],
+                                'toggleButton' => ['label' => $modelItem->name, 'tag' => 'a', 'class'=>'text-black'],
                             ]);
                         ?>
 

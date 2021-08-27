@@ -1,6 +1,10 @@
 <?php
 
+use common\models\Rubrics;
 use yii\bootstrap4\ActiveForm;
+use yii\bootstrap4\Modal;
+use yii\data\ActiveDataProvider;
+use yii\grid\GridView;
 use yii\helpers\Html;
 use yii\widgets\DetailView;
 
@@ -26,15 +30,52 @@ $this->params['breadcrumbs'][] = $this->title;
             <div class="card-body">
                 <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
                 <div class="row mb-1">
-                    <div class="col-md-2 text-white bg-secondary">
+                    <div class="col-md-2 font-weight-bold text-white bg-secondary">
                         Item/Functionality
                     </div>
                     <div class="col-md-10">
-                        <?= $modelItem->name ?>
+                        <?php
+                            $query = Rubrics::find()
+                                ->where('item_id = :id')
+                                ->addParams([':id' => $modelItem->id]);
+                            $dataProvider = new ActiveDataProvider([
+                                'query' => $query,
+                                'sort' => false,
+                            ]);
+                            Modal::begin([
+                                'title' => 'Rubrics',
+                                'toggleButton' => ['label' => $modelItem->name, 'tag' => 'a', 'class'=>'text-black'],
+                            ]);
+                        ?>
+                        <?= GridView::widget([
+                            'dataProvider' => $dataProvider,
+                            'id' => 'rubricsList',
+                            'tableOptions' => ['class' => 'table table-bordered'],
+                            'summary' => false,
+                            'columns' => [
+                                [
+                                    'attribute' => 'level',
+                                    'label' => 'Name',
+                                    'value' => 'level',
+                                    'headerOptions' => ['class' => 'text-light bg-primary']
+                                ],
+                                [
+                                    'attribute' => 'weight',
+                                    'value' => 'weight',
+                                    'headerOptions' => ['class' => 'text-light bg-primary']
+                                ],
+                                [
+                                    'attribute' => 'description',
+                                    'value' => 'description',
+                                    'headerOptions' => ['class' => 'text-light bg-primary']
+                                ]
+                            ],
+                        ]); ?>
+                        <?php Modal::end(); ?>
                     </div>
                 </div>
                 <div class="row mb-1">
-                    <div class="col-md-2 text-white bg-secondary">
+                    <div class="col-md-2 font-weight-bold text-white bg-secondary">
                         Max Mark
                     </div>
                     <div class="col-md-2">
@@ -51,10 +92,10 @@ $this->params['breadcrumbs'][] = $this->title;
                     <?php endif; ?>
                 </div>
                 <div class="row mb-1">
-                    <div class="col-md-2 text-white bg-secondary">
+                    <div class="col-md-2 font-weight-bold bg-light">
                         Student Name
                     </div>
-                    <div class="col-md-2 text-white bg-secondary">
+                    <div class="col-md-2 font-weight-bold bg-light">
                     <?php
                         if ($model->assessment_type == 0 || $model->assessment_type == 2) {
                             echo 'Contribution';
@@ -63,7 +104,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         }
                     ?>   
                     </div>
-                    <div class="col-md-8 text-white bg-secondary">
+                    <div class="col-md-8 font-weight-bold bg-light">
                         Comment
                     </div>
                 </div>
