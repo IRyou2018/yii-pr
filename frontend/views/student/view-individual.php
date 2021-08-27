@@ -19,78 +19,85 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?php if (!empty($modelsSection)) : ?>
         <?php foreach ($modelsSection as $indexSection => $modelSection): ?>
-        <table class="table table-bordered mt-2">
-            <thead>
-                <tr class="text-white bg-dark">
-                    <th scope="col" colspan="12">
-                        <?= $modelSection->name ?>
-                    </th>
-                </tr>
-                <tr class="text-white bg-secondary">
-                    <th class="align-middle">Item/Functionality</th>
-                    <th class="align-middle text-center">Max Mark</th>
-                    <th class="align-middle text-center">Proposed Mark</th>
-                    <th class="align-middle">Feedback</th>
-                </tr>
-            </thead>
-
-            <tbody class="container-section">
+        <div class="card mt-2 mb-2">
+            <div class="card-header text-white bg-dark">
+                <h5><?= $modelSection->name ?></h5>
+            </div>
+            <div class="card-body">
                 <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
-                <tr>
-                    <td class="col-md-2"> 
-                        <?php
-                            $query = Rubrics::find()
-                                ->where('item_id = :id')
-                                ->addParams([':id' => $modelItem->id]);
-                            $dataProvider = new ActiveDataProvider([
-                                'query' => $query,
-                                'sort' => false,
-                            ]);
-                            Modal::begin([
-                                'title' => 'Rubrics',
-                                'toggleButton' => ['label' => $modelItem->name, 'tag' => 'a'],
-                            ]);
-                        ?>
+                <div class="container border mb-2">
+                    <div class="row mb-1">
+                        <div class="col-md-2 font-weight-bold text-white bg-secondary">
+                            Item/Functionality
+                        </div>
+                        <div class="col-md-10">
+                            <?php
+                                $query = Rubrics::find()
+                                    ->where('item_id = :id')
+                                    ->addParams([':id' => $modelItem->id]);
+                                $dataProvider = new ActiveDataProvider([
+                                    'query' => $query,
+                                    'sort' => false,
+                                ]);
+                                Modal::begin([
+                                    'title' => 'Rubrics',
+                                    'toggleButton' => ['label' => $modelItem->name, 'tag' => 'a', 'class'=>'text-black'],
+                                ]);
+                            ?>
 
-                        <?= GridView::widget([
-                            'dataProvider' => $dataProvider,
-                            'id' => 'rubricsList',
-                            'tableOptions' => ['class' => 'table table-bordered'],
-                            'summary' => false,
-                            'columns' => [
-                                [
-                                    'attribute' => 'level',
-                                    'label' => 'Name',
-                                    'value' => 'level',
-                                    'headerOptions' => ['class' => 'text-light bg-primary']
+                            <?= GridView::widget([
+                                'dataProvider' => $dataProvider,
+                                'id' => 'rubricsList',
+                                'tableOptions' => ['class' => 'table table-bordered'],
+                                'summary' => false,
+                                'columns' => [
+                                    [
+                                        'attribute' => 'level',
+                                        'label' => 'Name',
+                                        'value' => 'level',
+                                        'headerOptions' => ['class' => 'text-light bg-primary']
+                                    ],
+                                    [
+                                        'attribute' => 'weight',
+                                        'value' => 'weight',
+                                        'headerOptions' => ['class' => 'text-light bg-primary']
+                                    ],
+                                    [
+                                        'attribute' => 'description',
+                                        'value' => 'description',
+                                        'headerOptions' => ['class' => 'text-light bg-primary']
+                                    ]
                                 ],
-                                [
-                                    'attribute' => 'weight',
-                                    'value' => 'weight',
-                                    'headerOptions' => ['class' => 'text-light bg-primary']
-                                ],
-                                [
-                                    'attribute' => 'description',
-                                    'value' => 'description',
-                                    'headerOptions' => ['class' => 'text-light bg-primary']
-                                ]
-                            ],
-                        ]); ?>
-                        <?php Modal::end(); ?>
-                    </td>
-                    <td class="col-md-1 text-center">
-                        <?= $modelItem->max_mark_value ?>
-                    </td>
-                    <td class="col-md-1">
-                        <?= $modelsAssessmentDetail[$indexSection][$indexItem]->mark ?>
-                    </td>
-                    <td class="col-md-7">
-                        <?= $modelsAssessmentDetail[$indexSection][$indexItem]->comment ?>
-                    </td>
-                </tr>
+                            ]); ?>
+                            <?php Modal::end(); ?>
+                        </div>
+                    </div>
+                    <div class="row mb-1">
+                        <div class="col-md-2 font-weight-bold text-white bg-secondary">
+                            Proposed Mark
+                        </div>
+                        <div class="col-md-4">
+                            <?= $modelsAssessmentDetail[$indexSection][$indexItem]->mark ?>
+                        </div>
+                        <div class="col-md-2 font-weight-bold text-white bg-secondary">
+                            Max Mark
+                        </div>
+                        <div class="col-md-4">
+                            <?= $modelItem->max_mark_value ?>
+                        </div>
+                    </div>
+                    <div class="row mb-1">
+                        <div class="col-md-2 font-weight-bold text-white bg-secondary">
+                            Feedback
+                        </div>
+                        <div class="col-md-10">
+                            <?= $modelsAssessmentDetail[$indexSection][$indexItem]->comment ?>
+                        </div>
+                    </div>
+                </div>
                 <?php endforeach; ?>
-            </tbody>
-        </table>
+            </div>
+        </div>
         <?php endforeach; ?>
     <?php endif; ?>
 

@@ -29,6 +29,7 @@ $this->params['breadcrumbs'][] = $this->title;
             </div>
             <div class="card-body">
                 <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
+                <div class="container border mb-2">
                 <div class="row mb-1">
                     <div class="col-md-2 font-weight-bold text-white bg-secondary">
                         Item/Functionality
@@ -128,6 +129,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     </div>
                 </div>
                 <?php endforeach; ?>
+                </div>
                 <?php endforeach; ?>
             </div>
         </div>
