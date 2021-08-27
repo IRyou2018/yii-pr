@@ -130,10 +130,32 @@ use yii\helpers\Url;
 <?php
 $script = <<< JS
 
+$(document).ready(function(){
     $('#assType').change(function(){
-        // alert($(this).val());
-        // alert($('#itemType').val());
+        var assType = $('#assType').val();
+        $("select").filter(".itemType").each(function() {
+            if (assType == 3 || assType == 4) {
+                $(this).val(0);
+                $(this).prop('disabled', true);
+            } else {
+                $(this).prop('disabled', false);
+            }
+        })        
     });
+
+    $("button").click(function(){
+        var assType = $('#assType').val();
+        $("select").filter(".itemType").each(function() {
+            if (assType == 3 || assType == 4) {
+                $(this).val(0);
+                $(this).prop('disabled', true);
+            } else {
+                $(this).prop('disabled', false);
+            }
+        })        
+    });
+
+});
 
     $('#selection_all').click(function(){
         $('input[name=selection_all]').click();

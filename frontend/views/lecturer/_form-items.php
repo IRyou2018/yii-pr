@@ -69,7 +69,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
                                     0 => 'Individual Item',
                                     1 => 'Group Item'
                                 ],
-                                ['prompt'=>'Select Item Type', 'id' => 'itemType'],
+                                ['prompt'=>'Select Item Type', 'class' => 'itemType'],
                         ) ?>
                     </div>
                 </div>

@@ -71,15 +71,14 @@ class StudentController extends Controller
      */
     public function actionDashboard()
     {
+        $this->layout = 'student';
         $studentModel = new StudentModel();
         $unCompletedAssessment = $studentModel->searchAssessment(self::UNCOMPLETE);
         $completedAssessment = $studentModel->searchAssessment(self::COMPLETED);
-        $feedbacks = $studentModel->searchAssessment(self::COMPLETED);
 
         return $this->render('dashboard', [
             'unCompletedAssessment' => $unCompletedAssessment,
             'completedAssessment' => $completedAssessment,
-            'feedbacks' => $feedbacks,
         ]);
     }
 
@@ -91,6 +90,7 @@ class StudentController extends Controller
      */
     public function actionArchived()
     {
+        $this->layout = 'student';
         $studentModel = new StudentModel();
         $completedAssessment = $studentModel->searchArchivedAssessment(self::COMPLETED);
         $feedbacks = $studentModel->searchAssessment(self::COMPLETED);
@@ -102,11 +102,29 @@ class StudentController extends Controller
     }
 
     /**
+     * Displays a single Assessments model.
+     * @param int $id ID
+     * @return mixed
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    public function actionFeedback()
+    {
+        $this->layout = 'student';
+        $studentModel = new StudentModel();
+        $feedbacks = $studentModel->searchAssessment(self::COMPLETED);
+
+        return $this->render('feedback', [
+            'feedbacks' => $feedbacks,
+        ]);
+    }
+
+    /**
      * Mark Individual Assessment
      * @return mixed
      */
     public function actionSubmitIndividual($id, $assessment_id)
     {
+        $this->layout = 'student';
         $model = Assessments::findOne($assessment_id);
 
         $section = new Sections();
@@ -211,6 +229,7 @@ class StudentController extends Controller
      */
     public function actionViewIndividual($id, $assessment_id)
     {
+        $this->layout = 'student';
         $model = Assessments::findOne($assessment_id);
 
         $section = new Sections();
@@ -251,6 +270,7 @@ class StudentController extends Controller
      */
     public function actionSubmitGroup($id, $assessment_id)
     {
+        $this->layout = 'student';
         $model = Assessments::findOne($assessment_id);
 
         $section = new Sections();
@@ -420,6 +440,7 @@ class StudentController extends Controller
      */
     public function actionViewGroup($id, $assessment_id)
     {
+        $this->layout = 'student';
         $model = Assessments::findOne($assessment_id);
 
         $section = new Sections();
@@ -431,6 +452,67 @@ class StudentController extends Controller
         $groupAssessmentDetails = GroupStudentInfo::findOne($id)->groupAssessmentDetails;
 
         $groupStudents = GroupStudentInfo::findOne($id)->group->groupStudentInfos;
+
+        foreach ($modelsSection as $indexSection => $modelSection) {
+
+            $items = $modelSection->items;
+            $modelsItem[$indexSection] = $items;
+
+            foreach ($items as $index => $item) {
+
+                if ($item->item_type == self::INDIVIDUAL_ITEM) {
+                    
+                    foreach($groupStudents as $indexStudent => $groupStudent) {
+
+                        foreach($groupAssessmentDetails as $groupAssessmentDetail) {
+
+                            if($groupStudent->student_id == $groupAssessmentDetail->work_student_id
+                                && $item->id == $groupAssessmentDetail->item_id) {
+
+                                $modelsGroupAssessmentDetail[$indexSection][$index][$indexStudent] = $groupAssessmentDetail;
+
+                            }
+                        }
+                    }
+                } else if ($item->item_type == self::GROUP) {
+
+                    foreach($groupAssessmentDetails as $groupAssessmentDetail) {
+
+                        if($item->id = $groupAssessmentDetail->item_id) {
+
+                            $modelsGroupAssessmentDetail[$indexSection][$index][0] = $groupAssessmentDetail;
+                        }
+                    }
+                }
+
+                if ($model->assessment_type == self::G_PEER_R_A) {
+                    $marklist[$indexSection][$index] = $modelsGroupAssessmentDetail[$indexSection][$index][0]->mark;
+                }
+            }
+        }
+
+        return $this->render('view-group', [
+            'model' => $model,
+            'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
+            'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
+            'modelsGroupAssessmentDetail' => (empty($modelsGroupAssessmentDetail)) ? [[[new GroupAssessmentDetail()]]] :  $modelsGroupAssessmentDetail,
+            'marklist' => (empty($marklist)) ? [['']] :  $marklist,
+        ]);
+    }
+
+    /**
+     * View completed group reviews.
+     * 
+     * @return mixed
+     */
+    public function actionViewFeedback($id, $assessment_id)
+    {
+        $this->layout = 'student';
+        $model = Assessments::findOne($assessment_id);
+
+        $modelsSection = $model->sections;
+        $modelsItem = [];
+        $modelsFeedback = [];
 
         foreach ($modelsSection as $indexSection => $modelSection) {
 

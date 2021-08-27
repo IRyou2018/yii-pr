@@ -79,6 +79,7 @@ class LecturerController extends Controller
      */
     public function actionDashboard()
     {
+        $this->layout = 'lecturer';
         $searchModel = new AssessmentsSearch();
         $dataProvider = $searchModel->getCurrentYearAssessment();
 
@@ -96,6 +97,7 @@ class LecturerController extends Controller
      */
     public function actionArchived()
     {
+        $this->layout = 'lecturer';
         $searchModel = new AssessmentsSearch();
         $dataProvider = $searchModel->getArchivedAssessment();
 

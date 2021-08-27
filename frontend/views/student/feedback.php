@@ -9,19 +9,18 @@ use yii\helpers\Url;
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
 ?>
-<div class="student-archived">
+<div class="student-dashboard">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <div class="d-flex">
-            <i class="material-icons fa-2x">assignment_turned_in</i> &nbsp; 
-            <span class="h4 align-self-center">Assessments</span>
+            <i class="material-icons fa-2x">feedback</i> &nbsp; 
+            <span class="h4 align-self-center">Feedback</span>
     </div>
-
-    <?php if (!empty($completedAssessment)) : ?>
+    <?php if (!empty($feedbacks)) : ?>
     <?= GridView::widget([
         'dataProvider' => new ArrayDataProvider([
-            'allModels' => $completedAssessment
+            'allModels' => $feedbacks
         ]),
         'summary' => false,
         'tableOptions' => ['class' => 'table table-bordered'],
@@ -30,19 +29,16 @@ use yii\helpers\Url;
                 'data-id' => $model['id'],
                 'data-assessment_id' => $model['assessment_id'],
                 'data-type' => $model['assessment_type'],
-                'data-status' => $model['completed']
+                'data-status' => 2
             ]; },
         'columns' => [
             [
                 'attribute' => 'name',
-                'label' => 'Assessment',
-                'value' => 'name',
                 'contentOptions' =>['width' => '80%'],
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
             ],
             [
                 'attribute' => 'deadline',
-                'value' => function ($data) { return 'Finished';},
                 'contentOptions' =>['width' => '20%'],
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
             ],
@@ -51,7 +47,7 @@ use yii\helpers\Url;
     <?php endif; ?>
     <div class="d-flex">
         <div class="tr mb-3">
-            <p class="text-muted"> &nbsp; Peer Assessments that are completed</p>
+            <p class="text-muted"> &nbsp; Feedbacks that are given</p>
         </div>
     </div>
 
@@ -69,18 +65,18 @@ $this->registerJs("
             if(type == 0 || type == 1 || type == 2) {
                 if(status == 0) {
                     location.href = '" . Url::to(['student/submit-group']) . "?id=' + id + '&assessment_id=' + assessment_id;
-                } else {
+                } else if(status == 1) {
                     location.href = '" . Url::to(['student/view-group']) . "?id=' + id + '&assessment_id=' + assessment_id;
-                } 
+                }
             }
             else if(type == 3 || type == 4) {
                 if(status == 0) {
                     location.href = '" . Url::to(['student/submit-individual']) . "?id=' + id + '&assessment_id=' + assessment_id;
-                } else {
+                } else if(status == 1) {
                     location.href = '" . Url::to(['student/view-individual']) . "?id=' + id + '&assessment_id=' + assessment_id;
                 }
-                
             }
+
             if(status == 2) {
                 location.href = '" . Url::to(['student/view-feedback']) . "?id=' + id + '&assessment_id=' + assessment_id;
             }
