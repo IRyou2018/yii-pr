@@ -14,11 +14,6 @@ use yii\helpers\Url;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <div class="d-flex">
-            <i class="material-icons fa-2x">assignment</i> &nbsp; 
-            <span class="h4 align-self-center">To be completed</span>
-    </div>
-
-    <div class="d-flex">
             <i class="material-icons fa-2x">assignment_turned_in</i> &nbsp; 
             <span class="h4 align-self-center">Completed</span>
     </div>
@@ -114,6 +109,9 @@ $this->registerJs("
                     location.href = '" . Url::to(['student/view-individual']) . "?id=' + id + '&assessment_id=' + assessment_id;
                 }
                 
+            }
+            if(status == 2) {
+                location.href = '" . Url::to(['student/view-feedback']) . "?id=' + id + '&assessment_id=' + assessment_id;
             }
         }
     });

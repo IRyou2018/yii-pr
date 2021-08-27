@@ -98,11 +98,13 @@ class StudentController extends Controller
     public function actionArchived()
     {
         $searchModel = new AssessmentsSearch();
-        $dataProvider = $searchModel->searchByLecturerID($this->request->queryParams);
+        $feedbacks = $searchModel->searchFeedbacks();
+        $studentModel = new StudentModel();
+        $completedAssessment = $studentModel->searchArchivedAssessment(self::COMPLETED);
 
         return $this->render('archived', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
+            'completedAssessment' => $completedAssessment,
+            'feedbacks' => $feedbacks,
         ]);
     }
 
