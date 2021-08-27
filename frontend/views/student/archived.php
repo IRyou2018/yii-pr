@@ -59,9 +59,11 @@ use yii\helpers\Url;
             <i class="material-icons fa-2x">feedback</i> &nbsp; 
             <span class="h4 align-self-center">Feedback</span>
     </div>
-    <?php if ($feedbacks->getTotalCount() > 0) : ?>
+    <?php if (!empty($feedbacks)) : ?>
     <?= GridView::widget([
-        'dataProvider' => $feedbacks,
+        'dataProvider' => new ArrayDataProvider([
+            'allModels' => $feedbacks
+        ]),
         'summary' => false,
         'tableOptions' => ['class' => 'table table-bordered'],
         'columns' => [

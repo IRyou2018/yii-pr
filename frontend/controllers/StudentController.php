@@ -3,19 +3,14 @@
 namespace frontend\controllers;
 
 use common\models\Assessments;
-use common\models\GroupAssessment;
 use common\models\GroupAssessmentDetail;
-use common\models\GroupInfo;
 use common\models\GroupStudentInfo;
 use common\models\IndividualAssessmentDetail;
 use common\models\Items;
 use common\models\MarkerStudentInfo;
-use common\models\Rubrics;
 use common\models\Sections;
 use Exception;
 use frontend\models\ArrayValidator;
-use frontend\models\AssessmentsSearch;
-use frontend\models\ContributionValidator;
 use frontend\models\GroupItemMark;
 use frontend\models\StudentModel;
 use yii\filters\AccessControl;
@@ -76,11 +71,10 @@ class StudentController extends Controller
      */
     public function actionDashboard()
     {
-        $searchModel = new AssessmentsSearch();
-        $feedbacks = $searchModel->searchFeedbacks();
         $studentModel = new StudentModel();
         $unCompletedAssessment = $studentModel->searchAssessment(self::UNCOMPLETE);
         $completedAssessment = $studentModel->searchAssessment(self::COMPLETED);
+        $feedbacks = $studentModel->searchAssessment(self::COMPLETED);
 
         return $this->render('dashboard', [
             'unCompletedAssessment' => $unCompletedAssessment,
@@ -97,10 +91,9 @@ class StudentController extends Controller
      */
     public function actionArchived()
     {
-        $searchModel = new AssessmentsSearch();
-        $feedbacks = $searchModel->searchFeedbacks();
         $studentModel = new StudentModel();
         $completedAssessment = $studentModel->searchArchivedAssessment(self::COMPLETED);
+        $feedbacks = $studentModel->searchAssessment(self::COMPLETED);
 
         return $this->render('archived', [
             'completedAssessment' => $completedAssessment,
@@ -114,7 +107,7 @@ class StudentController extends Controller
      */
     public function actionSubmitIndividual($id, $assessment_id)
     {
-        $model = $this->findModel($assessment_id);
+        $model = Assessments::findOne($assessment_id);
 
         $section = new Sections();
         $modelsSection = $section->getStudentSections($assessment_id);
@@ -218,7 +211,7 @@ class StudentController extends Controller
      */
     public function actionViewIndividual($id, $assessment_id)
     {
-        $model = $this->findModel($assessment_id);
+        $model = Assessments::findOne($assessment_id);
 
         $section = new Sections();
         $modelsSection = $section->getStudentSections($assessment_id);
@@ -258,7 +251,7 @@ class StudentController extends Controller
      */
     public function actionSubmitGroup($id, $assessment_id)
     {
-        $model = $this->findModel($assessment_id);
+        $model = Assessments::findOne($assessment_id);
 
         $section = new Sections();
         $modelsSection = $section->getStudentSections($assessment_id);
@@ -289,6 +282,18 @@ class StudentController extends Controller
                         $modelGroupDetail->item_id = $item->id;
                         $modelGroupDetail->group_student_Info_id = $id;
                         $modelGroupDetail->work_student_id = $groupStudent->student_id;
+
+                        if ($model->assessment_type == self::G_PEER_R_A || $model->assessment_type == self::G_PEER_REVIEW) {
+
+                            $contribution = 0;
+                            if($countGroupMember % 2 != 0) {
+                                $contribution = 100-(round(100/$countGroupMember,0,PHP_ROUND_HALF_DOWN) * $countGroupMember - 1);
+                            } else {
+                                $contribution = round(100/$countGroupMember,0,PHP_ROUND_HALF_DOWN);
+                            }
+
+                            $modelGroupDetail->contribution = $contribution;
+                        }
     
                         $modelsGroupAssessmentDetail[$indexSection][$index][$indexStudent] = $modelGroupDetail;
                     }
@@ -415,7 +420,7 @@ class StudentController extends Controller
      */
     public function actionViewGroup($id, $assessment_id)
     {
-        $model = $this->findModel($assessment_id);
+        $model = Assessments::findOne($assessment_id);
 
         $section = new Sections();
         $modelsSection = $section->getStudentSections($assessment_id);
@@ -474,19 +479,4 @@ class StudentController extends Controller
         ]);
     }
 
-    /**
-     * Finds the Assessments model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id ID
-     * @return Assessments the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
-     */
-    protected function findModel($id)
-    {
-        if (($model = Assessments::findOne($id)) !== null) {
-            return $model;
-        }
-
-        throw new NotFoundHttpException('The requested page does not exist.');
-    }
 }

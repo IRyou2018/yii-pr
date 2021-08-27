@@ -150,29 +150,4 @@ class AssessmentsSearch extends Assessments
 
         return $dataProvider;
     }
-
-    /**
-     * Search for current year Assessments.
-     *
-     * @param 
-     *
-     * @return ActiveDataProvider
-     */
-    public function searchFeedbacks()
-    {
-        $query = Assessments::find();
-
-        $dataProvider = new ActiveDataProvider([
-            'query' => $query,
-            'sort' =>false
-        ]);
-
-        if (!$this->validate()) {
-            // uncomment the following line if you do not want to return any records when validation fails
-            // $query->where('0=1');
-            return $dataProvider;
-        }
-
-        return $dataProvider;
-    }
 }
