@@ -9,7 +9,7 @@ use yii\helpers\Url;
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
 ?>
-<div class="lecturer-assessment-index">
+<div class="student-dashboard">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
@@ -28,7 +28,7 @@ use yii\helpers\Url;
                 'data-id' => $model['id'],
                 'data-assessment_id' => $model['assessment_id'],
                 'data-type' => $model['assessment_type'],
-                'data-status' => $model['completed']
+                'data-status' => 0
             ]; },
         'summary' => '',
         // 'hover'=>true,
@@ -71,7 +71,7 @@ use yii\helpers\Url;
                 'data-id' => $model['id'],
                 'data-assessment_id' => $model['assessment_id'],
                 'data-type' => $model['assessment_type'],
-                'data-status' => $model['completed']
+                'data-status' => 1
             ]; },
         'columns' => [
             [
@@ -105,6 +105,13 @@ use yii\helpers\Url;
         'dataProvider' => $feedbacks,
         'summary' => false,
         'tableOptions' => ['class' => 'table table-bordered'],
+        'rowOptions' => function ($model, $key, $index, $grid) {
+            return [
+                'data-id' => $model['id'],
+                'data-assessment_id' => $model['assessment_id'],
+                'data-type' => $model['assessment_type'],
+                'data-status' => 2
+            ]; },
         'columns' => [
             [
                 'attribute' => 'name',
@@ -139,17 +146,20 @@ $this->registerJs("
             if(type == 0 || type == 1 || type == 2) {
                 if(status == 0) {
                     location.href = '" . Url::to(['student/submit-group']) . "?id=' + id + '&assessment_id=' + assessment_id;
-                } else {
+                } else if(status == 1) {
                     location.href = '" . Url::to(['student/view-group']) . "?id=' + id + '&assessment_id=' + assessment_id;
-                } 
+                }
             }
             else if(type == 3 || type == 4) {
                 if(status == 0) {
                     location.href = '" . Url::to(['student/submit-individual']) . "?id=' + id + '&assessment_id=' + assessment_id;
-                } else {
+                } else if(status == 1) {
                     location.href = '" . Url::to(['student/view-individual']) . "?id=' + id + '&assessment_id=' + assessment_id;
                 }
-                
+            }
+
+            if(status == 2) {
+                location.href = '" . Url::to(['student/view-feedback']) . "?id=' + id + '&assessment_id=' + assessment_id;
             }
         }
     });

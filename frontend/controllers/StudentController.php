@@ -13,7 +13,10 @@ use common\models\MarkerStudentInfo;
 use common\models\Rubrics;
 use common\models\Sections;
 use Exception;
+use frontend\models\ArrayValidator;
 use frontend\models\AssessmentsSearch;
+use frontend\models\ContributionValidator;
+use frontend\models\GroupItemMark;
 use frontend\models\StudentModel;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -33,6 +36,10 @@ class StudentController extends Controller
 
     const INDIVIDUAL_ITEM = 0;
     const GROUP_ITEM = 1;
+
+    const G_PEER_REVIEW = 0;
+    const G_PEER_ASSESSMENT = 1;
+    const G_PEER_R_A = 2;
 
     /**
      * @inheritDoc
@@ -243,8 +250,8 @@ class StudentController extends Controller
     }
 
     /**
-     * Creates a new Assessments model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
+     * Submit group reviews.
+     * 
      * @return mixed
      */
     public function actionSubmitGroup($id, $assessment_id)
@@ -255,20 +262,24 @@ class StudentController extends Controller
         $modelsSection = $section->getStudentSections($assessment_id);
         $modelsItem = [[new Items()]];
         $modelsGroupAssessmentDetail = [];
-        $countGroupMember = 0;
+        $modelsGroupItemMark = [];
+
+        $groupStudents = GroupStudentInfo::findOne($id)->group->groupStudentInfos;
+
+        $countGroupMember = count($groupStudents);
 
         foreach ($modelsSection as $indexSection => $modelSection) {
 
             $items = $modelSection->items;
             $modelsItem[$indexSection] = $items;
 
-            $group_id = GroupStudentInfo::findOne($id)->group_id;
-
-            $groupStudents = GroupAssessment::findOne($group_id)->groupStudentInfos;
-
-            $countGroupMember = count($groupStudents);
-
             foreach ($items as $index => $item) {
+
+                if ($model->assessment_type == self::G_PEER_R_A) {
+                    $modelGroupItemMark = new GroupItemMark();
+                    $modelGroupItemMark->item_max_mark = $item->max_mark_value;
+                    $modelsGroupItemMark[$indexSection][$index] = $modelGroupItemMark;
+                }
 
                 if ($item->item_type == self::INDIVIDUAL_ITEM) {
                     foreach($groupStudents as $indexStudent => $groupStudent) {
@@ -279,17 +290,34 @@ class StudentController extends Controller
     
                         $modelsGroupAssessmentDetail[$indexSection][$index][$indexStudent] = $modelGroupDetail;
                     }
+                } else if ($item->item_type == self::GROUP) {
+                    $modelGroupDetail = new GroupAssessmentDetail();
+                    $modelGroupDetail->item_id = $item->id;
+                    $modelGroupDetail->group_student_Info_id = $id;
+                    $modelsGroupAssessmentDetail[$indexSection][$index][0] = $modelGroupDetail;
                 }
             }
         }
         
-        // echo "<pre>";
-        // print_r($modelsGroupAssessmentDetail);
-        // print_r(count($groupStudents));
-        // echo "</pre>";
-        // exit;
         if ($this->request->isPost) {
             
+            if (isset($_POST['GroupItemMark'][0][0])) {
+                foreach ($_POST['GroupItemMark'] as $indexSection => $items) {
+                    foreach ($items as $indexItem => $item) {
+                        $data['GroupItemMark'] = $item;
+                        $modelGroupItemMark = new GroupItemMark();
+                        $modelGroupItemMark->load($data);
+                        $modelGroupItemMark->scenario = 'submit';
+
+                        $modelsGroupItemMark[$indexSection][$indexItem] = $modelGroupItemMark;
+                        if ($modelGroupItemMark->validate()) {
+                        } else {
+                            $valid = false;
+                        }
+                    }
+                }
+            }
+
             if (isset($_POST['GroupAssessmentDetail'][0][0][0])) {
 
                 $index = 0;
@@ -298,17 +326,21 @@ class StudentController extends Controller
 
                 // Get Input value
                 foreach ($_POST['GroupAssessmentDetail'] as $indexSection => $groupDetailsSection) {
-                    
+
                     foreach ($groupDetailsSection as $indexItem => $groupDetailsItem) {
                     
-                        foreach ($groupDetailsItem as $index => $groupDetailStudent) {
+                        foreach ($groupDetailsItem as $indexStudent => $groupDetailStudent) {
                             
                             $data['GroupAssessmentDetail'] = $groupDetailStudent;
                             $groupDetail = new GroupAssessmentDetail();
                             $groupDetail->load($data);
-                            $groupDetail->scenario = 'submit';
+                            if ($model->assessment_type == self::G_PEER_ASSESSMENT) {
+                                $groupDetail->scenario = 'submit';
+                            } else if ($model->assessment_type == self::G_PEER_R_A) {
+                                $groupDetail->mark = $modelsGroupItemMark[$indexSection][$indexItem]->mark;
+                            }
 
-                            $modelsGroupAssessmentDetail[$indexSection][$indexItem] = $groupDetail;
+                            $modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent] = $groupDetail;
 
                             // Input validation
                             if($groupDetail->validate()) {
@@ -319,6 +351,11 @@ class StudentController extends Controller
                             $index++;
                         }
                     }
+                }
+
+                if ($model->assessment_type == self::G_PEER_REVIEW || $model->assessment_type == self::G_PEER_R_A) {
+                    $arrayValidator = new ArrayValidator();
+                    $valid = $arrayValidator->validateGroupDetail($modelsGroupAssessmentDetail, $countGroupMember);
                 }
 
                 if($valid) {
@@ -362,10 +399,76 @@ class StudentController extends Controller
 
         return $this->render('submit-group', [
             'model' => $model,
-            'countGroupMember' => $countGroupMember,
+            'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
+            'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
+            'modelsGroupItemMark' => (empty($modelsGroupItemMark)) ? [[new GroupItemMark()]] : $modelsGroupItemMark,
+            'modelsGroupAssessmentDetail' => (empty($modelsGroupAssessmentDetail)) ? [[[new GroupAssessmentDetail()]]] :  $modelsGroupAssessmentDetail,
+        ]);
+    }
+
+    /**
+     * View completed group reviews.
+     * 
+     * @return mixed
+     */
+    public function actionViewGroup($id, $assessment_id)
+    {
+        $model = $this->findModel($assessment_id);
+
+        $section = new Sections();
+        $modelsSection = $section->getStudentSections($assessment_id);
+        $modelsItem = [[new Items()]];
+        $modelsGroupAssessmentDetail = [];
+        $marklist = [];
+
+        $groupAssessmentDetails = GroupStudentInfo::findOne($id)->groupAssessmentDetails;
+
+        $groupStudents = GroupStudentInfo::findOne($id)->group->groupStudentInfos;
+
+        foreach ($modelsSection as $indexSection => $modelSection) {
+
+            $items = $modelSection->items;
+            $modelsItem[$indexSection] = $items;
+
+            foreach ($items as $index => $item) {
+
+                if ($item->item_type == self::INDIVIDUAL_ITEM) {
+                    
+                    foreach($groupStudents as $indexStudent => $groupStudent) {
+
+                        foreach($groupAssessmentDetails as $groupAssessmentDetail) {
+
+                            if($groupStudent->student_id == $groupAssessmentDetail->work_student_id
+                                && $item->id == $groupAssessmentDetail->item_id) {
+
+                                $modelsGroupAssessmentDetail[$indexSection][$index][$indexStudent] = $groupAssessmentDetail;
+
+                            }
+                        }
+                    }
+                } else if ($item->item_type == self::GROUP) {
+
+                    foreach($groupAssessmentDetails as $groupAssessmentDetail) {
+
+                        if($item->id = $groupAssessmentDetail->item_id) {
+
+                            $modelsGroupAssessmentDetail[$indexSection][$index][0] = $groupAssessmentDetail;
+                        }
+                    }
+                }
+
+                if ($model->assessment_type == self::G_PEER_R_A) {
+                    $marklist[$indexSection][$index] = $modelsGroupAssessmentDetail[$indexSection][$index][0]->mark;
+                }
+            }
+        }
+
+        return $this->render('view-group', [
+            'model' => $model,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
             'modelsGroupAssessmentDetail' => (empty($modelsGroupAssessmentDetail)) ? [[[new GroupAssessmentDetail()]]] :  $modelsGroupAssessmentDetail,
+            'marklist' => (empty($marklist)) ? [['']] :  $marklist,
         ]);
     }
 

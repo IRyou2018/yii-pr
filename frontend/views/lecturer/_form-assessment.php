@@ -132,7 +132,7 @@ $script = <<< JS
 
     $('#assType').change(function(){
         // alert($(this).val());
-        alert($('#itemType').val());
+        // alert($('#itemType').val());
     });
 
     $('#selection_all').click(function(){

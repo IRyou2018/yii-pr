@@ -35,13 +35,14 @@ class GroupAssessmentDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['mark', 'contribution', 'item_id'], 'required'],
+            [['item_id'], 'required'],
             [['work_student_id', 'mark', 'contribution', 'item_id', 'group_student_Info_id'], 'integer'],
             [['comment'], 'string'],
             [['group_student_Info_id'], 'exist', 'skipOnError' => true, 'targetClass' => GroupStudentInfo::className(), 'targetAttribute' => ['group_student_Info_id' => 'id']],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
             [['work_student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['work_student_id' => 'id']],
             [['mark'], 'validateMark'],
+            // [['contribution'], 'validateContribution'],
         ];
     }
 
@@ -65,6 +66,7 @@ class GroupAssessmentDetail extends \yii\db\ActiveRecord
     {
         $scenarios = parent::scenarios();
         $scenarios['submit'] = ['mark'];
+        $scenarios['contribution'] = ['contribution'];
         return $scenarios;
     }
 
@@ -98,6 +100,21 @@ class GroupAssessmentDetail extends \yii\db\ActiveRecord
         return $this->hasOne(User::className(), ['id' => 'work_student_id']);
     }
 
+    /**
+     * Gets student's full name.
+     *
+     * @return string
+     */
+    public function getStudentName()
+    {
+        return $this->workStudent->first_name . " " . $this->workStudent->last_name;
+    }
+
+    /**
+     * Validate input mark value which should be less than or equal to max mark value.
+     *
+     * @return \yii\db\ActiveQuery
+     */
     public function validateMark($attribute, $params) {
         
         if ($this->mark > $this->item->max_mark_value) {
@@ -105,4 +122,25 @@ class GroupAssessmentDetail extends \yii\db\ActiveRecord
             return false;
         }
     }
+
+    // /**
+    //  * Validate summary of contributions should be add to 100.
+    //  *
+    //  * @return \yii\db\ActiveQuery
+    //  */
+    // public function validateContribution($attribute, $params) {
+        
+    //     echo "<pre>";
+    //     print_r(11);
+    //     print_r($_POST);
+    //     print_r($this);
+    //     // print_r($modelsGroupItemMark);
+    //     echo "</pre>";
+    //     exit;
+    //     if ($this->mark > $this->item->max_mark_value) {
+    //         $this->addError($attribute, 'Mark must be less than or equal to Max Mark.');
+    //         return false;
+    //     }
+    // }
+
 }

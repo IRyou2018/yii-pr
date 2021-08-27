@@ -1,13 +1,10 @@
 <?php
 
 use common\models\Rubrics;
-use common\models\User;
-use yii\bootstrap4\ActiveForm;
 use yii\bootstrap4\Modal;
 use yii\data\ActiveDataProvider;
 use yii\grid\GridView;
 use yii\helpers\Html;
-use yii\widgets\DetailView;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\Assessments */
@@ -16,14 +13,9 @@ $this->title = $model->name;
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
-<div class="submit-individual">
+<div class="view-individual">
 
     <h2><?= Html::encode($this->title) ?></h2>
-
-    <?php $form = ActiveForm::begin([
-        'id' => 'dynamic-form',
-        'options' => ['enctype' => 'multipart/form-data']
-    ]); ?>
 
     <?php if (!empty($modelsSection)) : ?>
         <?php foreach ($modelsSection as $indexSection => $modelSection): ?>
@@ -90,12 +82,10 @@ $this->params['breadcrumbs'][] = $this->title;
                         <?= $modelItem->max_mark_value ?>
                     </td>
                     <td class="col-md-1">
-                        <?= Html::activeHiddenInput($modelsAssessmentDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]item_id"); ?>
-                        <?= Html::activeHiddenInput($modelsAssessmentDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]marker_student_info_id"); ?>
-                        <?= $form->field($modelsAssessmentDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]mark")->textInput(['style'=>'width:70px', 'class'=>'text-center'])->label(false) ?>
+                        <?= $modelsAssessmentDetail[$indexSection][$indexItem]->mark ?>
                     </td>
                     <td class="col-md-7">
-                        <?= $form->field($modelsAssessmentDetail[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]comment")->textarea(['maxlength' => true])->label(false) ?>
+                        <?= $modelsAssessmentDetail[$indexSection][$indexItem]->comment ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -103,10 +93,5 @@ $this->params['breadcrumbs'][] = $this->title;
         </table>
         <?php endforeach; ?>
     <?php endif; ?>
-
-    <div class="form-group">
-        <?= Html::submitButton('Submit', ['class' => 'btn btn-success']) ?>
-    </div>
-    <?php ActiveForm::end(); ?>
 
 </div>
