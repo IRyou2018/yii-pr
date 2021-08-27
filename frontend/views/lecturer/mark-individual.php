@@ -27,10 +27,10 @@ $this->params['breadcrumbs'][] = $this->title;
             <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
             <div class="container border mb-2">
             <div class="row mb-1">
-                <div class="col-md-2 text-white bg-secondary">
+                <div class="col-md-2 font-weight-bold text-white bg-primary">
                     Item/Functionality
                 </div>
-                <div class="col-md-10 text-white bg-secondary">
+                <div class="col-md-10 font-weight-bold text-white bg-primary">
                     <?= $modelItem->name ?>
                 </div>
             </div>
@@ -104,6 +104,25 @@ $this->params['breadcrumbs'][] = $this->title;
             </div>
             </div>
 
+            <?php if ($modelSection->section_type == 0) : ?>
+            <div class="comment container border mb-5">
+                <div class="row mb-1">
+                    <div class="col-md-12 text-white bg-secondary">
+                        Comments from student
+                    </div>
+                </div>
+                <?php foreach ($modelsReviewDetail[$indexSection][$indexItem] as $reviewDetail): ?>
+                <div class="row mt-1">
+                    <div class="col-md-2 text-white bg-secondary">
+                        <?= $reviewDetail->markerStudentInfo->studentName ?>
+                    </div>
+                    <div class="col-md-10 ">
+                        <?= $reviewDetail->comment ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
             <?php endforeach; ?>
         </div>
     </div>
