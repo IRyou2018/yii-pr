@@ -132,7 +132,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'dataProvider' => new ArrayDataProvider([
                 'allModels' => $groupInfo['inconsistent']
             ]),
-            'tableOptions' => ['class' => 'table table-bordered'],
+            'tableOptions' => ['class' => 'table'],
             'summary' => '',
             'columns' => [
                 [
@@ -148,7 +148,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
                     'format' => 'html',
                     'value' => function ($model) {
-                        if ($model['mark'] === null) {
+                        if ($model['marked'] == 0) {
                             return '<i class="material-icons mx-3" style="color:red">clear</i>';
                         } else {
                             return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
@@ -189,242 +189,349 @@ $this->params['breadcrumbs'][] = $this->title;
             <span class="title h4">Incompleted Groups</span>
         </div>
     </div>
-    <?php if (!empty($groupInfo['incomplete'])) : ?>
-        <?= GridView::widget([
-            'dataProvider' => new ArrayDataProvider([
-                'allModels' => $groupInfo['incomplete']
-            ]),
-            'tableOptions' => ['class' => 'table table-bordered'],
-            'summary' => '',
-            'columns' => [
-                [
-                    'attribute' => 'name',
-                    'label' => 'Group Name',
-                    'value' => 'name',
-                    'contentOptions' =>['width' => '77%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary']
-                ],
-                [
-                    'attribute' => 'marked',
-                    'contentOptions' =>['width' => '5%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
-                    'format' => 'html',
-                    'value' => function ($model) {
-                        if ($model['mark'] === null) {
-                            return '<i class="material-icons mx-3" style="color:red">clear</i>';
-                        } else {
-                            return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
-                        }
-                    },
-                ],
-                [
-                    'class' => 'yii\grid\ActionColumn',
-                    'contentOptions' =>['width' => '18%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary'],
-                    'template' => '{manage-group}{result}',
-                    'buttons'=>
-                        [
-                            'manage-group' => function ($url, $model, $key)
-                            {     
-                                $options = [
-                                    'title' => Yii::t('yii', 'Manage Group'),
-                                    'class' => 'btn'
-                                ];
-                                return Html::a('Manage Group', ['manage-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
-                            },
-                            'result' => function ($url, $model, $key)
-                            {     
-                                $options = [
-                                    'title' => Yii::t('yii', 'Result'),
-                                    'class' => 'btn'
-                                ];
-                                return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+        <?php if (!empty($groupInfo['incomplete'])) : ?>
+            <?= GridView::widget([
+                'dataProvider' => new ArrayDataProvider([
+                    'allModels' => $groupInfo['incomplete']
+                ]),
+                'tableOptions' => ['class' => 'table'],
+                'summary' => '',
+                'columns' => [
+                    [
+                        'attribute' => 'name',
+                        'label' => 'Group Name',
+                        'value' => 'name',
+                        'contentOptions' =>['width' => '77%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary']
+                    ],
+                    [
+                        'attribute' => 'marked',
+                        'contentOptions' =>['width' => '5%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                        'format' => 'html',
+                        'value' => function ($model) {
+                            if ($model['marked'] == 0) {
+                                return '<i class="material-icons mx-3" style="color:red">clear</i>';
+                            } else {
+                                return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
                             }
-                        ],
+                        },
+                    ],
+                    [
+                        'class' => 'yii\grid\ActionColumn',
+                        'contentOptions' =>['width' => '18%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary'],
+                        'template' => '{manage-group}{result}',
+                        'buttons'=>
+                            [
+                                'manage-group' => function ($url, $model, $key)
+                                {     
+                                    $options = [
+                                        'title' => Yii::t('yii', 'Manage Group'),
+                                        'class' => 'btn'
+                                    ];
+                                    return Html::a('Manage Group', ['manage-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                },
+                                'result' => function ($url, $model, $key)
+                                {     
+                                    $options = [
+                                        'title' => Yii::t('yii', 'Result'),
+                                        'class' => 'btn'
+                                    ];
+                                    return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                                }
+                            ],
+                    ],
                 ],
-            ],
-        ]); ?>
-    <?php endif; ?>
+            ]); ?>
+        <?php endif; ?>
 
     <div class="container">
         <div class="row mt-4 border-dark">
             <span class="title h4">Completed Groups</span>
         </div>
     </div>
-    <?php if (!empty($groupInfo['completed'])) : ?>
-        <?= GridView::widget([
-            'dataProvider' => new ArrayDataProvider([
-                'allModels' => $groupInfo['completed']
-            ]),
-            'tableOptions' => ['class' => 'table table-bordered'],
-            'summary' => '',
-            'columns' => [
-                [
-                    'attribute' => 'name',
-                    'label' => 'Group Name',
-                    'value' => 'name',
-                    'contentOptions' =>['width' => '77%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary']
-                ],
-                [
-                    'attribute' => 'marked',
-                    'contentOptions' =>['width' => '5%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
-                    'format' => 'html',
-                    'value' => function ($model) {
-                        if ($model['mark'] === null) {
-                            return '<i class="material-icons mx-3" style="color:red">clear</i>';
-                        } else {
-                            return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
-                        }
-                    },
-                ],
-                [
-                    'class' => 'yii\grid\ActionColumn',
-                    'contentOptions' =>['width' => '18%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary'],
-                    'template' => '{manage-group}{result}',
-                    'buttons'=>
-                        [
-                            'manage-group' => function ($url, $model, $key)
-                            {     
-                                $options = [
-                                    'title' => Yii::t('yii', 'Manage Group'),
-                                    'class' => 'btn'
-                                ];
-                                return Html::a('Manage Group', ['manage-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
-                            },
-                            'result' => function ($url, $model, $key)
-                            {     
-                                $options = [
-                                    'title' => Yii::t('yii', 'Result'),
-                                    'class' => 'btn'
-                                ];
-                                return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+        <?php if (!empty($groupInfo['completed'])) : ?>
+            <?= GridView::widget([
+                'dataProvider' => new ArrayDataProvider([
+                    'allModels' => $groupInfo['completed']
+                ]),
+                'tableOptions' => ['class' => 'table'],
+                'summary' => '',
+                'columns' => [
+                    [
+                        'attribute' => 'name',
+                        'label' => 'Group Name',
+                        'value' => 'name',
+                        'contentOptions' =>['width' => '77%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary']
+                    ],
+                    [
+                        'attribute' => 'marked',
+                        'contentOptions' =>['width' => '5%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                        'format' => 'html',
+                        'value' => function ($model) {
+                            if ($model['marked'] == 0) {
+                                return '<i class="material-icons mx-3" style="color:red">clear</i>';
+                            } else {
+                                return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
                             }
-                        ],
+                        },
+                    ],
+                    [
+                        'class' => 'yii\grid\ActionColumn',
+                        'contentOptions' =>['width' => '18%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary'],
+                        'template' => '{manage-group}{result}',
+                        'buttons'=>
+                            [
+                                'manage-group' => function ($url, $model, $key)
+                                {     
+                                    $options = [
+                                        'title' => Yii::t('yii', 'Manage Group'),
+                                        'class' => 'btn'
+                                    ];
+                                    return Html::a('Manage Group', ['manage-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                },
+                                'result' => function ($url, $model, $key)
+                                {     
+                                    $options = [
+                                        'title' => Yii::t('yii', 'Result'),
+                                        'class' => 'btn'
+                                    ];
+                                    return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                                }
+                            ],
+                    ],
                 ],
-            ],
-        ]); ?>
-    <?php endif; ?>
+            ]); ?>
+        <?php endif; ?>
 
     <?php elseif ($model->assessment_type == 3) : ?>
         <div class="container">
             <div class="row mt-4 border-dark">
-                <span class="title h4">Individual Mark Status</span>
+                <span class="title h4">Self Assessment Status</span>
             </div>
         </div>
-        <?php if ($individualInfo->getTotalCount() > 0) : ?>
-        <?= GridView::widget([
-            'dataProvider' => $individualInfo,
-            'tableOptions' => ['class' => 'table'],
-            'summary' => '',
-            'columns' => [
-                [
-                    'attribute' => 'work_student_name',
-                    'label' => 'Student Name',
-                    'value' => function ($model) {
-                        return $model['work_student_name'];
-                    },
-                    'contentOptions' =>['width' => '40%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary']
-                ],
-                [
-                    'attribute' => 'marked',
-                    'contentOptions' =>['width' => '5%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
-                    'format' => 'html',
-                    'value' => function ($model) {
-                        if ($model['marked'] == 0) {
-                            return '<i class="material-icons mx-3" style="color:red">clear</i>';
-                        } else {
-                            return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
-                        }
-                    },
-                ],
-                [
-                    'class' => 'yii\grid\ActionColumn',
-                    'contentOptions' =>['width' => '5%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary'],
-                    'template' => '{result}',
-                    'buttons'=>
-                        [
-                            'result' => function ($url, $model, $key)
-                                {     
-                                    if ($model['marked'] == 0) {
-                                        return Html::a('Result', ['mark-individual', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
-                                    } else if ($model['marked'] == 1) {
-                                        return Html::a('Result', ['individual-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+        <?php if (!empty($individualInfo)) : ?>
+            <?= GridView::widget([
+                'dataProvider' => new ArrayDataProvider([
+                    'allModels' => $individualInfo
+                ]),
+                'tableOptions' => ['class' => 'table'],
+                'summary' => '',
+                'columns' => [
+                    [
+                        'attribute' => 'student_name',
+                        'label' => 'Student Name',
+                        'value' => function ($model) {
+                            return $model['student_name'];
+                        },
+                        'contentOptions' =>['width' => '80%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary']
+                    ],
+                    [
+                        'attribute' => 'marked',
+                        'contentOptions' =>['width' => '5%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                        'format' => 'html',
+                        'value' => function ($model) {
+                            if ($model['marked'] == 0) {
+                                return '<i class="material-icons mx-3" style="color:red">clear</i>';
+                            } else {
+                                return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
+                            }
+                        },
+                    ],
+                    [
+                        'class' => 'yii\grid\ActionColumn',
+                        'contentOptions' =>['width' => '15%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary'],
+                        'template' => '{result}',
+                        'buttons'=>
+                            [
+                                'result' => function ($url, $model, $key)
+                                    {     
+                                        if ($model['marked'] == 0) {
+                                            return Html::a('Result', ['mark-individual', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                        } else if ($model['marked'] == 1) {
+                                            return Html::a('Result', ['individual-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                        }
                                     }
-                                }
-                        ],
+                            ],
+                    ],
                 ],
-            ],
-        ]); ?>
+            ]); ?>
         <?php endif; ?>
 
     <?php elseif ($model->assessment_type == 4) : ?>
         <div class="container">
             <div class="row mt-4 border-dark">
-                <span class="title h4">Individual Mark Status</span>
+                <span class="title h4">Partly Completed Peer Marking</span>
             </div>
         </div>
-        <?php if ($individualInfo->getTotalCount() > 0) : ?>
-        <?= GridView::widget([
-            'dataProvider' => $individualInfo,
-            'tableOptions' => ['class' => 'table'],
-            'summary' => '',
-            'columns' => [
-                [
-                    'attribute' => 'work_student_name',
-                    'label' => 'Work Student',
-                    'value' => function ($model) {
-                        return $model['work_student_name'];
-                    },
-                    'contentOptions' =>['width' => '40%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary']
-                ],
-                [
-                    'attribute' => 'marker_student_name',
-                    'label' => 'Marker Student',
-                    'value' => function ($model) {
-                        return $model['marker_student_name'];
-                    },
-                    'contentOptions' =>['width' => '40%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary']
-                ],
-                [
-                    'attribute' => 'marked',
-                    'contentOptions' =>['width' => '5%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
-                    'format' => 'html',
-                    'value' => function ($model) {
-                        if ($model['marked'] == 0) {
-                            return '<i class="material-icons mx-3" style="color:red">clear</i>';
-                        } else {
-                            return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
-                        }
-                    },
-                ],
-                [
-                    'class' => 'yii\grid\ActionColumn',
-                    'contentOptions' =>['width' => '5%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary'],
-                    'template' => '{result}',
-                    'buttons'=>
-                        [
-                            'result' => function ($url, $model, $key)
-                                {     
-                                    if ($model['marked'] == 0) {
-                                        return Html::a('Result', ['mark-individual', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
-                                    } else if ($model['marked'] == 1) {
-                                        return Html::a('Result', ['individual-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+        <?php if (!empty($individualInfo['inconsistent'])) : ?>
+            <?= GridView::widget([
+                'dataProvider' => new ArrayDataProvider([
+                    'allModels' => $individualInfo['inconsistent']
+                ]),
+                'tableOptions' => ['class' => 'table'],
+                'summary' => '',
+                'columns' => [
+                    [
+                        'attribute' => 'student_name',
+                        'label' => 'Student Name',
+                        'value' => function ($model) {
+                            return $model['student_name'];
+                        },
+                        'contentOptions' =>['width' => '80%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary']
+                    ],
+                    [
+                        'attribute' => 'marked',
+                        'contentOptions' =>['width' => '5%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                        'format' => 'html',
+                        'value' => function ($model) {
+                            if ($model['marked'] == 0) {
+                                return '<i class="material-icons mx-3" style="color:red">clear</i>';
+                            } else {
+                                return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
+                            }
+                        },
+                    ],
+                    [
+                        'class' => 'yii\grid\ActionColumn',
+                        'contentOptions' =>['width' => '15%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary'],
+                        'template' => '{result}',
+                        'buttons'=>
+                            [
+                                'result' => function ($url, $model, $key)
+                                    {     
+                                        if ($model['marked'] == 0) {
+                                            return Html::a('Result', ['mark-individual', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                        } else if ($model['marked'] == 1) {
+                                            return Html::a('Result', ['individual-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                        }
                                     }
-                                }
-                        ],
+                            ],
+                    ],
                 ],
-            ],
-        ]); ?>
+            ]); ?>
+        <?php endif; ?>
+
+        <div class="container">
+            <div class="row mt-4 border-dark">
+                <span class="title h4">Incompleted Peer Marking</span>
+            </div>
+        </div>
+        <?php if (!empty($individualInfo['incomplete'])) : ?>
+            <?= GridView::widget([
+                'dataProvider' => new ArrayDataProvider([
+                    'allModels' => $individualInfo['incomplete']
+                ]),
+                'tableOptions' => ['class' => 'table'],
+                'summary' => '',
+                'columns' => [
+                    [
+                        'attribute' => 'student_name',
+                        'label' => 'Student Name',
+                        'value' => function ($model) {
+                            return $model['student_name'];
+                        },
+                        'contentOptions' =>['width' => '80%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary']
+                    ],
+                    [
+                        'attribute' => 'marked',
+                        'contentOptions' =>['width' => '5%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                        'format' => 'html',
+                        'value' => function ($model) {
+                            if ($model['marked'] == 0) {
+                                return '<i class="material-icons mx-3" style="color:red">clear</i>';
+                            } else {
+                                return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
+                            }
+                        },
+                    ],
+                    [
+                        'class' => 'yii\grid\ActionColumn',
+                        'contentOptions' =>['width' => '15%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary'],
+                        'template' => '{result}',
+                        'buttons'=>
+                            [
+                                'result' => function ($url, $model, $key)
+                                    {     
+                                        if ($model['marked'] == 0) {
+                                            return Html::a('Result', ['mark-individual', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                        } else if ($model['marked'] == 1) {
+                                            return Html::a('Result', ['individual-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                        }
+                                    }
+                            ],
+                    ],
+                ],
+            ]); ?>
+        <?php endif; ?>
+
+        <div class="container">
+            <div class="row mt-4 border-dark">
+                <span class="title h4">Completed Peer Marking</span>
+            </div>
+        </div>
+        <?php if (!empty($individualInfo['completed'])) : ?>
+            <?= GridView::widget([
+                'dataProvider' => new ArrayDataProvider([
+                    'allModels' => $individualInfo['completed']
+                ]),
+                'tableOptions' => ['class' => 'table'],
+                'summary' => '',
+                'columns' => [
+                    [
+                        'attribute' => 'student_name',
+                        'label' => 'Student Name',
+                        'value' => function ($model) {
+                            return $model['student_name'];
+                        },
+                        'contentOptions' =>['width' => '80%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary']
+                    ],
+                    [
+                        'attribute' => 'marked',
+                        'contentOptions' =>['width' => '5%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                        'format' => 'html',
+                        'value' => function ($model) {
+                            if ($model['marked'] == 0) {
+                                return '<i class="material-icons mx-3" style="color:red">clear</i>';
+                            } else {
+                                return '<i class="material-icons mx-3" style="color:green">done</i>'; // check icon 
+                            }
+                        },
+                    ],
+                    [
+                        'class' => 'yii\grid\ActionColumn',
+                        'contentOptions' =>['width' => '15%'],
+                        'headerOptions' => ['class' => 'text-light bg-secondary'],
+                        'template' => '{result}',
+                        'buttons'=>
+                            [
+                                'result' => function ($url, $model, $key)
+                                    {     
+                                        if ($model['marked'] == 0) {
+                                            return Html::a('Result', ['mark-individual', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                        } else if ($model['marked'] == 1) {
+                                            return Html::a('Result', ['individual-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
+                                        }
+                                    }
+                            ],
+                    ],
+                ],
+            ]); ?>
         <?php endif; ?>
     <?php endif; ?>
 </div>

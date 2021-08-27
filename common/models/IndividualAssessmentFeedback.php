@@ -5,27 +5,27 @@ namespace common\models;
 use Yii;
 
 /**
- * This is the model class for table "individual_feedback".
+ * This is the model class for table "individual_assessment_feedback".
  *
  * @property int $id
  * @property int $student_id
  * @property int|null $mark
  * @property string|null $comment
  * @property int $item_id
- * @property int $marker_student_info_id
+ * @property int $individual_assessment_id
  *
+ * @property IndividualAssessment $individualAssessment
  * @property Items $item
- * @property MarkerStudentInfo $markerStudentInfo
  * @property User $student
  */
-class IndividualFeedback extends \yii\db\ActiveRecord
+class IndividualAssessmentFeedback extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'individual_feedback';
+        return 'individual_assessment_feedback';
     }
 
     /**
@@ -34,11 +34,11 @@ class IndividualFeedback extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['student_id', 'item_id', 'marker_student_info_id'], 'required'],
-            [['student_id', 'mark', 'item_id', 'marker_student_info_id'], 'integer'],
+            [['student_id', 'item_id', 'individual_assessment_id'], 'required'],
+            [['student_id', 'mark', 'item_id', 'individual_assessment_id'], 'integer'],
             [['comment'], 'string'],
+            [['individual_assessment_id'], 'exist', 'skipOnError' => true, 'targetClass' => IndividualAssessment::className(), 'targetAttribute' => ['individual_assessment_id' => 'id']],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
-            [['marker_student_info_id'], 'exist', 'skipOnError' => true, 'targetClass' => MarkerStudentInfo::className(), 'targetAttribute' => ['marker_student_info_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_id' => 'id']],
             [['mark'], 'validateMark'],
         ];
@@ -55,7 +55,7 @@ class IndividualFeedback extends \yii\db\ActiveRecord
             'mark' => 'Mark',
             'comment' => 'Comment',
             'item_id' => 'Item ID',
-            'marker_student_info_id' => 'Marker Student Info ID',
+            'individual_assessment_id' => 'Individual Assessment ID',
         ];
     }
 
@@ -67,6 +67,16 @@ class IndividualFeedback extends \yii\db\ActiveRecord
     }
 
     /**
+     * Gets query for [[IndividualAssessment]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIndividualAssessment()
+    {
+        return $this->hasOne(IndividualAssessment::className(), ['id' => 'individual_assessment_id']);
+    }
+
+    /**
      * Gets query for [[Item]].
      *
      * @return \yii\db\ActiveQuery
@@ -74,16 +84,6 @@ class IndividualFeedback extends \yii\db\ActiveRecord
     public function getItem()
     {
         return $this->hasOne(Items::className(), ['id' => 'item_id']);
-    }
-
-    /**
-     * Gets query for [[MarkerStudentInfo]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getMarkerStudentInfo()
-    {
-        return $this->hasOne(MarkerStudentInfo::className(), ['id' => 'marker_student_info_id']);
     }
 
     /**

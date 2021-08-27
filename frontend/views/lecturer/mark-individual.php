@@ -14,63 +14,75 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="individual-form">
 
     <h4>Assessment : <?= $model->name ?></h4>
+    <h5>Student : <?= $workStudentName ?></h5>
 
     <?php $form = ActiveForm::begin(); ?>
 
     <?php foreach ($modelsSection as $indexSection => $modelSection): ?>
-    <table class="table table-bordered mt-2">
-        <thead>
-            <tr class="text-white bg-dark">
-                <th class="col" colspan="4">
-                    <?= $modelSection->name ?>
-                </th>
-            </tr>
-            <tr class="text-white bg-secondary">
-                <th class="align-middle">Item/Functionality</th>
-                <th class="align-middle text-center">Max Mark</th>
-                <th class="align-middle text-center">
+    <div class="card mt-2 mb-2">
+        <div class="card-header text-white bg-dark">
+            <h5><?= $modelSection->name ?></h5>
+        </div>
+        <div class="card-body">
+            <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
+            <div class="container border mb-2">
+            <div class="row mb-1">
+                <div class="col-md-2 text-white bg-secondary">
+                    Item/Functionality
+                </div>
+                <div class="col-md-10 text-white bg-secondary">
+                    <?= $modelItem->name ?>
+                </div>
+            </div>
+            <div class="row mb-1">
+                <div class="col-md-2 text-white bg-secondary">
+                    Max Mark
+                </div>
+                <div class="col-md-2">
+                    &nbsp&nbsp&nbsp<?= $modelItem->max_mark_value ?>
+                </div>
+            </div>
+            <?php if ($modelSection->section_type == 0) : ?>
+            <div class="row mb-1">
+                <div class="col-md-2 bg-light">
+                    
+                </div>
+                <?php foreach ($modelsReviewDetail[$indexSection][$indexItem] as $reviewDetail): ?>
+                <div class="col bg-light">
+                    <?= $reviewDetail->markerStudentInfo->studentName ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="row mb-1">
+                <div class="col-md-2 bg-light">
+                    Proposed Mark
+                </div>
+                <?php foreach ($modelsReviewDetail[$indexSection][$indexItem] as $reviewDetail): ?>
+                <div class="col">
+                    &nbsp&nbsp&nbsp<?= $reviewDetail->mark ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="row mb-1">
+                <div class="col-md-2 bg-light">
+                    Supposed Mark
+                </div>
+                <div class="col">
+                    &nbsp&nbsp&nbsp<?= $supposedMarkList[$indexSection][$indexItem] ?>
+                </div>
+            </div>
+            <?php endif; ?>
+            <div class="row mb-1">
+                <div class="col-md-2 text-white bg-secondary">
                     <?php 
                         if ($modelSection->section_type == 0) {
-                            echo 'Proposed Mark';
+                            echo 'Actual Mark';
                         } else if ($modelSection->section_type == 1) {
                             echo 'Mark';
                         }
                     ?>
-                </th>
-                <th class="align-middle">
-                    <?php 
-                        if ($modelSection->section_type == 0) {
-                            echo 'Student Comment';
-                        } else if ($modelSection->section_type == 1) {
-                            echo 'Comment';
-                        }
-                    ?>
-                </th>
-            </tr>
-        </thead>
-
-        <tbody class="container-section">
-            <?php if ($modelSection->section_type == 0) : ?>
-            <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
-            <tr>
-                <td class="col-md-2 bg-light">
-                    <?= $modelItem->name ?>
-                </td>
-                <td class="col-md-1 text-center">
-                    <?= $modelItem->max_mark_value ?>
-                </td>
-                <td class="col-md-1 text-center">
-                    <?= $modelsReviewDetail[$indexSection][$indexItem]->mark ?>
-                </td>
-                <td class="col-md-7">
-                    <?= $modelsReviewDetail[$indexSection][$indexItem]->comment ?>
-                </td>
-            </tr>
-            <tr>
-                <td class="col-md-2 bg-light">
-                    Actual Mark
-                </td>
-                <td class="col-md-1" colspan="3">
+                </div>
+                <div class="col">
                     <?php
                         // necessary for update action.
                         if (!$modelsIndividualFeedback[$indexSection][$indexItem]->isNewRecord) {
@@ -78,47 +90,23 @@ $this->params['breadcrumbs'][] = $this->title;
                         }
                     ?>
                     <?= Html::activeHiddenInput($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]item_id"); ?>
-                    <?= Html::activeHiddenInput($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]marker_student_info_id"); ?>
+                    <?= Html::activeHiddenInput($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]individual_assessment_id"); ?>
                     <?= $form->field($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]mark")->textInput(['style'=>'width:76px', 'class'=>'text-center'])->label(false) ?>
-                </td>
-            </tr>
-            <tr>
-                <td class="col-md-2 bg-light">
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-2 text-white bg-secondary">
                     Your Comment
-                </td>
-                <td class="col-md-1" colspan="3">
-                    <?= $form->field($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]comment")->textarea(['maxlength' => true])->label(false) ?>
-                </td>
-            </tr>
+                </div>
+                <div class="col">
+                    <?= $form->field($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]comment")->textarea(['maxlength' => true])->label(false) ?>    
+                </div>
+            </div>
+            </div>
+
             <?php endforeach; ?>
-            <?php elseif ($modelSection->section_type == 1) : ?>
-                <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
-                <tr>
-                    <td class="col-md-2"> 
-                        <?= $modelItem->name ?>
-                    </td>
-                    <td class="col-md-1">
-                        <?= $modelItem->max_mark_value ?>
-                    </td>
-                    <td class="col-md-1">
-                        <?php
-                            // necessary for update action.
-                            if (!$modelsIndividualFeedback[$indexSection][$indexItem]->isNewRecord) {
-                                echo Html::activeHiddenInput($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]id");
-                            }
-                        ?>
-                        <?= Html::activeHiddenInput($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]item_id"); ?>
-                        <?= Html::activeHiddenInput($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]marker_student_info_id"); ?>
-                        <?= $form->field($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]mark")->textInput(['maxlength' => true])->label(false) ?>
-                    </td>
-                    <td class="col-md-7">
-                        <?= $form->field($modelsIndividualFeedback[$indexSection][$indexItem], "[{$indexSection}][{$indexItem}]comment")->textarea(['maxlength' => true])->label(false) ?>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </tbody>
-    </table>
+        </div>
+    </div>
     <?php endforeach; ?>
 
     <div class="form-group">

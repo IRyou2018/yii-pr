@@ -123,24 +123,4 @@ class GroupAssessmentDetail extends \yii\db\ActiveRecord
         }
     }
 
-    // /**
-    //  * Validate summary of contributions should be add to 100.
-    //  *
-    //  * @return \yii\db\ActiveQuery
-    //  */
-    // public function validateContribution($attribute, $params) {
-        
-    //     echo "<pre>";
-    //     print_r(11);
-    //     print_r($_POST);
-    //     print_r($this);
-    //     // print_r($modelsGroupItemMark);
-    //     echo "</pre>";
-    //     exit;
-    //     if ($this->mark > $this->item->max_mark_value) {
-    //         $this->addError($attribute, 'Mark must be less than or equal to Max Mark.');
-    //         return false;
-    //     }
-    // }
-
 }

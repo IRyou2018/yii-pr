@@ -55,4 +55,28 @@ class ArrayValidator extends Model
 
         return $valid;
     }
+
+    public function validateInputMarks($modelsIndividualFeedback, $proposedMarkList) {
+
+        $valid = true;
+
+        foreach ($modelsIndividualFeedback as $indexSection => $individualFeedbacks) {
+            foreach ($individualFeedbacks as $indexItem => $individualFeedback) {               
+
+                if($individualFeedback->item->section->section_type == 0) {
+
+                    if (empty($individualFeedback->mark) && empty($proposedMarkList[$indexSection][$indexItem])) {
+                    
+                        $individualFeedback->addError('mark', 'Supposed Mark is empty. Please enter a mark.');
+                        $valid = false;
+                        echo "<pre>";
+                        print_r($valid . "after");
+                        echo "</pre>";
+                    }
+                }
+            }
+        }
+
+        return $valid;
+    }
 }

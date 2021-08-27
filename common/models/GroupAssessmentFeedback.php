@@ -8,7 +8,7 @@ use Yii;
  * This is the model class for table "group_assessment_feedback".
  *
  * @property int $id
- * @property int $student_id
+ * @property int|null $student_id
  * @property int $mark
  * @property string|null $comment
  * @property int $item_id
@@ -34,7 +34,7 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['student_id', 'mark', 'item_id'], 'required'],
+            [['mark', 'item_id'], 'required'],
             [['student_id', 'mark', 'item_id', 'group_student_Info_id'], 'integer'],
             [['comment'], 'string'],
             [['group_student_Info_id'], 'exist', 'skipOnError' => true, 'targetClass' => GroupStudentInfo::className(), 'targetAttribute' => ['group_student_Info_id' => 'id']],

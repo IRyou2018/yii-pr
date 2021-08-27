@@ -14,7 +14,6 @@ use Yii;
  *
  * @property IndividualAssessment $individualAssessment
  * @property IndividualAssessmentDetail[] $individualAssessmentDetails
- * @property IndividualFeedback[] $individualFeedbacks
  * @property User $markerStudent
  */
 class MarkerStudentInfo extends \yii\db\ActiveRecord
@@ -74,16 +73,6 @@ class MarkerStudentInfo extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[IndividualFeedbacks]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getIndividualFeedbacks()
-    {
-        return $this->hasMany(IndividualFeedback::className(), ['marker_student_info_id' => 'id']);
-    }
-
-    /**
      * Gets query for [[MarkerStudent]].
      *
      * @return \yii\db\ActiveQuery
@@ -91,5 +80,15 @@ class MarkerStudentInfo extends \yii\db\ActiveRecord
     public function getMarkerStudent()
     {
         return $this->hasOne(User::className(), ['id' => 'marker_student_id']);
+    }
+
+    /**
+     * Gets student's full name.
+     *
+     * @return string
+     */
+    public function getStudentName()
+    {
+        return $this->markerStudent->first_name . " " . $this->markerStudent->last_name;
     }
 }

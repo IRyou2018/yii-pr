@@ -19,7 +19,7 @@ class m210815_220015_create_group_assessment_feedback_table extends Migration
     {
         $this->createTable('{{%group_assessment_feedback}}', [
             'id' => $this->primaryKey(),
-            'student_id' => $this->integer(11)->notNull(),
+            'student_id' => $this->integer(11),
             'mark' => $this->integer(3)->notNull(),
             'comment' => 'LONGTEXT',
             'item_id' => $this->integer(11)->notNull(),

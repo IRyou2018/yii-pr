@@ -5,7 +5,9 @@ namespace frontend\controllers;
 use common\models\Assessments;
 use common\models\GroupAssessment;
 use common\models\GroupStudentInfo;
+use common\models\IndividualAssessment;
 use common\models\IndividualAssessmentDetail;
+use common\models\IndividualAssessmentFeedback;
 use common\models\IndividualFeedback;
 use common\models\Items;
 use common\models\MarkerStudentInfo;
@@ -13,6 +15,7 @@ use common\models\Rubrics;
 use common\models\Sections;
 use common\models\User;
 use Exception;
+use frontend\models\ArrayValidator;
 use frontend\models\AssessmentsSearch;
 
 use frontend\models\GroupStudent;
@@ -37,6 +40,9 @@ class LecturerController extends Controller
     const INACTIVE = 0;
     const ACTIVE = 1;
     const STUDENT = 1;
+
+    const UNCOMPLETE = 0;
+    const COMPLETED = 1;
 
     /**
      * @inheritDoc
@@ -423,69 +429,104 @@ class LecturerController extends Controller
      */
     public function actionMarkIndividual($id)
     {
-        $makerInfo = MarkerStudentInfo::findOne($id);
-        $model = $makerInfo->individualAssessment->assessment;
+        $individualAssessmentInfo = IndividualAssessment::findOne($id);
+        $workStudentName = $individualAssessmentInfo->studentName;
+        $model = $individualAssessmentInfo->assessment;
         $modelsSection = $model->sections;
         $modelsItem = [];
         $modelsReviewDetail = [];
-        $reviewDetails = $makerInfo->individualAssessmentDetails;
-        $individualFeedbacks = $makerInfo->individualFeedbacks;
+        $makerInfos = $individualAssessmentInfo->markerStudentInfos;
+        $individualDetails = [];
+        foreach ($makerInfos as $index => $makerInfo) {
+            $reviewDetails = $makerInfo->individualAssessmentDetails;
+
+            $individualDetails[$index] = $reviewDetails;
+        }
+
         $modelsIndividualFeedback = [];
+        $supposedMarkList = [];
+        $markerCommentsList = [];
 
         foreach ($modelsSection as $indexSection => $modelSection) {
 
             $items = $modelSection->items;
             $modelsItem[$indexSection] = $items;
 
-            foreach ($items as $index => $item) {
+            foreach ($items as $indexItem => $item) {
             
                 if ($modelSection->section_type == 0) {
 
-                    if (!empty($reviewDetails)) {
-                        foreach($reviewDetails as $reviewDetail) {
-                            if ($reviewDetail->item_id == $item->id) {
-                                $modelsReviewDetail[$indexSection][$index] = $reviewDetail;
-                                break;
+                    $supposedMark = null;
+                    $tempComment = '';
+
+                    if (!empty($individualDetails)) {
+
+                        $totalProposedMark = 0;
+                        $count = 0;
+
+                        foreach ($individualDetails as $indexStudent => $reviewDetails) {
+
+                            if (!empty($reviewDetails)) {
+
+                                foreach($reviewDetails as $reviewDetail) {
+
+                                    if ($reviewDetail->item_id == $item->id) {
+
+                                        $totalProposedMark += $reviewDetail->mark;
+                                        $count++;
+                                        $tempComment = $tempComment . $reviewDetail->comment . " ";
+                                        $modelsReviewDetail[$indexSection][$indexItem][$indexStudent] = $reviewDetail;
+                                        break;
+                                    }
+                                }
+
+                            } else {
+
+                                foreach ($makerInfos as $indexStudent => $makerInfo) {
+                                    $reviewDetail = new IndividualAssessmentDetail();
+                                    $reviewDetail->marker_student_info_id = $makerInfo->id;
+                                    $modelsReviewDetail[$indexSection][$indexItem][$indexStudent] = $reviewDetail;
+                                }
                             }
                         }
-                    } else {
-                        $reviewDetail = new IndividualAssessmentDetail();
-                        $modelsReviewDetail[$indexSection][$index] = $reviewDetail;
-                    }
-                }
 
-                if (!empty($individualFeedbacks)) {
-                    foreach($individualFeedbacks as $individualFeedback) {
-                        if ($individualFeedback->item_id == $item->id) {
-                            $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
-                            break;
+                        if ($totalProposedMark > 0 && $count > 0) {
+                            $supposedMark = round($totalProposedMark/$count,0,PHP_ROUND_HALF_DOWN);
                         }
                     }
-                } else {
-                    $individualFeedback = new IndividualFeedback();
-                    $individualFeedback->item_id = $item->id;
-                    $individualFeedback->marker_student_info_id = $id;
-                    $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
+
+                    $supposedMarkList[$indexSection][$indexItem] = $supposedMark;
+                    $markerCommentsList[$indexSection][$indexItem] = $tempComment;
                 }
+
+                $individualFeedback = new IndividualAssessmentFeedback();
+                $individualFeedback->item_id = $item->id;
+                $individualFeedback->individual_assessment_id = $id;
+                $modelsIndividualFeedback[$indexSection][$indexItem] = $individualFeedback;
+
             }
         }
 
         if ($this->request->isPost) {
                 
-            if (isset($_POST['IndividualFeedback'][0][0])) {
+            if (isset($_POST['IndividualAssessmentFeedback'][0][0])) {
 
                 $index = 0;
-                $individualFeedbacks = [new IndividualFeedback()];
-                $actualMark = 0;
-                $student_id = $makerInfo->individualAssessment->student_id;
+                $totalMark = 0;
+                $student_id = $individualAssessmentInfo->student_id;
                 $valid = true;
 
-                foreach ($_POST['IndividualFeedback'] as $indexSection => $feedbacks) {
-                    
+                // echo "<pre>";
+                // print_r($_POST['IndividualAssessmentFeedback']);
+                // echo "</pre>";
+                // exit;
+
+                foreach ($_POST['IndividualAssessmentFeedback'] as $indexSection => $feedbacks) {
+                
                     foreach ($feedbacks as $indexItem => $feedback) {
                         
-                        $data['IndividualFeedback'] = $feedback;
-                        $modelIndividualFeedback = new IndividualFeedback();
+                        $data['IndividualAssessmentFeedback'] = $feedback;
+                        $modelIndividualFeedback = new IndividualAssessmentFeedback();
                         $modelIndividualFeedback->load($data);
                         $modelIndividualFeedback->student_id = $student_id;
                         $modelIndividualFeedback->scenario = 'submit';
@@ -494,8 +535,6 @@ class LecturerController extends Controller
                         
                         // Input validation
                         if($modelIndividualFeedback->validate()) {
-                            $actualMark += $modelIndividualFeedback->mark;
-                            $individualFeedbacks[$index] = $modelIndividualFeedback;
                         } else {
                             $valid = false;
                         }
@@ -504,7 +543,13 @@ class LecturerController extends Controller
                     }
                 }
                 
-                
+                $markValidate = new ArrayValidator();
+
+                if ($markValidate->validateInputMarks($modelsIndividualFeedback, $supposedMarkList)) {
+                } else {
+                    $valid = false;
+                }
+
                 if($valid) {
                     $transaction = \Yii::$app->db->beginTransaction();
 
@@ -512,20 +557,35 @@ class LecturerController extends Controller
 
                         $flag = true;
                         
-                        foreach ($individualFeedbacks as $index => $individualFeedback) {
-                            
-                            if ($flag = $individualFeedback->save(false)) {
-                            } else {
-                                break;
+                        foreach ($modelsIndividualFeedback as $indexSection => $feedbacks) {
+                
+                            foreach ($feedbacks as $indexItem => $feedback) {
+
+                                if ($modelSection->section_type == 0) {
+                                    if (empty($feedback->mark)) {
+                                        $feedback->mark = $supposedMarkList[$indexSection][$indexItem];
+                                    }
+
+                                    if (empty($feedback->comment)) {
+                                        $feedback->comment = $markerCommentsList[$indexSection][$indexItem];
+                                    }
+                                }
+                                
+                                $totalMark += $feedback->mark;
+                                
+                                if ($feedback->save(false)) {
+                                } else {
+                                    $flag = false;
+                                    break;
+                                }
                             }
                         }
-
                         
                         if($flag) {
                             $individualAssessment = $makerInfo->individualAssessment;
 
-                            $individualAssessment->marked = 1;
-                            $individualAssessment->mark_value = $actualMark;
+                            $individualAssessment->marked = self::COMPLETED;
+                            $individualAssessment->mark_value = $totalMark;
 
                             $flag = $individualAssessment->save(false);
                         }
@@ -548,10 +608,12 @@ class LecturerController extends Controller
 
         return $this->render('mark-individual', [
             'model' => $model,
+            'workStudentName' => $workStudentName,
+            'supposedMarkList' => $supposedMarkList,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
-            'modelsReviewDetail' => (empty($modelsReviewDetail)) ? [[new IndividualAssessmentDetail()]] :  $modelsReviewDetail,
-            'modelsIndividualFeedback' => (empty($modelsIndividualFeedback)) ? [[new IndividualFeedback()]] :  $modelsIndividualFeedback,
+            'modelsReviewDetail' => (empty($modelsReviewDetail)) ? [[[new IndividualAssessmentDetail()]]] :  $modelsReviewDetail,
+            'modelsIndividualFeedback' => (empty($modelsIndividualFeedback)) ? [[new IndividualAssessmentFeedback()]] :  $modelsIndividualFeedback,
         ]);
     }
 
@@ -562,13 +624,22 @@ class LecturerController extends Controller
      */
     public function actionIndividualResult($id)
     {
-        $makerInfo = MarkerStudentInfo::findOne($id);
-        $model = $makerInfo->individualAssessment->assessment;
+        $individualAssessmentInfo = IndividualAssessment::findOne($id);
+        $workStudentName = $individualAssessmentInfo->studentName;
+        $model = $individualAssessmentInfo->assessment;
         $modelsSection = $model->sections;
         $modelsItem = [];
         $modelsReviewDetail = [];
-        $reviewDetails = $makerInfo->individualAssessmentDetails;
-        $individualFeedbacks = $makerInfo->individualFeedbacks;
+        $makerInfos = $individualAssessmentInfo->markerStudentInfos;
+        $individualDetails = [];
+        foreach ($makerInfos as $index => $makerInfo) {
+            $reviewDetails = $makerInfo->individualAssessmentDetails;
+
+            $individualDetails[$index] = $reviewDetails;
+        }
+
+        $individualFeedbacks = $individualAssessmentInfo->individualAssessmentFeedbacks;
+        $supposedMarkList = [];
         $modelsIndividualFeedback = [];
 
         foreach ($modelsSection as $indexSection => $modelSection) {
@@ -576,43 +647,72 @@ class LecturerController extends Controller
             $items = $modelSection->items;
             $modelsItem[$indexSection] = $items;
 
-            foreach ($items as $index => $item) {
+            foreach ($items as $indexItem => $item) {
             
                 if ($modelSection->section_type == 0) {
 
-                    if (!empty($reviewDetails)) {
-                        foreach($reviewDetails as $reviewDetail) {
-                            if ($reviewDetail->item_id == $item->id) {
-                                $modelsReviewDetail[$indexSection][$index] = $reviewDetail;
-                                break;
+                    $supposedMark = null;
+
+                    if (!empty($individualDetails)) {
+
+                        $totalProposedMark = 0;
+                        $count = 0;
+
+                        foreach ($individualDetails as $indexStudent => $reviewDetails) {
+
+                            if (!empty($reviewDetails)) {
+
+                                foreach($reviewDetails as $reviewDetail) {
+
+                                    if ($reviewDetail->item_id == $item->id) {
+
+                                        $totalProposedMark += $reviewDetail->mark;
+                                        $count++;
+                                        $modelsReviewDetail[$indexSection][$indexItem][$indexStudent] = $reviewDetail;
+                                        break;
+                                    }
+                                }
+
+                            } else {
+
+                                foreach ($makerInfos as $indexStudent => $makerInfo) {
+                                    $reviewDetail = new IndividualAssessmentDetail();
+                                    $reviewDetail->marker_student_info_id = $makerInfo->id;
+                                    $modelsReviewDetail[$indexSection][$indexItem][$indexStudent] = $reviewDetail;
+                                }
                             }
                         }
-                    } else {
-                        $reviewDetail = new IndividualAssessmentDetail();
-                        $modelsReviewDetail[$indexSection][$index] = $reviewDetail;
+
+                        if ($totalProposedMark > 0 && $count > 0) {
+                            $supposedMark = round($totalProposedMark/$count,0,PHP_ROUND_HALF_DOWN);
+                        }
                     }
+
+                    $supposedMarkList[$indexSection][$indexItem] = $supposedMark;
                 }
 
                 if (!empty($individualFeedbacks)) {
                     foreach($individualFeedbacks as $individualFeedback) {
                         if ($individualFeedback->item_id == $item->id) {
-                            $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
+                            $modelsIndividualFeedback[$indexSection][$indexItem] = $individualFeedback;
                             break;
                         }
                     }
                 } else {
-                    $individualFeedback = new IndividualFeedback();
-                    $modelsIndividualFeedback[$indexSection][$index] = $individualFeedback;
+                    $individualFeedback = new IndividualAssessmentFeedback();
+                    $modelsIndividualFeedback[$indexSection][$indexItem] = $individualFeedback;
                 }
             }
         }
 
         return $this->render('individual-result', [
             'model' => $model,
+            'workStudentName' => $workStudentName,
+            'supposedMarkList' => $supposedMarkList,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
             'modelsReviewDetail' => (empty($modelsReviewDetail)) ? [[new IndividualAssessmentDetail()]] :  $modelsReviewDetail,
-            'modelsIndividualFeedback' => (empty($modelsIndividualFeedback)) ? [[new IndividualFeedback()]] :  $modelsIndividualFeedback,
+            'modelsIndividualFeedback' => (empty($modelsIndividualFeedback)) ? [[new IndividualAssessmentFeedback()]] :  $modelsIndividualFeedback,
         ]);
     }
 
@@ -652,7 +752,7 @@ class LecturerController extends Controller
             ]);
         } else if ($model->assessment_type == 3 || $model->assessment_type == 4) {
 
-            $individualInfo = $modelLecturer->getStudentMarkStatus($id);
+            $individualInfo = $modelLecturer->getStudentMarkStatus($id, $model->assessment_type);
 
             return $this->render('assessment', [
                 'model' => $model,
