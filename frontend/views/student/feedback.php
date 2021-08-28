@@ -28,7 +28,6 @@ use yii\helpers\Url;
             return [
                 'data-id' => $model['id'],
                 'data-assessment_id' => $model['assessment_id'],
-                'data-type' => $model['assessment_type'],
                 'data-status' => 2
             ]; },
         'columns' => [
@@ -38,7 +37,7 @@ use yii\helpers\Url;
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
             ],
             [
-                'attribute' => 'deadline',
+                'attribute' => 'mark',
                 'contentOptions' =>['width' => '20%'],
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
             ],
@@ -59,27 +58,9 @@ $this->registerJs("
     $('td').click(function (e) {
         var id = $(this).closest('tr').data('id');
         var assessment_id = $(this).closest('tr').data('assessment_id');
-        var type = $(this).closest('tr').data('type');
-        var status = $(this).closest('tr').data('status');
+        
         if(e.target == this) {
-            if(type == 0 || type == 1 || type == 2) {
-                if(status == 0) {
-                    location.href = '" . Url::to(['student/submit-group']) . "?id=' + id + '&assessment_id=' + assessment_id;
-                } else if(status == 1) {
-                    location.href = '" . Url::to(['student/view-group']) . "?id=' + id + '&assessment_id=' + assessment_id;
-                }
-            }
-            else if(type == 3 || type == 4) {
-                if(status == 0) {
-                    location.href = '" . Url::to(['student/submit-individual']) . "?id=' + id + '&assessment_id=' + assessment_id;
-                } else if(status == 1) {
-                    location.href = '" . Url::to(['student/view-individual']) . "?id=' + id + '&assessment_id=' + assessment_id;
-                }
-            }
-
-            if(status == 2) {
-                location.href = '" . Url::to(['student/view-feedback']) . "?id=' + id + '&assessment_id=' + assessment_id;
-            }
+            location.href = '" . Url::to(['student/view-feedback']) . "?id=' + id + '&assessment_id=' + assessment_id;
         }
     });
 

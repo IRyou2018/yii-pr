@@ -16,6 +16,9 @@ class StudentModel extends Model
     const INACTIVE = 0;
     const ACTIVE = 1;
 
+    const UNMARK = 0;
+    const MARKED = 1;
+
     /**
      * {@inheritdoc}
      */
@@ -110,6 +113,44 @@ class StudentModel extends Model
                 ->addParams([
                     ':user_id' => Yii::$app->user->id,
                     ':date' => $date,
+                    ])
+            )
+            ->all();
+
+        return $data;
+    }
+
+    /**
+     * Get feedback list
+     *
+     * @param array $params
+     *
+     * @return ActiveDataProvider
+     */
+    public function getFeedback()
+    {
+
+        $data = (new \Yii\db\Query())
+            ->select('gsi.id as id, gsi.mark as mark, assessments.id as assessment_id, assessments.name as name')
+            ->from('assessments')
+            ->join('INNER JOIN', 'group_assessment as ga', 'ga.assessment_id = assessments.id')
+            ->join('INNER JOIN', 'group_student_info as gsi', 'gsi.group_id = ga.id')
+            ->where(['assessments.active' => self::ACTIVE])
+            ->andWhere(['gsi.marked' => self::MARKED])
+            ->andWhere('gsi.student_id = :user_id')
+            ->addParams([
+                ':user_id' => Yii::$app->user->id,
+                ])
+            ->union(
+                (new \Yii\db\Query())
+                ->select('ia.id as id, ia.mark_value as mark, assessments.id as assessment_id, assessments.name as name')
+                ->from('individual_assessment as ia')
+                ->join('INNER JOIN', 'assessments', 'ia.assessment_id = assessments.id')
+                ->where(['assessments.active' => self::ACTIVE])
+                ->andWhere(['ia.marked' => self::MARKED])
+                ->andWhere('ia.student_id = :user_id')
+                ->addParams([
+                    ':user_id' => Yii::$app->user->id,
                     ])
             )
             ->all();

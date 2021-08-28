@@ -111,7 +111,7 @@ class StudentController extends Controller
     {
         $this->layout = 'student';
         $studentModel = new StudentModel();
-        $feedbacks = $studentModel->searchAssessment(self::COMPLETED);
+        $feedbacks = $studentModel->getFeedback();
 
         return $this->render('feedback', [
             'feedbacks' => $feedbacks,
