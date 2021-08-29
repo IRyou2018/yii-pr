@@ -38,12 +38,12 @@ use yii\helpers\Url;
                 'label' => 'Assessment',
                 'value' => 'name',
                 'contentOptions' =>['width' => '80%'],
-                'headerOptions' => ['class' => 'text-light bg-secondary']
+                'headerOptions' => ['class' => 'text-light bg-dark']
             ],
             [
                 'attribute' => 'deadline',
                 'contentOptions' =>['width' => '20%'],
-                'headerOptions' => ['class' => 'text-light bg-secondary'],
+                'headerOptions' => ['class' => 'text-light bg-dark'],
             ],
         ],
     ]); ?>
@@ -79,13 +79,13 @@ use yii\helpers\Url;
                 'label' => 'Assessment',
                 'value' => 'name',
                 'contentOptions' =>['width' => '80%'],
-                'headerOptions' => ['class' => 'text-light bg-secondary'],
+                'headerOptions' => ['class' => 'text-light bg-dark'],
             ],
             [
                 'attribute' => 'deadline',
                 'value' => function ($data) { return 'Finished';},
                 'contentOptions' =>['width' => '20%'],
-                'headerOptions' => ['class' => 'text-light bg-secondary'],
+                'headerOptions' => ['class' => 'text-light bg-dark'],
             ],
         ],
     ]); ?>

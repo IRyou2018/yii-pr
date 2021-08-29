@@ -19,7 +19,7 @@ $this->params['breadcrumbs'][] = $this->title;
     <div class="row">
         <div class="col-md-10">
             <p>
-                <?= Html::a('Assessment Results', ['view-result', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
+                <?= Html::a('Assessment Results', ['brief-result', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
                 <?= Html::a('Edit Details', ['update', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
                 <?php if ($model->assessment_type == 0 || $model->assessment_type == 1 || $model->assessment_type == 2) : ?>
                     <?= Html::button('Add Group', ['value' => Url::to(['add-group', 'id' => $model->id]), 'class' => 'btn btn-primary btn-sm', 'id' => 'modalButton']) ?>

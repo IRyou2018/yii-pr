@@ -301,7 +301,7 @@ class LecturerController extends Controller
                         $valid = false;
                     }
                 }
-                
+
                 // Get upload file name
                 $modelUpload->file = UploadedFile::getInstance($modelUpload, 'file');
                 // Set upload path
@@ -795,15 +795,13 @@ class LecturerController extends Controller
     public function actionBriefResult($id)
     {
         $model = $this->findModel($id);
-        $inconsistent = [];
-        $completed = [];
-		$incomplete = [];
+        $modelLecturer = new LecturerModel();
 
-        return $this->render('view', [
+        $briefResult = $modelLecturer->getBriefResult($id, $model->assessment_type);
+
+        return $this->render('brief-result', [
             'model' => $model,
-            'inconsistent' => $inconsistent,
-            'completed' => $completed,
-            'incomplete' => $incomplete,
+            'briefResult' => $briefResult,
         ]);
     }
 

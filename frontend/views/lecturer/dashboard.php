@@ -33,17 +33,17 @@ $this->title = 'Dashboard';
         'columns' => [
             [
                 'attribute' => 'name',
-                'headerOptions' => ['class' => 'text-light bg-secondary'],
+                'headerOptions' => ['class' => 'text-light bg-dark'],
                 'contentOptions' =>['width' => '67%']
             ],
             [
                 'attribute' => 'deadline',
-                'headerOptions' => ['class' => 'text-center text-light bg-secondary'],
+                'headerOptions' => ['class' => 'text-center text-light bg-dark'],
                 'contentOptions' =>['width' => '16%']
             ],
             [
                 'attribute' => 'active',
-                'headerOptions' => ['class' => 'text-center text-light bg-secondary'],
+                'headerOptions' => ['class' => 'text-center text-light bg-dark'],
                 'format' => 'raw',
                 'contentOptions' =>['width' => '10%'],
                 'value' => function ($data) {
@@ -69,7 +69,7 @@ $this->title = 'Dashboard';
             [
                 'class' => 'yii\grid\ActionColumn',
                 'contentOptions' =>['width' => '7%'],
-                'headerOptions' => ['class' => 'text-light bg-secondary'],
+                'headerOptions' => ['class' => 'text-light bg-dark'],
                 'template' => '{result}',
                 'buttons'=>
                     [

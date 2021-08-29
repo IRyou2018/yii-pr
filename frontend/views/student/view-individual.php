@@ -27,49 +27,11 @@ $this->params['breadcrumbs'][] = $this->title;
                 <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
                 <div class="container border mb-2">
                     <div class="row mb-1">
-                        <div class="col-md-2 font-weight-bold text-white bg-secondary">
+                        <div class="col-md-2 font-weight-bold text-white bg-primary">
                             Item/Functionality
                         </div>
                         <div class="col-md-10">
-                            <?php
-                                $query = Rubrics::find()
-                                    ->where('item_id = :id')
-                                    ->addParams([':id' => $modelItem->id]);
-                                $dataProvider = new ActiveDataProvider([
-                                    'query' => $query,
-                                    'sort' => false,
-                                ]);
-                                Modal::begin([
-                                    'title' => 'Rubrics',
-                                    'toggleButton' => ['label' => $modelItem->name, 'tag' => 'a', 'class'=>'text-black'],
-                                ]);
-                            ?>
-
-                            <?= GridView::widget([
-                                'dataProvider' => $dataProvider,
-                                'id' => 'rubricsList',
-                                'tableOptions' => ['class' => 'table table-bordered'],
-                                'summary' => false,
-                                'columns' => [
-                                    [
-                                        'attribute' => 'level',
-                                        'label' => 'Name',
-                                        'value' => 'level',
-                                        'headerOptions' => ['class' => 'text-light bg-primary']
-                                    ],
-                                    [
-                                        'attribute' => 'weight',
-                                        'value' => 'weight',
-                                        'headerOptions' => ['class' => 'text-light bg-primary']
-                                    ],
-                                    [
-                                        'attribute' => 'description',
-                                        'value' => 'description',
-                                        'headerOptions' => ['class' => 'text-light bg-primary']
-                                    ]
-                                ],
-                            ]); ?>
-                            <?php Modal::end(); ?>
+                            <?= $modelItem->name ?>
                         </div>
                     </div>
                     <div class="row mb-1">

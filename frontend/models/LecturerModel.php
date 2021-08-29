@@ -664,4 +664,54 @@ class LecturerModel extends Model
         }
         return $flag;
     }
+
+    /**
+     * Get brief result.
+     *
+     * @param int assessment_id
+     * @return coorinators
+     */
+    public function getBriefResult($id, $assessment_type)
+    {
+
+        if ($assessment_type == self::PEER_MARKING
+            || $assessment_type == self::SELF_ASSESSMENT) {
+
+            $data = (new yii\db\Query())
+            ->select(["CONCAT(user.first_name, ' ', user.last_name) as name,
+                grade.grade as mark"])
+            ->from('individual_assessment as ia')
+            ->join('INNER JOIN', 'assessments', 'ia.assessment_id = assessments.id')
+            ->join('LEFT OUTER JOIN', 'user', 'ia.student_id = user.id')
+            ->join('LEFT OUTER JOIN', 'grade', 'ia.mark_value >= grade.min_mark and ia.mark_value < grade.max_mark')
+            ->where('assessments.id = :id')
+            ->addParams([
+                ':id' => $id
+                ])
+            ->all();
+
+        } else if ($assessment_type == self::G_PEER_R_A
+            || $assessment_type == self::G_PEER_REVIEW
+            || $assessment_type == self::G_PEER_ASSESSMENT) {
+
+            $data = (new yii\db\Query())
+                ->select(["CONCAT(user.first_name, ' ', user.last_name) as name,
+                        ga.name as group_name,
+                        g2.grade as group_mark,
+                        g1.grade as individual_mark"])
+                ->from('group_student_info as gsi')
+                ->join('INNER JOIN', 'group_assessment as ga', 'gsi.group_id = ga.id')
+                ->join('INNER JOIN', 'assessments', 'ga.assessment_id = assessments.id')
+                ->join('LEFT OUTER JOIN', 'user', 'gsi.student_id = user.id')
+                ->join('LEFT OUTER JOIN', 'grade as g1', 'gsi.mark >= g1.min_mark and gsi.mark < g1.max_mark')
+                ->join('LEFT OUTER JOIN', 'grade as g2', 'ga.mark >= g2.min_mark and ga.mark < g2.max_mark')
+                ->where('assessments.id = :id')
+                ->addParams([
+                    ':id' => $id
+                    ])
+                ->all();
+        }
+
+        return $data;
+    }
 }

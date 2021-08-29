@@ -33,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
                 <div class="container border mb-2">
                     <div class="row mb-1">
-                        <div class="col-md-2 font-weight-bold text-white bg-secondary">
+                        <div class="col-md-2 font-weight-bold text-white bg-primary">
                             Item/Functionality
                         </div>
                         <div class="col-md-10">
@@ -47,7 +47,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 ]);
                                 Modal::begin([
                                     'title' => 'Rubrics',
-                                    'toggleButton' => ['label' => $modelItem->name, 'tag' => 'a', 'class'=>'text-black'],
+                                    'toggleButton' => ['label' => $modelItem->name, 'tag' => 'a', 'class'=>'text-black h5'],
                                 ]);
                             ?>
 
