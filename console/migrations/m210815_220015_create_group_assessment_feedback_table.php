@@ -8,7 +8,6 @@ use yii\db\Migration;
  *
  * - `{{%user}}`
  * - `{{%items}}`
- * - `{{%group_student_Info}}`
  */
 class m210815_220015_create_group_assessment_feedback_table extends Migration
 {

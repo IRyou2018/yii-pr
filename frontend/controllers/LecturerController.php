@@ -513,7 +513,7 @@ class LecturerController extends Controller
                             }
                         }
 
-                        if ($totalProposedMark > 0 && $count > 0) {
+                        if ($count > 0) {
                             $supposedMark = round($totalProposedMark/$count,0,PHP_ROUND_HALF_DOWN);
                         }
                     }
@@ -818,19 +818,21 @@ class LecturerController extends Controller
         $modelsSection = $model->sections;
         $modelsItem = [];
         $modelsReviewDetail = [];
-        $makerInfos = $groupAssessmentInfo->groupStudentInfos;
+        $groupStudentInfos = $groupAssessmentInfo->groupStudentInfos;
 
-        $itemBaseDetails = [];
-        foreach ($makerInfos as $index => $makerInfo) {
-            $reviewDetails = $makerInfo->groupAssessmentDetails;
+        $totalStudentNumber = count($groupStudentInfos);
 
-            $itemBaseDetails[$index] = $reviewDetails;
-        }
+        // echo "<pre>";
+        // print_r($itemBaseDetails);
+        // echo "</pre>";
+        // exit;
         
         $modelsIndividualFeedback = [];
         $supposedMarkList = [];
         $markerCommentsList = [];
         $markerInfoList = [];
+
+        $proposedMarks = [];
 
         foreach ($modelsSection as $indexSection => $modelSection) {
 
@@ -841,53 +843,76 @@ class LecturerController extends Controller
             
                 if ($modelSection->section_type == 0) {
 
-                    if ($item->item_type == 0) {
+                    foreach ($groupStudentInfos as $indexMarker => $groupStudentInfo) {
 
-                        foreach ($makerInfos as $indexWorker => $workerInfo) {
+                        $reviewDetails = $groupStudentInfo->groupAssessmentDetails;
+                        // echo "<pre>";
+                        // print_r($reviewDetails);
+                        // echo "</pre>";
+                        // exit;
+                        if (!empty($reviewDetails)) {
 
-                            if (!empty($itemBaseDetails)) {
+                            $indexWorker = 0;
 
-                                foreach ($itemBaseDetails as $indexMarker => $reviewDetails) {
+                            foreach($reviewDetails as $index => $reviewDetail) {
 
-                                    if (!empty($reviewDetails)) {
+                                if ($reviewDetail->item_id == $item->id) {
 
-                                        foreach($reviewDetails as $reviewDetail) {
+                                    $modelsReviewDetail[$indexSection][$indexItem][$indexMarker][$indexWorker] = $reviewDetail;
 
-                                            if ($reviewDetail->item_id == $item->id && $reviewDetail->work_student_id == $workerInfo->student_id) {
-
-                                                // $tempComment = $tempComment . $reviewDetail->comment . " ";
-                                                $modelsReviewDetail[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail;
-                                                break;
-                                            }
-                                        }
-
-                                    } else {
-
-                                        foreach ($makerInfos as $indexMarker => $makerInfo) {
-                                            $reviewDetail = new IndividualAssessmentDetail();
-                                            $reviewDetail->marker_student_info_id = $makerInfo->id;
-                                            $modelsReviewDetail[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail;
-                                        }
-                                    }
+                                    $proposedMarks[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->mark;
+                                    $indexWorker++;
                                 }
                             }
 
+                        } else {
+
+                            for ($i=0; $i < $totalStudentNumber; $i++) {
+                                $reviewDetail = new GroupAssessmentDetail();
+                                $reviewDetail->group_student_Info_id = $groupStudentInfo->id;
+                                $modelsReviewDetail[$indexSection][$indexItem][$indexMarker][$i] = $reviewDetail;
+
+                                $proposedMarks[$indexSection][$indexItem][$i][$indexMarker] = null;
+                            }
                         }
 
-                        $groupIndividualFeedback = new GroupAssessmentFeedback();
-                        $groupIndividualFeedback->item_id = $item->id;
-                        $groupIndividualFeedback->student_id = $workerInfo->student_id;
-                        $groupIndividualFeedback->group_id = $id;
-                        $modelsIndividualFeedback[$indexSection][$indexItem][$indexWorker] = $groupIndividualFeedback;
 
-                    } else {
-
+                        $individualFeedback = new GroupAssessmentFeedback();
+                        $individualFeedback->item_id = $item->id;
+                        $individualFeedback->student_id = $groupStudentInfo->student_id;
+                        $individualFeedback->group_id = $id;
+                        $modelsGroupAssessmentFeedback[$indexSection][$indexItem][$indexMarker] = $individualFeedback;
                     }
                 }
-
             }
         }
 
+        foreach ($proposedMarks as $indexSection => $proposedMark) {
+            foreach ($proposedMark as $indexItem => $marks) {
+                foreach ($marks as $index => $markersMark) {
+
+                    $totalProposedMark = 0;
+                    $count = 0;
+                    foreach($markersMark as $mark) {
+                        if (!empty($mark)) {
+                            $totalProposedMark += $mark;
+                            $count++;
+                        }
+                    }
+
+                    if ($count > 0) {
+                        $supposedMarkList[$indexSection][$indexItem][$index] = round($totalProposedMark/$count,0,PHP_ROUND_HALF_DOWN);
+                    }
+                }
+            }
+        }
+        // echo "<pre>";
+        // print_r($groupStudentInfo);
+        // // print_r($supposedMarkList);
+        // // print_r($modelsGroupAssessmentFeedback);
+        // echo "</pre>";
+        // exit;
+        
         if ($this->request->isPost) {
                 
             if (isset($_POST['IndividualAssessmentFeedback'][0][0])) {
@@ -958,7 +983,7 @@ class LecturerController extends Controller
                         }
                         
                         if($flag) {
-                            $individualAssessment = $makerInfo->individualAssessment;
+                            $individualAssessment = $groupStudentInfo->individualAssessment;
 
                             $individualAssessment->marked = self::COMPLETED;
                             $individualAssessment->mark_value = $totalMark;
@@ -982,14 +1007,14 @@ class LecturerController extends Controller
             $model->loadDefaultValues();
         }
 
-        return $this->render('mark-individual', [
+        return $this->render('mark-group', [
             'model' => $model,
-            // 'supposedMarkList' => $supposedMarkList,
+            'supposedMarkList' => $supposedMarkList,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
-            'makerInfos' => $makerInfos,
-            'modelsReviewDetail' => (empty($modelsReviewDetail)) ? [[[new IndividualAssessmentDetail()]]] :  $modelsReviewDetail,
-            'modelsIndividualFeedback' => (empty($modelsIndividualFeedback)) ? [[new IndividualAssessmentFeedback()]] :  $modelsIndividualFeedback,
+            'groupStudentInfos' => $groupStudentInfos,
+            'modelsReviewDetail' => (empty($modelsReviewDetail)) ? [[[[new GroupAssessmentDetail()]]]] :  $modelsReviewDetail,
+            'modelsGroupAssessmentFeedback' => (empty($modelsGroupAssessmentFeedback)) ? [[[new GroupAssessmentFeedback()]]] :  $modelsGroupAssessmentFeedback,
         ]);
     }
 

@@ -96,4 +96,14 @@ class GroupStudentInfo extends \yii\db\ActiveRecord
     {
         return $this->hasOne(User::className(), ['id' => 'student_id']);
     }
+
+    /**
+     * Gets student's full name.
+     *
+     * @return string
+     */
+    public function getStudentName()
+    {
+        return $this->student->first_name . " " . $this->student->last_name;
+    }
 }
