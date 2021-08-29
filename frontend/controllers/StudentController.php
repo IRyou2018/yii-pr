@@ -35,6 +35,8 @@ class StudentController extends Controller
     const G_PEER_REVIEW = 0;
     const G_PEER_ASSESSMENT = 1;
     const G_PEER_R_A = 2;
+    const SELF_ASSESSMENT = 3;
+    const PEER_MARKING = 4;
 
     /**
      * @inheritDoc
@@ -317,7 +319,8 @@ class StudentController extends Controller
     
                         $modelsGroupAssessmentDetail[$indexSection][$index][$indexStudent] = $modelGroupDetail;
                     }
-                } else if ($item->item_type == self::GROUP) {
+                } else if ($item->item_type == self::GROUP_ITEM) {
+
                     $modelGroupDetail = new GroupAssessmentDetail();
                     $modelGroupDetail->item_id = $item->id;
                     $modelGroupDetail->group_student_Info_id = $id;
@@ -325,6 +328,12 @@ class StudentController extends Controller
                 }
             }
         }
+        // echo "<pre>";
+        // print_r($modelsItem);
+        // print_r($modelsGroupAssessmentDetail);
+        // echo "</pre>";
+        // exit;
+
         
         if ($this->request->isPost) {
             
@@ -505,60 +514,52 @@ class StudentController extends Controller
      * 
      * @return mixed
      */
-    public function actionViewFeedback($id, $assessment_id)
+    public function actionViewFeedback($id, $assessment_id, $grade)
     {
         $this->layout = 'student';
         $model = Assessments::findOne($assessment_id);
 
         $modelsSection = $model->sections;
         $modelsItem = [];
-        $modelsFeedback = [];
+        $feedbackDetail = [];
+
+        $modelStudent = new StudentModel();
+
+        if ($model->assessment_type == self::G_PEER_ASSESSMENT
+            || $model->assessment_type == self::G_PEER_REVIEW
+            || $model->assessment_type == self::G_PEER_R_A) {
+
+                $group_id = GroupStudentInfo::findOne($id)->group_id;
+                $feedbacks = $modelStudent->getGroupFeedback($id, $group_id);
+        } else if ($model->assessment_type == self::PEER_MARKING
+            || $model->assessment_type == self::SELF_ASSESSMENT) {
+
+                $feedbacks = $modelStudent->getIndividualFeedback($id);
+        }
 
         foreach ($modelsSection as $indexSection => $modelSection) {
 
             $items = $modelSection->items;
             $modelsItem[$indexSection] = $items;
 
-            foreach ($items as $index => $item) {
-
-                if ($item->item_type == self::INDIVIDUAL_ITEM) {
+            foreach ($items as $indexItem => $item) {
                     
-                    foreach($groupStudents as $indexStudent => $groupStudent) {
+                foreach($feedbacks as $feedback) {
 
-                        foreach($groupAssessmentDetails as $groupAssessmentDetail) {
-
-                            if($groupStudent->student_id == $groupAssessmentDetail->work_student_id
-                                && $item->id == $groupAssessmentDetail->item_id) {
-
-                                $modelsGroupAssessmentDetail[$indexSection][$index][$indexStudent] = $groupAssessmentDetail;
-
-                            }
-                        }
+                    if ($item->id == $feedback['item_id']) {
+                        $feedbackDetail[$indexSection][$indexItem] = $feedback;
+                        break;
                     }
-                } else if ($item->item_type == self::GROUP) {
-
-                    foreach($groupAssessmentDetails as $groupAssessmentDetail) {
-
-                        if($item->id = $groupAssessmentDetail->item_id) {
-
-                            $modelsGroupAssessmentDetail[$indexSection][$index][0] = $groupAssessmentDetail;
-                        }
-                    }
-                }
-
-                if ($model->assessment_type == self::G_PEER_R_A) {
-                    $marklist[$indexSection][$index] = $modelsGroupAssessmentDetail[$indexSection][$index][0]->mark;
                 }
             }
         }
 
-        return $this->render('view-group', [
+        return $this->render('view-feedback', [
             'model' => $model,
+            'grade' => $grade,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
-            'modelsGroupAssessmentDetail' => (empty($modelsGroupAssessmentDetail)) ? [[[new GroupAssessmentDetail()]]] :  $modelsGroupAssessmentDetail,
-            'marklist' => (empty($marklist)) ? [['']] :  $marklist,
+            'feedbackDetail' => $feedbackDetail,
         ]);
     }
-
 }

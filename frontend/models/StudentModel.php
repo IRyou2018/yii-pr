@@ -2,6 +2,7 @@
 
 namespace frontend\models;
 
+use common\models\Assessments;
 use Yii;
 use yii\base\Model;
 
@@ -131,10 +132,11 @@ class StudentModel extends Model
     {
 
         $data = (new \Yii\db\Query())
-            ->select('gsi.id as id, gsi.mark as mark, assessments.id as assessment_id, assessments.name as name')
+            ->select('gsi.id as id, gsi.mark as mark, grade.grade as grade, assessments.id as assessment_id, assessments.name as name')
             ->from('assessments')
             ->join('INNER JOIN', 'group_assessment as ga', 'ga.assessment_id = assessments.id')
             ->join('INNER JOIN', 'group_student_info as gsi', 'gsi.group_id = ga.id')
+            ->join('LEFT OUTER JOIN', 'grade', 'gsi.mark >= grade.min_mark and gsi.mark < grade.max_mark')
             ->where(['assessments.active' => self::ACTIVE])
             ->andWhere(['gsi.marked' => self::MARKED])
             ->andWhere('gsi.student_id = :user_id')
@@ -143,9 +145,10 @@ class StudentModel extends Model
                 ])
             ->union(
                 (new \Yii\db\Query())
-                ->select('ia.id as id, ia.mark_value as mark, assessments.id as assessment_id, assessments.name as name')
+                ->select('ia.id as id, ia.mark_value as mark, grade.grade as grade, assessments.id as assessment_id, assessments.name as name')
                 ->from('individual_assessment as ia')
                 ->join('INNER JOIN', 'assessments', 'ia.assessment_id = assessments.id')
+                ->join('LEFT OUTER JOIN', 'grade', 'ia.mark_value >= grade.min_mark and ia.mark_value < grade.max_mark')
                 ->where(['assessments.active' => self::ACTIVE])
                 ->andWhere(['ia.marked' => self::MARKED])
                 ->andWhere('ia.student_id = :user_id')
@@ -154,6 +157,47 @@ class StudentModel extends Model
                     ])
             )
             ->all();
+
+        return $data;
+    }
+
+    public function getGroupFeedback($id, $group_id)
+    {
+        $data = (new \Yii\db\Query())
+        ->select('gaf.item_id, gaf.mark, gaf.comment')
+        ->from('group_assessment_feedback as gaf')
+        ->join('INNER JOIN', 'items', 'gaf.item_id = items.id and items.item_type = 0')
+        ->where('gaf.group_student_Info_id = :id')
+        ->andWhere('gsi.group_id = :group_id')
+        ->addParams([
+            ':id' => $id,
+            ':group_id' => $group_id,
+            ])
+        ->union(
+            (new \Yii\db\Query())
+            ->select('gaf.item_id, gaf.mark, comment')
+            ->from('group_assessment_feedback as gaf')
+            ->join('INNER JOIN', 'items', 'gaf.item_id = items.id and items.item_type = 1')
+            ->where('gsi.group_id = :group_id')
+            ->addParams([
+                ':group_id' => $group_id,
+                ])
+            )
+        ->all();
+
+        return $data;
+    }
+
+    public function getIndividualFeedback($id)
+    {
+        $data = (new \Yii\db\Query())
+        ->select('iaf.item_id, iaf.mark, iaf.comment')
+        ->from('individual_assessment_feedback as iaf')
+        ->where('iaf.individual_assessment_id = :id')
+        ->addParams([
+            ':id' => $id,
+            ])
+        ->all();
 
         return $data;
     }

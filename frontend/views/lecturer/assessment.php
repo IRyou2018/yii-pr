@@ -163,20 +163,16 @@ $this->params['breadcrumbs'][] = $this->title;
                     'buttons'=>
                         [
                             'manage-group' => function ($url, $model, $key)
-                            {     
-                                $options = [
-                                    'title' => Yii::t('yii', 'Manage Group'),
-                                    'class' => 'btn'
-                                ];
+                            {
                                 return Html::a('Manage Group', ['manage-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
                             },
                             'result' => function ($url, $model, $key)
-                            {     
-                                $options = [
-                                    'title' => Yii::t('yii', 'Result'),
-                                    'class' => 'btn'
-                                ];
-                                return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                            {
+                                if ($model['marked'] == 0) {
+                                    return Html::a('Result', ['mark-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                                } else if ($model['marked'] == 1) {
+                                    return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                                }
                             }
                         ],
                 ],
@@ -225,20 +221,16 @@ $this->params['breadcrumbs'][] = $this->title;
                         'buttons'=>
                             [
                                 'manage-group' => function ($url, $model, $key)
-                                {     
-                                    $options = [
-                                        'title' => Yii::t('yii', 'Manage Group'),
-                                        'class' => 'btn'
-                                    ];
+                                {
                                     return Html::a('Manage Group', ['manage-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
                                 },
                                 'result' => function ($url, $model, $key)
-                                {     
-                                    $options = [
-                                        'title' => Yii::t('yii', 'Result'),
-                                        'class' => 'btn'
-                                    ];
-                                    return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                                {
+                                    if ($model['marked'] == 0) {
+                                        return Html::a('Result', ['mark-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                                    } else if ($model['marked'] == 1) {
+                                        return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                                    }
                                 }
                             ],
                     ],
@@ -287,20 +279,16 @@ $this->params['breadcrumbs'][] = $this->title;
                         'buttons'=>
                             [
                                 'manage-group' => function ($url, $model, $key)
-                                {     
-                                    $options = [
-                                        'title' => Yii::t('yii', 'Manage Group'),
-                                        'class' => 'btn'
-                                    ];
+                                {
                                     return Html::a('Manage Group', ['manage-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm']);
                                 },
                                 'result' => function ($url, $model, $key)
-                                {     
-                                    $options = [
-                                        'title' => Yii::t('yii', 'Result'),
-                                        'class' => 'btn'
-                                    ];
-                                    return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                                {
+                                    if ($model['marked'] == 0) {
+                                        return Html::a('Result', ['mark-group', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                                    } else if ($model['marked'] == 1) {
+                                        return Html::a('Result', ['group-result', 'id'=>$model['id']], ['class'=>'btn btn-primary btn-sm mx-2']);
+                                    }
                                 }
                             ],
                     ],
@@ -541,37 +529,4 @@ $this->registerJsFile(
     '@web/js/lecturer/assessment.js',
     ['depends' => [\yii\web\JqueryAsset::class]]
 );
-?>
-<?php
-$script = <<< JS
-
-// here you write all your javascript stuff
-
-$('form#{$model->formName()}').on('beforeSubmit', function(e)
-{
-    var \$form = $(this);
-    $.post(
-        \$form.attr("action"), // serialize Yii2 form
-        \$form.serialize()
-    )
-        .done(function(result) {
-            console.log(result);
-            // if(result.message == 'Success')
-            if(result == 1)
-            {
-                $(\$form).trigger("reset");
-                // $(document).find('#secondmodal').modal('hide');
-                $.pjax.reload({container:'#branchesGrid'});
-            } else {
-                
-                $("#message").html(result);
-            }
-        }).fail(function() {
-            console.log("server error");
-        });
-    return false;
-});
-
-JS;
-$this->registerJs($script);
 ?>

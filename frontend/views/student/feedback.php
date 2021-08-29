@@ -28,7 +28,7 @@ use yii\helpers\Url;
             return [
                 'data-id' => $model['id'],
                 'data-assessment_id' => $model['assessment_id'],
-                'data-status' => 2
+                'data-grade' => $model['grade'],
             ]; },
         'columns' => [
             [
@@ -37,7 +37,7 @@ use yii\helpers\Url;
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
             ],
             [
-                'attribute' => 'mark',
+                'attribute' => 'grade',
                 'contentOptions' =>['width' => '20%'],
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
             ],
@@ -58,9 +58,10 @@ $this->registerJs("
     $('td').click(function (e) {
         var id = $(this).closest('tr').data('id');
         var assessment_id = $(this).closest('tr').data('assessment_id');
+        var grade = $(this).closest('tr').data('grade');
         
         if(e.target == this) {
-            location.href = '" . Url::to(['student/view-feedback']) . "?id=' + id + '&assessment_id=' + assessment_id;
+            location.href = '" . Url::to(['student/view-feedback']) . "?id=' + id + '&assessment_id=' + assessment_id + '&grade=' + grade;
         }
     });
 

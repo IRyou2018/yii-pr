@@ -31,7 +31,7 @@ class Sections extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'assessment_id', 'section_type'], 'required'],
+            [['name', 'section_type'], 'required'],
             [['assessment_id', 'section_type'], 'integer'],
             [['name'], 'string', 'max' => 255],
             [['assessment_id'], 'exist', 'skipOnError' => true, 'targetClass' => Assessments::className(), 'targetAttribute' => ['assessment_id' => 'id']],

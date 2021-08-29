@@ -92,43 +92,62 @@ $this->params['breadcrumbs'][] = $this->title;
                     </div>
                     <?php endif; ?>
                 </div>
-                <div class="row mb-1">
-                    <div class="col-md-2 font-weight-bold bg-light">
-                        Student Name
+                <?php if ($modelItem->item_type == 0) : ?>
+                    <div class="row mb-1">
+                        <div class="col-md-2 font-weight-bold bg-light">
+                            Student Name
+                        </div>
+                        <div class="col-md-2 font-weight-bold bg-light">
+                        <?php
+                            if ($model->assessment_type == 0 || $model->assessment_type == 2) {
+                                echo 'Contribution';
+                            } else if ($model->assessment_type == 1) {
+                                echo 'Proposed Mark';
+                            }
+                        ?>   
+                        </div>
+                        <div class="col-md-8 font-weight-bold bg-light">
+                            Comment
+                        </div>
                     </div>
-                    <div class="col-md-2 font-weight-bold bg-light">
-                    <?php
-                        if ($model->assessment_type == 0 || $model->assessment_type == 2) {
-                            echo 'Contribution';
-                        } else if ($model->assessment_type == 1) {
-                            echo 'Proposed Mark';
-                        }
-                    ?>   
+                    <?php foreach ($modelsGroupAssessmentDetail[$indexSection][$indexItem] as $indexStudent => $groupDetail) : ?>
+                    <div class="row mb-1">
+                        <div class="col-md-2 bg-light">
+                            <?= $groupDetail->studentName ?>
+                        </div>
+                        <div class="col-md-2">
+                            <?= Html::activeHiddenInput($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]item_id"); ?>
+                            <?= Html::activeHiddenInput($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]group_student_Info_id"); ?>
+                            <?= Html::activeHiddenInput($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]work_student_id"); ?>
+                            <?php if ($model->assessment_type == 0 || $model->assessment_type == 2) : ?>
+                                <?= $form->field($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]contribution")->textInput(['style'=>'width:70px', 'class'=>'text-center', 'type' => 'number'])->label(false) ?>
+                            <?php elseif ($model->assessment_type == 1) : ?>
+                                <?= $form->field($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]mark")->textInput(['style'=>'width:70px', 'class'=>'text-center'])->label(false) ?>
+                            <?php endif; ?>
+                        </div>
+                        <div class="col-md-8">
+                            <?= $form->field($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]comment")->textarea(['maxlength' => true])->label(false) ?>
+                        </div>
                     </div>
-                    <div class="col-md-8 font-weight-bold bg-light">
-                        Comment
+                    <?php endforeach; ?>
+                <?php elseif ($modelItem->item_type == 1) : ?>
+                    <div class="row mb-1">
+                        <div class="col-md-2 font-weight-bold bg-light">
+                            Proposed Mark
+                        </div>
+                        <div class="col-md-2">
+                        <?= $form->field($modelsGroupAssessmentDetail[$indexSection][$indexItem][0], "[{$indexSection}][{$indexItem}][{0}]mark")->textInput(['style'=>'width:70px', 'class'=>'text-center'])->label(false) ?>
+                        </div>
                     </div>
-                </div>
-                <?php foreach ($modelsGroupAssessmentDetail[$indexSection][$indexItem] as $indexStudent => $groupDetail) : ?>
-                <div class="row mb-1">
-                    <div class="col-md-2 bg-light">
-                        <?= $groupDetail->studentName ?>
+                    <div class="row mb-1">
+                        <div class="col-md-2 font-weight-bold bg-light">
+                            Comment
+                        </div>
+                        <div class="col-md-10">
+                            <?= $form->field($modelsGroupAssessmentDetail[$indexSection][$indexItem][0], "[{$indexSection}][{$indexItem}][{0}]comment")->textarea(['maxlength' => true])->label(false) ?>
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <?= Html::activeHiddenInput($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]item_id"); ?>
-                        <?= Html::activeHiddenInput($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]group_student_Info_id"); ?>
-                        <?= Html::activeHiddenInput($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]work_student_id"); ?>
-                        <?php if ($model->assessment_type == 0 || $model->assessment_type == 2) : ?>
-                            <?= $form->field($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]contribution")->textInput(['style'=>'width:70px', 'class'=>'text-center', 'type' => 'number'])->label(false) ?>
-                        <?php elseif ($model->assessment_type == 1) : ?>
-                            <?= $form->field($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]mark")->textInput(['style'=>'width:70px', 'class'=>'text-center'])->label(false) ?>
-                        <?php endif; ?>
-                    </div>
-                    <div class="col-md-8">
-                        <?= $form->field($modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent], "[{$indexSection}][{$indexItem}][{$indexStudent}]comment")->textarea(['maxlength' => true])->label(false) ?>
-                    </div>
-                </div>
-                <?php endforeach; ?>
+                <?php endif; ?>
                 </div>
                 <?php endforeach; ?>
             </div>

@@ -4,6 +4,8 @@ namespace frontend\controllers;
 
 use common\models\Assessments;
 use common\models\GroupAssessment;
+use common\models\GroupAssessmentDetail;
+use common\models\GroupAssessmentFeedback;
 use common\models\GroupStudentInfo;
 use common\models\IndividualAssessment;
 use common\models\IndividualAssessmentDetail;
@@ -290,13 +292,26 @@ class LecturerController extends Controller
                     }
                 }
 
+                if ($valid) {
+
+                    $arrayValidator = new ArrayValidator();
+
+                    if($arrayValidator->validateCreateAssessment($modelsSection, $modelsItem)) {
+                    } else {
+                        $valid = false;
+                    }
+                }
+                
                 // Get upload file name
                 $modelUpload->file = UploadedFile::getInstance($modelUpload, 'file');
                 // Set upload path
                 $path = "uploads/";
 
                 // Validate file extension
-                $valid = $modelUpload->validate();
+                if($modelUpload->validate()){
+                } else {
+                    $valid = false;
+                }
 
                 if ($valid) {
                     // Upload file to server
@@ -316,10 +331,16 @@ class LecturerController extends Controller
 
 
                     // Validate file format
-                    $valid = $modelUpload->validateTemplateFormat($excelData, $model->assessment_type);
+                    if ($modelUpload->validateTemplateFormat($excelData, $model->assessment_type)) {
+                    } else {
+                        $valid = false;
+                    }
 
                     // Validate file Content
-                    $valid = $modelUpload->validateInputContents($excelData, $model->assessment_type);
+                    if ($modelUpload->validateInputContents($excelData, $model->assessment_type)) {
+                    } else {
+                        $valid = false;
+                    }
 
                 }
 
@@ -783,6 +804,194 @@ class LecturerController extends Controller
             'inconsistent' => $inconsistent,
             'completed' => $completed,
             'incomplete' => $incomplete,
+        ]);
+    }
+
+    /**
+     * Creates a new Assessments model.
+     * If creation is successful, the browser will be redirected to the 'view' page.
+     * @return mixed
+     */
+    public function actionMarkGroup($id)
+    {
+        $groupAssessmentInfo = GroupAssessment::findOne($id);
+
+        $model = $groupAssessmentInfo->assessment;
+        $modelsSection = $model->sections;
+        $modelsItem = [];
+        $modelsReviewDetail = [];
+        $makerInfos = $groupAssessmentInfo->groupStudentInfos;
+
+        $itemBaseDetails = [];
+        foreach ($makerInfos as $index => $makerInfo) {
+            $reviewDetails = $makerInfo->groupAssessmentDetails;
+
+            $itemBaseDetails[$index] = $reviewDetails;
+        }
+        
+        $modelsIndividualFeedback = [];
+        $supposedMarkList = [];
+        $markerCommentsList = [];
+        $markerInfoList = [];
+
+        foreach ($modelsSection as $indexSection => $modelSection) {
+
+            $items = $modelSection->items;
+            $modelsItem[$indexSection] = $items;
+
+            foreach ($items as $indexItem => $item) {
+            
+                if ($modelSection->section_type == 0) {
+
+                    if ($item->item_type == 0) {
+
+                        foreach ($makerInfos as $indexWorker => $workerInfo) {
+
+                            if (!empty($itemBaseDetails)) {
+
+                                foreach ($itemBaseDetails as $indexMarker => $reviewDetails) {
+
+                                    if (!empty($reviewDetails)) {
+
+                                        foreach($reviewDetails as $reviewDetail) {
+
+                                            if ($reviewDetail->item_id == $item->id && $reviewDetail->work_student_id == $workerInfo->student_id) {
+
+                                                // $tempComment = $tempComment . $reviewDetail->comment . " ";
+                                                $modelsReviewDetail[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail;
+                                                break;
+                                            }
+                                        }
+
+                                    } else {
+
+                                        foreach ($makerInfos as $indexMarker => $makerInfo) {
+                                            $reviewDetail = new IndividualAssessmentDetail();
+                                            $reviewDetail->marker_student_info_id = $makerInfo->id;
+                                            $modelsReviewDetail[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail;
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+
+                        $groupIndividualFeedback = new GroupAssessmentFeedback();
+                        $groupIndividualFeedback->item_id = $item->id;
+                        $groupIndividualFeedback->student_id = $workerInfo->student_id;
+                        $groupIndividualFeedback->group_id = $id;
+                        $modelsIndividualFeedback[$indexSection][$indexItem][$indexWorker] = $groupIndividualFeedback;
+
+                    } else {
+
+                    }
+                }
+
+            }
+        }
+
+        if ($this->request->isPost) {
+                
+            if (isset($_POST['IndividualAssessmentFeedback'][0][0])) {
+
+                $index = 0;
+                $totalMark = 0;
+                $student_id = $groupAssessmentInfo->student_id;
+                $valid = true;
+
+                foreach ($_POST['IndividualAssessmentFeedback'] as $indexSection => $feedbacks) {
+                
+                    foreach ($feedbacks as $indexItem => $feedback) {
+                        
+                        $data['IndividualAssessmentFeedback'] = $feedback;
+                        $modelIndividualFeedback = new IndividualAssessmentFeedback();
+                        $modelIndividualFeedback->load($data);
+                        $modelIndividualFeedback->student_id = $student_id;
+                        $modelIndividualFeedback->scenario = 'submit';
+
+                        $modelsIndividualFeedback[$indexSection][$indexItem] = $modelIndividualFeedback;
+                        
+                        // Input validation
+                        if($modelIndividualFeedback->validate()) {
+                        } else {
+                            $valid = false;
+                        }
+
+                        $index++;
+                    }
+                }
+                
+                $markValidate = new ArrayValidator();
+
+                if ($markValidate->validateInputMarks($modelsIndividualFeedback, $supposedMarkList)) {
+                } else {
+                    $valid = false;
+                }
+
+                if($valid) {
+                    $transaction = \Yii::$app->db->beginTransaction();
+
+                    try {
+
+                        $flag = true;
+                        
+                        foreach ($modelsIndividualFeedback as $indexSection => $feedbacks) {
+                
+                            foreach ($feedbacks as $indexItem => $feedback) {
+
+                                if ($modelSection->section_type == 0) {
+                                    if (empty($feedback->mark)) {
+                                        $feedback->mark = $supposedMarkList[$indexSection][$indexItem];
+                                    }
+
+                                    if (empty($feedback->comment)) {
+                                        $feedback->comment = $markerCommentsList[$indexSection][$indexItem];
+                                    }
+                                }
+                                
+                                $totalMark += $feedback->mark;
+                                
+                                if ($feedback->save(false)) {
+                                } else {
+                                    $flag = false;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if($flag) {
+                            $individualAssessment = $makerInfo->individualAssessment;
+
+                            $individualAssessment->marked = self::COMPLETED;
+                            $individualAssessment->mark_value = $totalMark;
+
+                            $flag = $individualAssessment->save(false);
+                        }
+
+                        if ($flag) {
+                            $transaction->commit();
+                            return $this->redirect(['assessment', 'id' => $model->id]);
+                        } else {
+
+                            $transaction->rollBack();
+                        }
+                    } catch (Exception $e) {
+                        $transaction->rollBack();
+                    }
+                }
+            }
+        } else {
+            $model->loadDefaultValues();
+        }
+
+        return $this->render('mark-individual', [
+            'model' => $model,
+            // 'supposedMarkList' => $supposedMarkList,
+            'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
+            'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
+            'makerInfos' => $makerInfos,
+            'modelsReviewDetail' => (empty($modelsReviewDetail)) ? [[[new IndividualAssessmentDetail()]]] :  $modelsReviewDetail,
+            'modelsIndividualFeedback' => (empty($modelsIndividualFeedback)) ? [[new IndividualAssessmentFeedback()]] :  $modelsIndividualFeedback,
         ]);
     }
 

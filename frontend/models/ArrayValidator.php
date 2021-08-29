@@ -20,6 +20,37 @@ class ArrayValidator extends Model
         ];
     }
 
+    public function validateCreateAssessment($modelsSection, $modelsItem) {
+
+        $valid = true;
+
+        $totalMark = 0;
+
+        foreach ($modelsItem as $indexSection => $items) {
+            foreach ($items as $item) {
+
+                $totalMark += $item->max_mark_value;
+
+                if ($modelsSection[$indexSection]->section_type == 0
+                    && $item->item_type <> 0) {
+                    $valid = false;
+                    $item->addError('item_type', 'Only Individule Item could be select for the section type of "For Student".');
+                }
+            }
+        }
+
+        if ($totalMark <> 100) {
+            $valid = false;
+            foreach ($modelsItem as $items) {
+                foreach ($items as $item) {
+                    $item->addError('max_mark_value', 'Total max marks should be 100.');
+                }
+            }
+        }
+
+        return $valid;
+    }
+
     public function validateGroupDetail($attribute, $count) {
         
         $valid = true;
@@ -46,7 +77,7 @@ class ArrayValidator extends Model
 
                     $valid = false;
                     foreach ($groupDetailsItem as $groupDetailStudent) {
-                        $groupDetailStudent->addError('contribution', 'Contributions for each item should be add to 100.');
+                        $groupDetailStudent->addError('contribution', 'Summary of contributions should be 100.');
 
                     }
                 }

@@ -43,34 +43,47 @@ $this->params['breadcrumbs'][] = $this->title;
                 </div>
             </div>
             <?php if ($modelSection->section_type == 0) : ?>
-            <div class="row mb-1">
-                <div class="col-md-2 bg-light">
-                    
-                </div>
-                <?php foreach ($modelsReviewDetail[$indexSection][$indexItem] as $reviewDetail): ?>
-                <div class="col bg-light">
-                    <?= $reviewDetail->markerStudentInfo->studentName ?>
-                </div>
-                <?php endforeach; ?>
-            </div>
-            <div class="row mb-1">
-                <div class="col-md-2 bg-light">
-                    Proposed Mark
-                </div>
-                <?php foreach ($modelsReviewDetail[$indexSection][$indexItem] as $reviewDetail): ?>
-                <div class="col">
-                    &nbsp&nbsp&nbsp<?= $reviewDetail->mark ?>
-                </div>
-                <?php endforeach; ?>
-            </div>
-            <div class="row mb-1">
-                <div class="col-md-2 bg-light">
-                    Supposed Mark
-                </div>
-                <div class="col">
-                    &nbsp&nbsp&nbsp<?= $supposedMarkList[$indexSection][$indexItem] ?>
-                </div>
-            </div>
+                <?php if ($model->assessment_type == 4) : ?>
+                    <div class="row mb-1">
+                        <div class="col-md-2 text-white bg-secondary">
+                            Marker Student
+                        </div>
+                        <?php foreach ($modelsReviewDetail[$indexSection][$indexItem] as $reviewDetail): ?>
+                        <div class="col text-white bg-secondary">
+                            <?= $reviewDetail->markerStudentInfo->studentName ?>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="row mb-1">
+                        <div class="col-md-2 text-white bg-secondary">
+                            Proposed Mark
+                        </div>
+                        <?php foreach ($modelsReviewDetail[$indexSection][$indexItem] as $reviewDetail): ?>
+                        <div class="col">
+                            &nbsp&nbsp&nbsp<?= $reviewDetail->mark ?>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="row mb-1">
+                        <div class="col-md-2 text-white bg-secondary">
+                            Supposed Mark
+                        </div>
+                        <div class="col">
+                            &nbsp&nbsp&nbsp<?= $supposedMarkList[$indexSection][$indexItem] ?>
+                        </div>
+                    </div>
+                    <?php elseif ($model->assessment_type == 3) : ?>
+                        <div class="row mb-1">
+                            <div class="col-md-2 text-white bg-secondary">
+                                Proposed Mark
+                            </div>
+                            <?php foreach ($modelsReviewDetail[$indexSection][$indexItem] as $reviewDetail): ?>
+                            <div class="col">
+                                &nbsp&nbsp&nbsp<?= $reviewDetail->mark ?>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
             <?php endif; ?>
             <div class="row mb-1">
                 <div class="col-md-2 text-white bg-secondary">

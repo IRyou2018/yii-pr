@@ -12,10 +12,9 @@ use Yii;
  * @property int $mark
  * @property string|null $comment
  * @property int $item_id
- * @property int|null $group_student_Info_id
  * @property int|null $group_id
  *
- * @property GroupStudentInfo $groupStudentInfo
+ * @property GroupAssessment $group
  * @property Items $item
  * @property User $student
  */
@@ -36,10 +35,9 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
     {
         return [
             [['mark', 'item_id'], 'required'],
-            [['student_id', 'mark', 'item_id', 'group_student_Info_id', 'group_id'], 'integer'],
+            [['student_id', 'mark', 'item_id', 'group_id'], 'integer'],
             [['comment'], 'string'],
             [['group_id'], 'exist', 'skipOnError' => true, 'targetClass' => GroupAssessment::className(), 'targetAttribute' => ['group_id' => 'id']],
-            [['group_student_Info_id'], 'exist', 'skipOnError' => true, 'targetClass' => GroupStudentInfo::className(), 'targetAttribute' => ['group_student_Info_id' => 'id']],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_id' => 'id']],
             [['mark'], 'validateMark'],
@@ -57,7 +55,6 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
             'mark' => 'Mark',
             'comment' => 'Comment',
             'item_id' => 'Item ID',
-            'group_student_Info_id' => 'Group Student  Info ID',
             'group_id' => 'Group ID',
         ];
     }
@@ -77,17 +74,6 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
     public function getGroup()
     {
         return $this->hasOne(GroupAssessment::className(), ['id' => 'group_id']);
-    }
-
-
-    /**
-     * Gets query for [[GroupStudentInfo]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getGroupStudentInfo()
-    {
-        return $this->hasOne(GroupStudentInfo::className(), ['id' => 'group_student_Info_id']);
     }
 
     /**

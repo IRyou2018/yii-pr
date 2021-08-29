@@ -23,7 +23,6 @@ class m210815_220015_create_group_assessment_feedback_table extends Migration
             'mark' => $this->integer(3)->notNull(),
             'comment' => 'LONGTEXT',
             'item_id' => $this->integer(11)->notNull(),
-            'group_student_Info_id' => $this->integer(11),
         ]);
 
         // creates index for column `student_id`
@@ -59,23 +58,6 @@ class m210815_220015_create_group_assessment_feedback_table extends Migration
             'id',
             'CASCADE'
         );
-
-        // creates index for column `group_student_Info_id`
-        $this->createIndex(
-            '{{%idx-group_assessment_feedback-group_student_Info_id}}',
-            '{{%group_assessment_feedback}}',
-            'group_student_Info_id'
-        );
-
-        // add foreign key for table `{{%group_student_Info}}`
-        $this->addForeignKey(
-            '{{%fk-group_assessment_feedback-group_student_Info_id}}',
-            '{{%group_assessment_feedback}}',
-            'group_student_Info_id',
-            '{{%group_student_Info}}',
-            'id',
-            'CASCADE'
-        );
     }
 
     /**
@@ -104,18 +86,6 @@ class m210815_220015_create_group_assessment_feedback_table extends Migration
         // drops index for column `item_id`
         $this->dropIndex(
             '{{%idx-group_assessment_feedback-item_id}}',
-            '{{%group_assessment_feedback}}'
-        );
-
-        // drops foreign key for table `{{%group_student_Info}}`
-        $this->dropForeignKey(
-            '{{%fk-group_assessment_feedback-group_student_Info_id}}',
-            '{{%group_assessment_feedback}}'
-        );
-
-        // drops index for column `group_student_Info_id`
-        $this->dropIndex(
-            '{{%idx-group_assessment_feedback-group_student_Info_id}}',
             '{{%group_assessment_feedback}}'
         );
 
