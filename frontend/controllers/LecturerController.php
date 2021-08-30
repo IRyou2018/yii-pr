@@ -6,6 +6,7 @@ use common\models\Assessments;
 use common\models\GroupAssessment;
 use common\models\GroupAssessmentDetail;
 use common\models\GroupAssessmentFeedback;
+use common\models\GroupAssessmentGrade;
 use common\models\GroupStudentInfo;
 use common\models\IndividualAssessment;
 use common\models\IndividualAssessmentDetail;
@@ -43,8 +44,14 @@ class LecturerController extends Controller
     const ACTIVE = 1;
     const STUDENT = 1;
 
+    const MARKED = 1;
+
     const UNCOMPLETE = 0;
     const COMPLETED = 1;
+
+    const G_PEER_REVIEW = 0;
+    const G_PEER_ASSESSMENT = 1;
+    const G_PEER_R_A = 2;
 
     /**
      * @inheritDoc
@@ -814,25 +821,355 @@ class LecturerController extends Controller
     {
         $groupAssessmentInfo = GroupAssessment::findOne($id);
 
+        $groupGrades = GroupAssessmentGrade::find()
+                    ->where('group_id = :id')
+                    ->addParams([':id' => $id])
+                    ->all();
+        
+        $model = $groupAssessmentInfo->assessment;
+
+        if (empty($groupGrades)) {
+
+            return $this->redirect(['grade-group', 'id' => $id]);
+            
+        } else {
+
+            $modelsSection = $model->sections;
+            $modelsItem = [];
+            $modelsReviewDetail = [];
+            $groupStudentInfos = $groupAssessmentInfo->groupStudentInfos;
+
+            $totalStudentNumber = count($groupStudentInfos);
+            
+            $supposedMarkList = [];
+            $markerCommentsList = [];
+            $contributionList = [];
+
+            $proposedMarks = [];
+            $tempComments = [];
+            $tempContributions = [];
+
+            foreach ($modelsSection as $indexSection => $modelSection) {
+
+                $items = $modelSection->items;
+                $modelsItem[$indexSection] = $items;
+
+                foreach ($items as $indexItem => $item) {
+                
+                    if ($modelSection->section_type == 0) {
+
+                        foreach ($groupStudentInfos as $indexMarker => $groupStudentInfo) {
+
+                            $reviewDetails = $groupStudentInfo->groupAssessmentDetails;
+
+                            if (!empty($reviewDetails)) {
+
+                                $indexWorker = 0;
+
+                                foreach($reviewDetails as $index => $reviewDetail) {
+
+                                    if ($reviewDetail->item_id == $item->id) {
+
+                                        $modelsReviewDetail[$indexSection][$indexItem][$indexMarker][$indexWorker] = $reviewDetail;
+
+                                        $proposedMarks[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->mark;
+                                        $tempComments[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->mark;
+                                        $tempContributions[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->mark;
+                                        $indexWorker++;
+                                    }
+                                }
+
+                            } else {
+
+                                for ($i=0; $i < $totalStudentNumber; $i++) {
+                                    $reviewDetail = new GroupAssessmentDetail();
+                                    $reviewDetail->group_student_Info_id = $groupStudentInfo->id;
+                                    $modelsReviewDetail[$indexSection][$indexItem][$indexMarker][$i] = $reviewDetail;
+
+                                    $proposedMarks[$indexSection][$indexItem][$i][$indexMarker] = null;
+                                    $tempComments[$indexSection][$indexItem][$i][$indexMarker] = null;
+                                    $tempContributions[$indexSection][$indexItem][$i][$indexMarker] = null;
+                                }
+                            }
+
+
+                            $individualFeedback = new GroupAssessmentFeedback();
+                            $individualFeedback->item_id = $item->id;
+                            $individualFeedback->student_id = $groupStudentInfo->student_id;
+                            $individualFeedback->group_id = $id;
+                            $modelsGroupAssessmentFeedback[$indexSection][$indexItem][$indexMarker] = $individualFeedback;
+                        }
+                    } else if ($modelSection->section_type == 1) {
+
+                        if ($item->item_type == 0) {
+                            foreach ($groupStudentInfos as $indexMarker => $groupStudentInfo) {
+                                $individualFeedback = new GroupAssessmentFeedback();
+                                $individualFeedback->item_id = $item->id;
+                                $individualFeedback->student_id = $groupStudentInfo->student_id;
+                                $individualFeedback->group_id = $id;
+                                $modelsGroupAssessmentFeedback[$indexSection][$indexItem][$indexMarker] = $individualFeedback;
+                            }
+                        } else if ($item->item_type == 1) {
+                            $groupFeedback = new GroupAssessmentFeedback();
+                            $groupFeedback->item_id = $item->id;
+                            $groupFeedback->group_id = $id;
+                            $modelsGroupAssessmentFeedback[$indexSection][$indexItem][0] = $groupFeedback;
+                        }
+                    }
+                }
+            }
+
+            if($model->assessment_type == self::G_PEER_ASSESSMENT || $model->assessment_type == self::G_PEER_R_A) {
+                foreach ($proposedMarks as $indexSection => $proposedMark) {
+                    foreach ($proposedMark as $indexItem => $marks) {
+                        foreach ($marks as $index => $markersMark) {
+                            $totalProposedMark = 0;
+                            $count = 0;
+    
+                            foreach($markersMark as $mark) {
+                                if (!empty($mark)) {
+                                    $totalProposedMark += $mark;
+                                    $count++;
+                                }
+                            }
+    
+                            if ($count > 0) {
+                                $supposedMarkList[$indexSection][$indexItem][$index] = round($totalProposedMark/$count,0,PHP_ROUND_HALF_DOWN);
+                            } else {
+                                foreach ($groupGrades as $groupGrade) {
+                                    if ($groupGrade->item_id == $modelsItem[$indexSection][$indexItem]->id) {
+                                        $supposedMarkList[$indexSection][$indexItem][$index] = $groupGrade->mark;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if ($model->assessment_type == self::G_PEER_REVIEW) {
+                foreach ($tempContributions as $indexSection => $modelsContribution) {
+                    foreach ($modelsContribution as $indexItem => $contributions) {
+                        foreach ($contributions as $index => $contribution) {
+
+                            $totalC = 0;
+                            $count = 0;
+    
+                            foreach($contribution as $contrib) {
+                                if (!empty($contrib)) {
+                                    $totalC += $contrib;
+                                    $count++;
+                                }
+                            }
+    
+                            $contributionList[$indexSection][$indexItem][$index] = $totalC;
+
+                            if ($count > 0) {
+                                foreach ($groupGrades as $groupGrade) {
+                                    if ($groupGrade->item_id == $modelsItem[$indexSection][$indexItem]->id) {
+                                        $supposedMarkList[$indexSection][$indexItem][$index] = round($groupGrade->mark * ($totalC/$count) / (100/$totalStudentNumber),0,PHP_ROUND_HALF_DOWN);
+                                    }
+                                }
+                            } else {
+                                foreach ($groupGrades as $groupGrade) {
+                                    if ($groupGrade->item_id == $modelsItem[$indexSection][$indexItem]->id) {
+                                        $supposedMarkList[$indexSection][$indexItem][$index] = $groupGrade->mark;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach ($tempComments as $indexSection => $tempComment) {
+                foreach ($tempComment as $indexItem => $comments) {
+
+                    foreach ($comments as $index => $commentList) {
+                        $tempComment = '';
+                        foreach($commentList as $comment) {
+                            if (!empty($comment)) {
+                                $comment = $tempComment . $comment . " ";
+                            }
+                        }
+
+                        $markerCommentsList[$indexSection][$indexItem][$index] = $tempComment;
+                    }
+                }
+            }
+            
+            if ($this->request->isPost) {
+                    
+                if (isset($_POST['GroupAssessmentFeedback'][0][0][0])) {
+
+
+                    $totalMark = 0;
+                    $valid = true;
+                    $markList = [];
+
+                    foreach ($_POST['GroupAssessmentFeedback'] as $indexSection => $groupFeedbacks) {
+                    
+                        foreach ($groupFeedbacks as $indexItem => $feedbacks) {
+
+                            foreach ($feedbacks as $indexStudent => $feedback) {
+                                // echo "<pre>";
+                                // print_r($feedbacks);
+                                // // print_r($markList);
+                                // echo "</pre>";
+                                // exit;
+                                
+                                $data['GroupAssessmentFeedback'] = $feedback;
+                                $modelFeedback = new GroupAssessmentFeedback();
+                                $modelFeedback->load($data);
+                                $modelFeedback->scenario = 'submit';
+
+                                $modelsGroupAssessmentFeedback[$indexSection][$indexItem][$indexStudent] = $modelFeedback;
+                                
+                                // Input validation
+                                if($modelFeedback->validate()) {
+                                } else {
+                                    $valid = false;
+                                }
+                            }
+
+                        }
+                    }
+                    // echo "<pre>";
+                    // print_r($modelsGroupAssessmentFeedback);
+                    // // print_r($markList);
+                    // echo "</pre>";
+                    // exit;
+                    if($valid) {
+                        $transaction = \Yii::$app->db->beginTransaction();
+
+                        try {
+
+                            $flag = true;
+                            $count = 0;
+
+                            foreach ($modelsGroupAssessmentFeedback as $indexSection => $groupFeedbacks) {
+
+                                foreach ($groupFeedbacks as $indexItem => $feedbacks) {
+
+                                    if($modelsItem[$indexSection][$indexItem]->item_type == 0) {
+
+                                        foreach ($feedbacks as $indexStudent => $individualFeedback) {
+
+                                            if($modelsSection[$indexSection]->section_type == 0) {
+                                                if (empty($individualFeedback->mark)) {
+                                                    $individualFeedback->mark = $supposedMarkList[$indexSection][$indexItem][$indexStudent];
+                                                }
+
+                                                if (empty($individualFeedback->comment)) {
+                                                    $individualFeedback->comment = $markerCommentsList[$indexSection][$indexItem][$indexStudent];
+                                                }
+                                            }
+                                        
+                                            $markList[$indexStudent][$count] = $individualFeedback->mark;
+                                            
+                                            if ($individualFeedback->save(false)) {
+                                            } else {
+                                                $flag = false;
+                                                break;
+                                            }
+                                        
+                                        }
+
+                                        $count++;
+
+                                    } else if($modelsItem[$indexSection][$indexItem]->item_type == 1) {
+
+                                        foreach ($feedbacks as $indexStudent => $individualFeedback) {
+                                            
+                                            if ($individualFeedback->save(false)) {
+                                            } else {
+                                                $flag = false;
+                                                break;
+                                            }
+                                        
+                                        }
+                                        
+                                        foreach ($groupStudentInfos as $indexWorker => $workStudent) {
+                                            $markList[$indexWorker][$count] = $modelsGroupAssessmentFeedback[$indexSection][$indexItem][0]->mark;
+                                        }
+                                        $count++;
+                                    }
+                                }
+                            }
+
+                            if($flag) {
+
+                                $studentTotalMark = [];
+
+                                foreach ($markList as $indexStudent => $studentMarkList) {
+                                    $totalMark = 0;
+                                    foreach ($studentMarkList as $mark) {
+                                        $totalMark += $mark;
+                                    }
+                                    $studentTotalMark[$indexStudent] = $totalMark;
+                                }
+
+                                foreach ($groupStudentInfos as $index => $workStudent) {
+                                    $workStudent->mark = $studentTotalMark[$index];
+                                    $workStudent->marked = self::MARKED;
+
+                                    if ($workStudent->save(false)) {
+                                    } else {
+                                        $flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if($flag) {
+
+                                $groupAssessmentInfo->marked = self::MARKED;
+
+                                if ($groupAssessmentInfo->save(false)) {
+                                } else {
+                                    $flag = false;
+                                }
+                            }
+
+                            if ($flag) {
+                                $transaction->commit();
+                                return $this->redirect(['assessment', 'id' => $model->id]);
+                            } else {
+
+                                $transaction->rollBack();
+                            }
+                        } catch (Exception $e) {
+                            $transaction->rollBack();
+                        }
+                    }
+                }
+            } else {
+                $model->loadDefaultValues();
+            }
+
+            return $this->render('mark-group', [
+                'model' => $model,
+                'groupGrades' => $groupGrades,
+                'supposedMarkList' => $supposedMarkList,
+                'contributionList' => $contributionList,
+                'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
+                'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
+                'groupStudentInfos' => $groupStudentInfos,
+                'modelsReviewDetail' => (empty($modelsReviewDetail)) ? [[[[new GroupAssessmentDetail()]]]] :  $modelsReviewDetail,
+                'modelsGroupAssessmentFeedback' => (empty($modelsGroupAssessmentFeedback)) ? [[[new GroupAssessmentFeedback()]]] :  $modelsGroupAssessmentFeedback,
+            ]);
+        }
+    }
+
+    /**
+     * Grade group.
+     * @return mixed
+     */
+    public function actionGradeGroup($id) {
+        $groupAssessmentInfo = GroupAssessment::findOne($id);
+
         $model = $groupAssessmentInfo->assessment;
         $modelsSection = $model->sections;
         $modelsItem = [];
-        $modelsReviewDetail = [];
-        $groupStudentInfos = $groupAssessmentInfo->groupStudentInfos;
-
-        $totalStudentNumber = count($groupStudentInfos);
-
-        // echo "<pre>";
-        // print_r($itemBaseDetails);
-        // echo "</pre>";
-        // exit;
-        
-        $modelsIndividualFeedback = [];
-        $supposedMarkList = [];
-        $markerCommentsList = [];
-        $markerInfoList = [];
-
-        $proposedMarks = [];
+        $modelsGroupAssessmentGrade = [];
 
         foreach ($modelsSection as $indexSection => $modelSection) {
 
@@ -840,181 +1177,93 @@ class LecturerController extends Controller
             $modelsItem[$indexSection] = $items;
 
             foreach ($items as $indexItem => $item) {
-            
-                if ($modelSection->section_type == 0) {
+                $groupAssessmentGrade = new GroupAssessmentGrade();
+                $groupAssessmentGrade->item_id = $item->id;
+                $groupAssessmentGrade->group_id = $id;
 
-                    foreach ($groupStudentInfos as $indexMarker => $groupStudentInfo) {
-
-                        $reviewDetails = $groupStudentInfo->groupAssessmentDetails;
-                        // echo "<pre>";
-                        // print_r($reviewDetails);
-                        // echo "</pre>";
-                        // exit;
-                        if (!empty($reviewDetails)) {
-
-                            $indexWorker = 0;
-
-                            foreach($reviewDetails as $index => $reviewDetail) {
-
-                                if ($reviewDetail->item_id == $item->id) {
-
-                                    $modelsReviewDetail[$indexSection][$indexItem][$indexMarker][$indexWorker] = $reviewDetail;
-
-                                    $proposedMarks[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->mark;
-                                    $indexWorker++;
-                                }
-                            }
-
-                        } else {
-
-                            for ($i=0; $i < $totalStudentNumber; $i++) {
-                                $reviewDetail = new GroupAssessmentDetail();
-                                $reviewDetail->group_student_Info_id = $groupStudentInfo->id;
-                                $modelsReviewDetail[$indexSection][$indexItem][$indexMarker][$i] = $reviewDetail;
-
-                                $proposedMarks[$indexSection][$indexItem][$i][$indexMarker] = null;
-                            }
-                        }
-
-
-                        $individualFeedback = new GroupAssessmentFeedback();
-                        $individualFeedback->item_id = $item->id;
-                        $individualFeedback->student_id = $groupStudentInfo->student_id;
-                        $individualFeedback->group_id = $id;
-                        $modelsGroupAssessmentFeedback[$indexSection][$indexItem][$indexMarker] = $individualFeedback;
-                    }
-                }
+                $modelsGroupAssessmentGrade[$indexSection][$indexItem] = $groupAssessmentGrade;
             }
         }
 
-        foreach ($proposedMarks as $indexSection => $proposedMark) {
-            foreach ($proposedMark as $indexItem => $marks) {
-                foreach ($marks as $index => $markersMark) {
-
-                    $totalProposedMark = 0;
-                    $count = 0;
-                    foreach($markersMark as $mark) {
-                        if (!empty($mark)) {
-                            $totalProposedMark += $mark;
-                            $count++;
-                        }
-                    }
-
-                    if ($count > 0) {
-                        $supposedMarkList[$indexSection][$indexItem][$index] = round($totalProposedMark/$count,0,PHP_ROUND_HALF_DOWN);
-                    }
-                }
-            }
-        }
-        // echo "<pre>";
-        // print_r($groupStudentInfo);
-        // // print_r($supposedMarkList);
-        // // print_r($modelsGroupAssessmentFeedback);
-        // echo "</pre>";
-        // exit;
-        
         if ($this->request->isPost) {
-                
-            if (isset($_POST['IndividualAssessmentFeedback'][0][0])) {
-
-                $index = 0;
+                    
+            if (isset($_POST['GroupAssessmentGrade'][0][0])) {
                 $totalMark = 0;
-                $student_id = $groupAssessmentInfo->student_id;
                 $valid = true;
 
-                foreach ($_POST['IndividualAssessmentFeedback'] as $indexSection => $feedbacks) {
-                
-                    foreach ($feedbacks as $indexItem => $feedback) {
+                foreach ($_POST['GroupAssessmentGrade'] as $indexSection => $grouprades) {
+                    
+                    foreach ($grouprades as $indexItem => $grouprade) {
                         
-                        $data['IndividualAssessmentFeedback'] = $feedback;
-                        $modelIndividualFeedback = new IndividualAssessmentFeedback();
-                        $modelIndividualFeedback->load($data);
-                        $modelIndividualFeedback->student_id = $student_id;
-                        $modelIndividualFeedback->scenario = 'submit';
+                        $data['GroupAssessmentGrade'] = $grouprade;
+                        $modelGroupGrade = new GroupAssessmentGrade();
+                        $modelGroupGrade->load($data);
+                        $modelGroupGrade->scenario = 'submit';
 
-                        $modelsIndividualFeedback[$indexSection][$indexItem] = $modelIndividualFeedback;
+                        $modelsGroupAssessmentGrade[$indexSection][$indexItem] = $modelGroupGrade;
                         
                         // Input validation
-                        if($modelIndividualFeedback->validate()) {
+                        if($modelGroupGrade->validate()) {
                         } else {
                             $valid = false;
                         }
-
-                        $index++;
-                    }
-                }
-                
-                $markValidate = new ArrayValidator();
-
-                if ($markValidate->validateInputMarks($modelsIndividualFeedback, $supposedMarkList)) {
-                } else {
-                    $valid = false;
-                }
-
-                if($valid) {
-                    $transaction = \Yii::$app->db->beginTransaction();
-
-                    try {
-
-                        $flag = true;
-                        
-                        foreach ($modelsIndividualFeedback as $indexSection => $feedbacks) {
-                
-                            foreach ($feedbacks as $indexItem => $feedback) {
-
-                                if ($modelSection->section_type == 0) {
-                                    if (empty($feedback->mark)) {
-                                        $feedback->mark = $supposedMarkList[$indexSection][$indexItem];
-                                    }
-
-                                    if (empty($feedback->comment)) {
-                                        $feedback->comment = $markerCommentsList[$indexSection][$indexItem];
-                                    }
-                                }
-                                
-                                $totalMark += $feedback->mark;
-                                
-                                if ($feedback->save(false)) {
-                                } else {
-                                    $flag = false;
-                                    break;
-                                }
-                            }
-                        }
-                        
-                        if($flag) {
-                            $individualAssessment = $groupStudentInfo->individualAssessment;
-
-                            $individualAssessment->marked = self::COMPLETED;
-                            $individualAssessment->mark_value = $totalMark;
-
-                            $flag = $individualAssessment->save(false);
-                        }
-
-                        if ($flag) {
-                            $transaction->commit();
-                            return $this->redirect(['assessment', 'id' => $model->id]);
-                        } else {
-
-                            $transaction->rollBack();
-                        }
-                    } catch (Exception $e) {
-                        $transaction->rollBack();
                     }
                 }
             }
-        } else {
-            $model->loadDefaultValues();
+
+            if($valid) {
+                $transaction = \Yii::$app->db->beginTransaction();
+
+                try {
+
+                    $flag = true;
+                    $totalMark = 0;
+                    
+                    foreach ($modelsGroupAssessmentGrade as $grouprades) {
+            
+                        foreach ($grouprades as $grouprade) {
+                            
+                            $totalMark += $grouprade->mark;
+                            
+                            if ($grouprade->save(false)) {
+                            } else {
+                                $flag = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if($flag) {
+
+                        $groupAssessmentInfo->mark = $totalMark;
+                        
+                        
+                        $flag = $groupAssessmentInfo->save(false);
+                    }
+
+                    if ($flag) {
+                        $transaction->commit();
+                        // echo "<pre>";
+                        // print_r($flag);
+                        // echo "</pre>";
+                        // exit;
+                        return $this->redirect(['mark-group', 'id' => $id]);
+                    } else {
+
+                        $transaction->rollBack();
+                    }
+                } catch (Exception $e) {
+                    $transaction->rollBack();
+                }
+            }
         }
 
-        return $this->render('mark-group', [
+        return $this->render('grade-group', [
             'model' => $model,
-            'supposedMarkList' => $supposedMarkList,
+            'groupAssessmentInfo' => $groupAssessmentInfo,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
-            'groupStudentInfos' => $groupStudentInfos,
-            'modelsReviewDetail' => (empty($modelsReviewDetail)) ? [[[[new GroupAssessmentDetail()]]]] :  $modelsReviewDetail,
-            'modelsGroupAssessmentFeedback' => (empty($modelsGroupAssessmentFeedback)) ? [[[new GroupAssessmentFeedback()]]] :  $modelsGroupAssessmentFeedback,
+            'modelsGroupAssessmentGrade' => (empty($modelsGroupAssessmentGrade)) ? [[[new GroupAssessmentGrade()]]] :  $modelsGroupAssessmentGrade,
         ]);
     }
 

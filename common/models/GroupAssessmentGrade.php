@@ -5,27 +5,24 @@ namespace common\models;
 use Yii;
 
 /**
- * This is the model class for table "group_assessment_feedback".
+ * This is the model class for table "group_assessment_grade".
  *
  * @property int $id
- * @property int|null $student_id
  * @property int $mark
- * @property string|null $comment
  * @property int $item_id
  * @property int $group_id
  *
  * @property GroupAssessment $group
  * @property Items $item
- * @property User $student
  */
-class GroupAssessmentFeedback extends \yii\db\ActiveRecord
+class GroupAssessmentGrade extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'group_assessment_feedback';
+        return 'group_assessment_grade';
     }
 
     /**
@@ -35,11 +32,9 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
     {
         return [
             [['mark', 'item_id', 'group_id'], 'required'],
-            [['student_id', 'mark', 'item_id', 'group_id'], 'integer'],
-            [['comment'], 'string'],
+            [['mark', 'item_id', 'group_id'], 'integer'],
             [['group_id'], 'exist', 'skipOnError' => true, 'targetClass' => GroupAssessment::className(), 'targetAttribute' => ['group_id' => 'id']],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
-            [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_id' => 'id']],
             [['mark'], 'validateMark'],
         ];
     }
@@ -51,9 +46,7 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'student_id' => 'Student ID',
             'mark' => 'Mark',
-            'comment' => 'Comment',
             'item_id' => 'Item ID',
             'group_id' => 'Group ID',
         ];
@@ -67,10 +60,10 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
     }
 
     /**
-    * Gets query for [[Group]].
-    *
-    * @return \yii\db\ActiveQuery
-    */
+     * Gets query for [[Group]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
     public function getGroup()
     {
         return $this->hasOne(GroupAssessment::className(), ['id' => 'group_id']);
@@ -84,16 +77,6 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
     public function getItem()
     {
         return $this->hasOne(Items::className(), ['id' => 'item_id']);
-    }
-
-    /**
-     * Gets query for [[Student]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getStudent()
-    {
-        return $this->hasOne(User::className(), ['id' => 'student_id']);
     }
 
     public function validateMark($attribute, $params) {

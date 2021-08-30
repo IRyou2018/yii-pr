@@ -167,8 +167,7 @@ class StudentModel extends Model
         ->select('gaf.item_id, gaf.mark, gaf.comment')
         ->from('group_assessment_feedback as gaf')
         ->join('INNER JOIN', 'items', 'gaf.item_id = items.id and items.item_type = 0')
-        ->where('gaf.group_student_Info_id = :id')
-        ->andWhere('gsi.group_id = :group_id')
+        ->where('gaf.group_id = :group_id')
         ->addParams([
             ':id' => $id,
             ':group_id' => $group_id,
@@ -178,7 +177,7 @@ class StudentModel extends Model
             ->select('gaf.item_id, gaf.mark, comment')
             ->from('group_assessment_feedback as gaf')
             ->join('INNER JOIN', 'items', 'gaf.item_id = items.id and items.item_type = 1')
-            ->where('gsi.group_id = :group_id')
+            ->where('gaf.group_id = :group_id')
             ->addParams([
                 ':group_id' => $group_id,
                 ])

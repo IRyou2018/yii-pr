@@ -21,6 +21,7 @@ class LecturerModel extends Model
 {
     const DEFAULTPASS = "00000000";
     const UNMARK = 0;
+    const MARKED = 1;
 
     const LECTURER = 0;
     const STUDENT = 1;
