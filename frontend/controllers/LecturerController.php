@@ -1134,6 +1134,7 @@ class LecturerController extends Controller
             return $this->render('mark-group', [
                 'model' => $model,
                 'groupGrades' => $groupGrades,
+                'id' => $id,
                 'supposedMarkList' => $supposedMarkList,
                 'contributionList' => $contributionList,
                 'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
@@ -1327,6 +1328,7 @@ class LecturerController extends Controller
 
         return $this->render('group-result', [
             'model' => $model,
+            'id' => $id,
             'groupGrades' => $groupGrades,
             'supposedMarkList' => $supposedMarkList,
             'contributionList' => $contributionList,

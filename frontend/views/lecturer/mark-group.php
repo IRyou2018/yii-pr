@@ -2,6 +2,9 @@
 
 use yii\helpers\Html;
 use yii\bootstrap4\ActiveForm;
+use yii\bootstrap4\Modal;
+use yii\data\ArrayDataProvider;
+use yii\grid\GridView;
 
 /* @var $this yii\web\View */
 /* @var $form yii\widgets\ActiveForm */
@@ -129,8 +132,59 @@ $this->params['breadcrumbs'][] = $this->title;
                             <?php endforeach; ?>
                         </div>
                         <div class="row mb-2">
-                            <div class="col-md-12 text-white bg-secondary">
+                        <div class="col-md-9 text-white bg-secondary">
                                 Your Comment
+                            </div>
+                            <div class="col-md-3 bg-secondary">
+                                <?php
+                                    $commentQuery = (new \Yii\db\Query())
+                                        ->select(["CONCAT(u1.first_name, ' ', u1.last_name) as commentee,
+                                                CONCAT(u2.first_name, ' ', u2.last_name) as commentor,
+                                                gad.comment as comment"])
+                                        ->from('group_assessment_detail as gad')
+                                        ->join('INNER JOIN', 'group_student_info as gsa', 'gad.group_student_Info_id = gsa.id')
+                                        ->join('INNER JOIN', 'group_assessment as ga', 'gsa.group_id = ga.id')
+                                        ->join('LEFT OUTER JOIN', 'user as u1', 'gad.work_student_id  = u1.id')
+                                        ->join('LEFT OUTER JOIN', 'user as u2', 'gsa.student_id  = u2.id')
+                                        ->where('gad.item_id = :item_id')
+                                        ->andWhere('ga.id = :group_id')
+                                        ->addParams([':group_id' => $id, ':item_id' => $modelItem->id])
+                                        ->all();
+
+                                    $dataProvider = new ArrayDataProvider([
+                                        'allModels' => $commentQuery
+                                    ]);
+                                                                        
+                                    Modal::begin([
+                                            'title' => 'Students comments for each other',
+                                            'toggleButton' => ['label' => 'Group Members Comments', 'class' => 'btn btn-primary btn-sm'],
+                                        ]);
+                                    ?>
+
+                                    <?= GridView::widget([
+                                        'dataProvider' => $dataProvider,
+                                        'id' => 'coordinatorList',
+                                        'tableOptions' => ['class' => 'table table-bordered'],
+                                        'summary' => false,
+                                        'columns' => [
+                                            [
+                                                'attribute' => 'commentor',
+                                                'value' => 'commentor',
+                                                'headerOptions' => ['class' => 'text-light bg-dark']
+                                            ],
+                                            [
+                                                'attribute' => 'commentee',
+                                                'value' => 'commentee',
+                                                'headerOptions' => ['class' => 'text-light bg-dark']
+                                            ],
+                                            [
+                                                'attribute' => 'comment',
+                                                'value' => 'comment',
+                                                'headerOptions' => ['class' => 'text-light bg-dark']
+                                            ]
+                                        ],
+                                    ]); ?>
+                                <?php Modal::end(); ?>
                             </div>
                         </div>
                         <?php foreach ($groupStudentInfos as $indexWork => $workStudent): ?>
@@ -178,17 +232,17 @@ $this->params['breadcrumbs'][] = $this->title;
                                 <div class="col-md-12 text-white bg-secondary">
                                     Your Comment
                                 </div>
-                                </div>
-                                <?php foreach ($groupStudentInfos as $indexWork => $workStudent): ?>
-                                    <div class="row mb-2">
-                                        <div class="col-md-2 text-white bg-secondary">
-                                            <?= $workStudent->studentName ?>
-                                        </div>
-                                        <div class="col">
-                                            <?= $form->field($modelsGroupAssessmentFeedback[$indexSection][$indexItem][$indexWork], "[{$indexSection}][{$indexItem}][{$indexWork}]comment")->textarea(['maxlength' => true])->label(false) ?>    
-                                        </div>
+                            </div>
+                            <?php foreach ($groupStudentInfos as $indexWork => $workStudent): ?>
+                                <div class="row mb-2">
+                                    <div class="col-md-2 text-white bg-secondary">
+                                        <?= $workStudent->studentName ?>
                                     </div>
-                                <?php endforeach; ?>
+                                    <div class="col">
+                                        <?= $form->field($modelsGroupAssessmentFeedback[$indexSection][$indexItem][$indexWork], "[{$indexSection}][{$indexItem}][{$indexWork}]comment")->textarea(['maxlength' => true])->label(false) ?>    
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
                         <?php elseif ($modelItem->item_type == 1) : ?>
                             <div class="row mb-2">
                                 <div class="col-md-2 text-white bg-secondary">

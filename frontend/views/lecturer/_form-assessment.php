@@ -1,14 +1,10 @@
 <?php
 
-use common\models\User;
 use yii\helpers\Html;
 use yii\bootstrap4\ActiveForm;
 use kartik\datetime\DateTimePicker;
 use yii\bootstrap4\Modal;
-use yii\data\ActiveDataProvider;
 use yii\grid\GridView;
-use yii\helpers\ArrayHelper;
-use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\Assessments */
