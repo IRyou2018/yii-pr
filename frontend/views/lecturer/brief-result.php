@@ -49,6 +49,8 @@ $this->params['breadcrumbs'][] = $this->title;
                     'value' => function ($model) {
                         if (empty($model['group_mark'])) {
                             return "-";
+                        } else {
+                            return $model['group_mark'];
                         }
                     },
                     'contentOptions' =>['width' => '15%'],
@@ -59,6 +61,8 @@ $this->params['breadcrumbs'][] = $this->title;
                     'value' => function ($model) {
                         if (empty($model['individual_mark'])) {
                             return "-";
+                        } else {
+                            return $model['individual_mark'];
                         }
                     },
                     'contentOptions' =>['width' => '15%'],

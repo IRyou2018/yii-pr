@@ -23,7 +23,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
 ]); ?>
 
 <div class="card mt-2 mb-2"><!-- widgetBody -->
-    <div class="card-header">
+    <div class="card-header text-white bg-dark">
         <div class="row">
             <div class="col-md-11">
                 <h5>Students</h5>
@@ -33,11 +33,12 @@ use wbraganca\dynamicform\DynamicFormWidget;
             </div>
         </div>
     </div>
-    <?php foreach ($groupStudents as $index => $student): ?>
+    
     <div class="card-body container-student">
-        <div class="row student mt-2">
+        <?php foreach ($groupStudents as $index => $student): ?>
+        <div class="row student mt-2 border">
             <div class="col">
-                <div class="row">
+                <div class="row mt-1">
                     <div class="col-md-2 bg-light">
                         <span class="align-middle">First Name</span>
                     </div>
@@ -70,8 +71,8 @@ use wbraganca\dynamicform\DynamicFormWidget;
                 </div>
             </div>
         </div>
-        
+        <?php endforeach; ?>
     </div>
-    <?php endforeach; ?>
+    
 </div>
 <?php DynamicFormWidget::end(); ?>  

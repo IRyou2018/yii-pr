@@ -15,6 +15,8 @@ use Yii;
  * @property int|null $assessment_id
  *
  * @property Assessments $assessment
+ * @property GroupAssessmentFeedback[] $groupAssessmentFeedbacks
+ * @property GroupAssessmentGrade[] $groupAssessmentGrades
  * @property GroupStudentInfo[] $groupStudentInfos
  */
 class GroupAssessment extends \yii\db\ActiveRecord
@@ -65,6 +67,26 @@ class GroupAssessment extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Assessments::className(), ['id' => 'assessment_id']);
     }
+
+    /**
+    * Gets query for [[GroupAssessmentFeedbacks]]. 
+    * 
+    * @return \yii\db\ActiveQuery 
+    */ 
+    public function getGroupAssessmentFeedbacks() 
+    { 
+        return $this->hasMany(GroupAssessmentFeedback::className(), ['group_id' => 'id']); 
+    } 
+ 
+   /** 
+    * Gets query for [[GroupAssessmentGrades]]. 
+    * 
+    * @return \yii\db\ActiveQuery 
+    */ 
+    public function getGroupAssessmentGrades() 
+    { 
+        return $this->hasMany(GroupAssessmentGrade::className(), ['group_id' => 'id']); 
+    } 
 
     /**
      * Gets query for [[GroupStudentInfos]].

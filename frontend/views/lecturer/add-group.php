@@ -15,8 +15,6 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="add-group">
 
-    <h4><?= Html::encode($this->title) ?></h4>
-
     <?php $form = ActiveForm::begin([
         'id' => 'dynamic-form'
     ]); ?>
