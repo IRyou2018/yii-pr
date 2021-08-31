@@ -25,7 +25,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
     <div class="card-header text-white bg-dark">
         <div class="row">
             <div class="col-md-11">
-                <h5>Items</h5>
+                <h5>Item</h5>
             </div>
             <div class="col-md-1 text-right">
                 <button type="button" class="add-item btn-success btn-xs"><i class="fas fa-plus"></i></button>
@@ -34,10 +34,10 @@ use wbraganca\dynamicform\DynamicFormWidget;
     </div>
     <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem) : ?>
     <div class="card-body container-item border-bottom">
-        <div class="row item mt-2">
+        <div class="row item mb-3">
             <div class="col">
                 <div class="row">
-                    <div class="col-md-2 bg-light">
+                    <div class="col-md-2">
                         <span class="align-middle">Item Name</span>
                     </div>
                     <div class="col-md-9">
@@ -54,13 +54,13 @@ use wbraganca\dynamicform\DynamicFormWidget;
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-2 bg-light align-middle">
+                    <div class="col-md-2 align-middle">
                         <span class="align-middle">Max Value</span>
                     </div>
                     <div class="col-md-2">
                         <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]max_mark_value")->label(false)->textInput(['maxlength' => true]) ?>
                     </div>
-                    <div class="col-md-2 bg-light align-middle">
+                    <div class="col-md-2 align-middle">
                         <span class="align-middle">Item Type</span>
                     </div>
                     <div class="col-md-5">

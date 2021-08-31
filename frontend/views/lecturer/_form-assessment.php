@@ -28,21 +28,19 @@ use yii\grid\GridView;
         </div>
         <div class="card-body">
             <div class="row">
-                <div class="col-md-6">
-                    <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
+                <div class="col-md-2">
+                    Assessment Name
                 </div>
-                <div class="col-md-6">
-                    <?= $form->field($model, 'deadline')->widget(DateTimePicker::classname(), [
-                        'options' => ['placeholder' => 'Enter event time ...'],
-                        'pluginOptions' => [
-                            'autoclose' => true
-                        ]
-                    ]) ?>
+                <div class="col-md-10">
+                    <?= $form->field($model, 'name')->label(false)->textInput(['maxlength' => true]) ?>
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-6">
-                    <?= $form->field($model, 'assessment_type')->dropdownList(
+                <div class="col-md-2">
+                    Assessment Type
+                </div>
+                <div class="col-md-4">
+                    <?= $form->field($model, 'assessment_type')->label(false)->dropdownList(
                         [
                             0 => '(Group) Peer Review',
                             1 => '(Group) Peer Assessment',
@@ -53,8 +51,11 @@ use yii\grid\GridView;
                         ['prompt'=>'Select Assessment Type', 'id' => 'assType'],
                     ) ?>
                 </div>
-                <div class="col-md-6">
-                    <?= $form->field($model, 'active')->dropdownList(
+                <div class="col-md-2">
+                    Visibility
+                </div>
+                <div class="col-md-4">
+                    <?= $form->field($model, 'active')->label(false)->dropdownList(
                         [
                             1 => 'Active', 
                             0 => 'Inactive'
@@ -64,13 +65,18 @@ use yii\grid\GridView;
                 </div>
             </div>
             <div class="row">
+                <div class="col-md-2">
+                    Deadline
+                </div>
                 <div class="col-md-6">
-                    <?= $form->field($modelUpload,'file')->fileInput(['multiple'=>'multiple']) ?>
+                    <?= $form->field($model, 'deadline')->label(false)->widget(DateTimePicker::classname(), [
+                        'options' => ['placeholder' => 'Enter event time ...'],
+                        'pluginOptions' => [
+                            'autoclose' => true
+                        ]
+                    ]) ?>
                 </div>
-                <div class="col-md-4 mt-3">
-                    <a id="downloadTemp" class="btn btn-secondary" href="#"><i class="fas fa-download"></i> Download Template</a>
-                </div>
-                <div class="col-md-2 mt-3">
+                <div class="col-md-4">
                     <?php
                         $dataProvider = $coordinators;
                         Modal::begin([
@@ -103,6 +109,18 @@ use yii\grid\GridView;
                     ]); ?>
                     <?php Modal::end(); ?>
                 </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    Upload File
+                </div>
+                <div class="col-md-6">
+                    <?= $form->field($modelUpload,'file')->label(false)->fileInput(['multiple'=>'multiple']) ?>
+                </div>
+                <div class="col-md-4">
+                    <a id="downloadTemp" class="btn btn-primary" href="#"><i class="fas fa-download"></i> Download Template</a>
+                </div>
+                
             </div>
         </div>
     </div>

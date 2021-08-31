@@ -33,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         Modal::end();
                     ?>
                 <?php elseif ($model->assessment_type == 3 || $model->assessment_type == 4) : ?>
-                    <?= Html::a('Add Student', ['add-student', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
+                    <?= Html::a('Manage Student', ['manage-student', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
                 <?php endif; ?>
             </p>
         </div>
@@ -140,12 +140,12 @@ $this->params['breadcrumbs'][] = $this->title;
                     'label' => 'Group Name',
                     'value' => 'name',
                     'contentOptions' =>['width' => '77%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary']
+                    'headerOptions' => ['class' => 'text-light bg-dark']
                 ],
                 [
                     'attribute' => 'marked',
                     'contentOptions' =>['width' => '5%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                    'headerOptions' => ['class' => 'text-light bg-dark text-center'],
                     'format' => 'html',
                     'value' => function ($model) {
                         if ($model['marked'] == 0) {
@@ -158,7 +158,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 [
                     'class' => 'yii\grid\ActionColumn',
                     'contentOptions' =>['width' => '18%'],
-                    'headerOptions' => ['class' => 'text-light bg-secondary'],
+                    'headerOptions' => ['class' => 'text-light bg-dark'],
                     'template' => '{manage-group}{result}',
                     'buttons'=>
                         [
@@ -198,12 +198,12 @@ $this->params['breadcrumbs'][] = $this->title;
                         'label' => 'Group Name',
                         'value' => 'name',
                         'contentOptions' =>['width' => '77%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary']
+                        'headerOptions' => ['class' => 'text-light bg-dark']
                     ],
                     [
                         'attribute' => 'marked',
                         'contentOptions' =>['width' => '5%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                        'headerOptions' => ['class' => 'text-light bg-dark text-center'],
                         'format' => 'html',
                         'value' => function ($model) {
                             if ($model['marked'] == 0) {
@@ -216,7 +216,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     [
                         'class' => 'yii\grid\ActionColumn',
                         'contentOptions' =>['width' => '18%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary'],
+                        'headerOptions' => ['class' => 'text-light bg-dark'],
                         'template' => '{manage-group}{result}',
                         'buttons'=>
                             [
@@ -256,12 +256,12 @@ $this->params['breadcrumbs'][] = $this->title;
                         'label' => 'Group Name',
                         'value' => 'name',
                         'contentOptions' =>['width' => '77%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary']
+                        'headerOptions' => ['class' => 'text-light bg-dark']
                     ],
                     [
                         'attribute' => 'marked',
                         'contentOptions' =>['width' => '5%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                        'headerOptions' => ['class' => 'text-light bg-dark text-center'],
                         'format' => 'html',
                         'value' => function ($model) {
                             if ($model['marked'] == 0) {
@@ -274,7 +274,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     [
                         'class' => 'yii\grid\ActionColumn',
                         'contentOptions' =>['width' => '18%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary'],
+                        'headerOptions' => ['class' => 'text-light bg-dark'],
                         'template' => '{manage-group}{result}',
                         'buttons'=>
                             [
@@ -317,12 +317,12 @@ $this->params['breadcrumbs'][] = $this->title;
                             return $model['student_name'];
                         },
                         'contentOptions' =>['width' => '80%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary']
+                        'headerOptions' => ['class' => 'text-light bg-dark']
                     ],
                     [
                         'attribute' => 'marked',
                         'contentOptions' =>['width' => '5%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                        'headerOptions' => ['class' => 'text-light bg-dark text-center'],
                         'format' => 'html',
                         'value' => function ($model) {
                             if ($model['marked'] == 0) {
@@ -335,7 +335,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     [
                         'class' => 'yii\grid\ActionColumn',
                         'contentOptions' =>['width' => '15%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary'],
+                        'headerOptions' => ['class' => 'text-light bg-dark'],
                         'template' => '{result}',
                         'buttons'=>
                             [
@@ -374,12 +374,12 @@ $this->params['breadcrumbs'][] = $this->title;
                             return $model['student_name'];
                         },
                         'contentOptions' =>['width' => '80%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary']
+                        'headerOptions' => ['class' => 'text-light bg-dark']
                     ],
                     [
                         'attribute' => 'marked',
                         'contentOptions' =>['width' => '5%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                        'headerOptions' => ['class' => 'text-light bg-dark text-center'],
                         'format' => 'html',
                         'value' => function ($model) {
                             if ($model['marked'] == 0) {
@@ -392,7 +392,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     [
                         'class' => 'yii\grid\ActionColumn',
                         'contentOptions' =>['width' => '15%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary'],
+                        'headerOptions' => ['class' => 'text-light bg-dark'],
                         'template' => '{result}',
                         'buttons'=>
                             [
@@ -430,12 +430,12 @@ $this->params['breadcrumbs'][] = $this->title;
                             return $model['student_name'];
                         },
                         'contentOptions' =>['width' => '80%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary']
+                        'headerOptions' => ['class' => 'text-light bg-dark']
                     ],
                     [
                         'attribute' => 'marked',
                         'contentOptions' =>['width' => '5%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                        'headerOptions' => ['class' => 'text-light bg-dark text-center'],
                         'format' => 'html',
                         'value' => function ($model) {
                             if ($model['marked'] == 0) {
@@ -448,7 +448,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     [
                         'class' => 'yii\grid\ActionColumn',
                         'contentOptions' =>['width' => '15%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary'],
+                        'headerOptions' => ['class' => 'text-light bg-dark'],
                         'template' => '{result}',
                         'buttons'=>
                             [
@@ -486,12 +486,12 @@ $this->params['breadcrumbs'][] = $this->title;
                             return $model['student_name'];
                         },
                         'contentOptions' =>['width' => '80%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary']
+                        'headerOptions' => ['class' => 'text-light bg-dark']
                     ],
                     [
                         'attribute' => 'marked',
                         'contentOptions' =>['width' => '5%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary text-center'],
+                        'headerOptions' => ['class' => 'text-light bg-dark text-center'],
                         'format' => 'html',
                         'value' => function ($model) {
                             if ($model['marked'] == 0) {
@@ -504,7 +504,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     [
                         'class' => 'yii\grid\ActionColumn',
                         'contentOptions' =>['width' => '15%'],
-                        'headerOptions' => ['class' => 'text-light bg-secondary'],
+                        'headerOptions' => ['class' => 'text-light bg-dark'],
                         'template' => '{result}',
                         'buttons'=>
                             [

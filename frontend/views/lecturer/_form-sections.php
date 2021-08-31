@@ -24,7 +24,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
     <div class="card-header text-white bg-dark">
         <div class="row">
             <div class="col-md-11">
-                <h5>Sections</h5>
+                <h5>Section</h5>
             </div>
             <div class="col-md-1 text-right">
                 <button type="button" class="add-section btn-success btn-xs"><i class="fas fa-plus"></i></button>
@@ -33,10 +33,10 @@ use wbraganca\dynamicform\DynamicFormWidget;
     </div>
     <?php foreach ($modelsSection as $indexSection => $modelSection): ?>
     <div class="card-body container-section">
-        <div class="row section mt-2">
+        <div class="row section mb-3">
             <div class="col">
                 <div class="row">
-                    <div class="col-md-2 bg-light">
+                    <div class="col-md-2">
                         <span class="align-middle">Section Name</span>
                     </div>
                     <div class="col-md-5">
@@ -48,7 +48,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
                         ?>
                         <?= $form->field($modelSection, "[{$indexSection}]name")->label(false)->textInput(['maxlength' => true]) ?>
                     </div>
-                    <div class="col-md-2 bg-light align-middle">
+                    <div class="col-md-2 align-middle">
                     <span class="align-middle">Section Type</span>
                     </div>
                     <div class="col-md-2">

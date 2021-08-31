@@ -8,6 +8,7 @@ use yii\helpers\Html;
 /* @var $model common\models\Assessments */
 
 $this->title = 'Result';
+$this->params['breadcrumbs'][] = ['label' => 'Assessment', 'url' => ['assessment', 'id' => $model->id]];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
