@@ -328,12 +328,6 @@ class StudentController extends Controller
                 }
             }
         }
-        // echo "<pre>";
-        // print_r($modelsItem);
-        // print_r($modelsGroupAssessmentDetail);
-        // echo "</pre>";
-        // exit;
-
         
         if ($this->request->isPost) {
             

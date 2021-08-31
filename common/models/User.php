@@ -102,6 +102,17 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
+     * Finds user by matric
+     *
+     * @param string $matric
+     * @return static|null
+     */
+    public static function findByMatric($matric)
+    {
+        return static::findOne(['matric_number' => $matric, 'status' => self::STATUS_ACTIVE]);
+    }
+
+    /**
      * Finds user by password reset token
      *
      * @param string $token password reset token

@@ -24,13 +24,6 @@ class GroupItemMark extends Model
             [['mark', 'item_max_mark'], 'integer'],
             // validates if mark is less than or equal to item_max_mark
             [['mark'], 'validateMark'],
-            // ['mark', 'compare', 'compareAttribute'=>'item_max_mark', 'operator' => '<=', 'type' => 'number'],
-            // ['mark', function ($attribute, $params) {
-            //     if ($this->$attribute > $this->item_max_mark) {
-            //         $this->addError($attribute, 'Proposed Mark should less than or equal to Max Mark.');
-            //       return false;
-            //     }
-            // }],
         ];
     }
 

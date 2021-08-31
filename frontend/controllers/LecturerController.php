@@ -147,53 +147,7 @@ class LecturerController extends Controller
                     $transaction = \Yii::$app->db->beginTransaction();
                     try {
 
-                        $flag = true;
-                        if ($group->save(false)) {
-
-                            $group_id = $group->id;
-
-                            foreach ($groupStudents as $groupStudent) {
-                                $modelUser = new User();
-
-                                //Get student info by email
-                                $student = $modelUser->findByEmail($groupStudent->email);
-
-                                $modelGroupStudentInfo = new GroupStudentInfo();
-                                $modelGroupStudentInfo->group_id = $group_id;
-                                $modelGroupStudentInfo->marked = 0;
-                                $modelGroupStudentInfo->completed = 0;
-        
-                                // If student not exist, regist
-                                if (empty($student)) {
-        
-                                    $modelUser->first_name = $groupStudent->first_name;
-                                    $modelUser->last_name = $groupStudent->last_name;
-                                    $modelUser->matric_number = $groupStudent->matric_number;
-                                    $modelUser->email = $groupStudent->email;
-                                    $modelUser->type = self::STUDENT;
-                                    $modelUser->setPassword(self::DEFAULTPASS);
-                                    $modelUser->generateAuthKey();
-       
-                                    if($modelUser->save(false)) {
-                                        $modelGroupStudentInfo->student_id = $modelUser->id;
-                                    } else {
-                                        $flag = false;
-                                        break;
-                                    }
-                                } else {
-                                    $modelGroupStudentInfo->student_id = $student->id;
-                                }
-        
-                                if ($modelGroupStudentInfo->save(false)) {
-                                } else {
-                                    $flag = false;
-                                    break;
-                                }
-                            }
-
-                        } else {
-                            $flag = false;
-                        }
+                        $flag = $modelLecturer->registGroupInfo($group, $groupStudents);
 
                         if ($flag) {
                             $transaction->commit();
@@ -887,7 +841,6 @@ class LecturerController extends Controller
                                 }
                             }
 
-
                             $individualFeedback = new GroupAssessmentFeedback();
                             $individualFeedback->item_id = $item->id;
                             $individualFeedback->student_id = $groupStudentInfo->student_id;
@@ -914,33 +867,7 @@ class LecturerController extends Controller
                 }
             }
 
-            if($model->assessment_type == self::G_PEER_ASSESSMENT || $model->assessment_type == self::G_PEER_R_A) {
-                foreach ($proposedMarks as $indexSection => $proposedMark) {
-                    foreach ($proposedMark as $indexItem => $marks) {
-                        foreach ($marks as $index => $markersMark) {
-                            $totalProposedMark = 0;
-                            $count = 0;
-    
-                            foreach($markersMark as $mark) {
-                                if (!empty($mark)) {
-                                    $totalProposedMark += $mark;
-                                    $count++;
-                                }
-                            }
-    
-                            if ($count > 0) {
-                                $supposedMarkList[$indexSection][$indexItem][$index] = round($totalProposedMark/$count,0,PHP_ROUND_HALF_DOWN);
-                            } else {
-                                foreach ($groupGrades as $groupGrade) {
-                                    if ($groupGrade->item_id == $modelsItem[$indexSection][$indexItem]->id) {
-                                        $supposedMarkList[$indexSection][$indexItem][$index] = $groupGrade->mark;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } else if ($model->assessment_type == self::G_PEER_REVIEW) {
+            if ($model->assessment_type == self::G_PEER_REVIEW || $model->assessment_type == self::G_PEER_R_A) {
                 foreach ($tempContributions as $indexSection => $modelsContribution) {
                     foreach ($modelsContribution as $indexItem => $contributions) {
                         foreach ($contributions as $index => $contribution) {
@@ -975,6 +902,42 @@ class LecturerController extends Controller
                 }
             }
 
+            if($model->assessment_type == self::G_PEER_ASSESSMENT || $model->assessment_type == self::G_PEER_R_A) {
+                foreach ($proposedMarks as $indexSection => $proposedMark) {
+                    foreach ($proposedMark as $indexItem => $marks) {
+                        foreach ($marks as $index => $markersMark) {
+                            $totalProposedMark = 0;
+                            $count = 0;
+    
+                            foreach($markersMark as $mark) {
+                                if (!empty($mark)) {
+                                    $totalProposedMark += $mark;
+                                    $count++;
+                                }
+                            }
+    
+                            if ($count > 0) {
+                                if ($model->assessment_type == self::G_PEER_ASSESSMENT) {
+                                    $supposedMarkList[$indexSection][$indexItem][$index] = round($totalProposedMark/$count,0,PHP_ROUND_HALF_DOWN);
+                                }
+
+                                if ($model->assessment_type == self::G_PEER_R_A) {
+                                    $supposedMarkList[$indexSection][$indexItem][$index] = round(($totalProposedMark/$count) * ($contributionList[$indexSection][$indexItem][$index]/$count),0,PHP_ROUND_HALF_DOWN);
+                                }
+                                
+                            } else {
+                                
+                                foreach ($groupGrades as $groupGrade) {
+                                    if ($groupGrade->item_id == $modelsItem[$indexSection][$indexItem]->id) {
+                                        $supposedMarkList[$indexSection][$indexItem][$index] = $groupGrade->mark;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }            
+
             foreach ($tempComments as $indexSection => $tempComment) {
                 foreach ($tempComment as $indexItem => $comments) {
 
@@ -994,7 +957,6 @@ class LecturerController extends Controller
             if ($this->request->isPost) {
                     
                 if (isset($_POST['GroupAssessmentFeedback'][0][0][0])) {
-
 
                     $totalMark = 0;
                     $valid = true;

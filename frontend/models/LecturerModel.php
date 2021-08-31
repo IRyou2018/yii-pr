@@ -7,7 +7,6 @@ use common\models\GroupStudentInfo;
 use common\models\IndividualAssessment;
 use common\models\LecturerAssessment;
 use common\models\MarkerStudentInfo;
-use common\models\PeerReview;
 use common\models\User;
 use Yii;
 use yii\base\Model;
