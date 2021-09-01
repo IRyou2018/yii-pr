@@ -66,7 +66,6 @@ use wbraganca\dynamicform\DynamicFormWidget;
                     <div class="col-md-9">
                         <?= $form->field($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]description")->label(false)->textInput(['maxlength' => true]) ?>
                     </div>
-                    </div>
                 </div>
             </div>
         </div>

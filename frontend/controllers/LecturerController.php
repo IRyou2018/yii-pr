@@ -22,6 +22,7 @@ use frontend\models\LecturerModel;
 use frontend\models\Model;
 use frontend\models\Upload;
 use moonland\phpexcel\Excel;
+use tidy;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -168,6 +169,7 @@ class LecturerController extends Controller
             'groupStudents' => $groupStudents,
         ]);
     }
+
 
     public function actionUpdateActive(){
         $status = Yii::$app->request->post('status');
@@ -353,52 +355,13 @@ class LecturerController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-        $modelsSection = $model->sections;
-        $modelsItem = [[new Items()]];
-        $oldItems = [];
-        $modelsRubric = [[[new Rubrics()]]];
-        $oldRubrics = [];
         
-        if (!empty($modelsSection[0]->id)) {
-            foreach ($modelsSection as $indexSection => $modelSection) {
-
-                $temp_Items = $modelSection->items;
-                $modelsItem[$indexSection] = $temp_Items;
-                $oldItems = ArrayHelper::merge(ArrayHelper::index($temp_Items, 'id'), $oldItems);
-
-                if (!empty($temp_Items[0]->id)) {
-                    foreach ($modelsItem[$indexSection] as $indexItem => $modelItem) {
-                        $temp_Rubrics = $modelItem->rubrics;
-                        
-                        if(!empty($temp_Rubrics[0]->id)) {
-                            $modelsRubric[$indexSection][$indexItem] = $temp_Rubrics;
-                            $oldRubrics = ArrayHelper::merge(ArrayHelper::index($temp_Rubrics, 'id'), $oldRubrics);
-                        } else {
-                            $rubric = new Rubrics();
-                            $modelsRubric[$indexSection][$indexItem][0] = $rubric;
-                        }
-                    }
-                }
-            }
-        }
-
-        echo "<pre>";
-        print_r($modelsSection);
-        print_r($modelsItem);
-        print_r($modelsRubric);
-        echo "</pre>";
-        exit;
-
-
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            return $this->redirect(['assessment', 'id' => $model->id]);
         }
 
-        return $this->render('update', [
+        return $this->renderAjax('update', [
             'model' => $model,
-            'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
-            'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
-            'modelsRubric' => (empty($modelsRubric)) ? [[[new Rubrics()]]] : $modelsRubric,
         ]);
     }
 
@@ -1422,5 +1385,11 @@ class LecturerController extends Controller
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    public function actionExportResult($id)
+    {
+        $modelLecturer = new LecturerModel();
+        $modelLecturer->getExportData($id);
     }
 }

@@ -132,7 +132,7 @@ class StudentModel extends Model
     {
 
         $data = (new \Yii\db\Query())
-            ->select('gsi.id as id, gsi.mark as mark, grade.grade as grade, assessments.id as assessment_id, assessments.name as name')
+            ->select('gsi.id as id, gsi.mark as mark, grade.grade as grade, assessments.id as assessment_id, assessments.name as name, assessments.deadline as deadline')
             ->from('assessments')
             ->join('INNER JOIN', 'group_assessment as ga', 'ga.assessment_id = assessments.id')
             ->join('INNER JOIN', 'group_student_info as gsi', 'gsi.group_id = ga.id')
@@ -145,7 +145,7 @@ class StudentModel extends Model
                 ])
             ->union(
                 (new \Yii\db\Query())
-                ->select('ia.id as id, ia.mark_value as mark, grade.grade as grade, assessments.id as assessment_id, assessments.name as name')
+                ->select('ia.id as id, ia.mark_value as mark, grade.grade as grade, assessments.id as assessment_id, assessments.name as name, assessments.deadline as deadline')
                 ->from('individual_assessment as ia')
                 ->join('INNER JOIN', 'assessments', 'ia.assessment_id = assessments.id')
                 ->join('LEFT OUTER JOIN', 'grade', 'ia.mark_value >= grade.min_mark and ia.mark_value < grade.max_mark')

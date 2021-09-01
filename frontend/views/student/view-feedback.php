@@ -12,7 +12,7 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="view-feedback">
 
     <h2>Assessment: <?= Html::encode($this->title) ?></h2>
-    <h2>Grade Mark: <?= $grade ?></h2>
+    <h2>Grade: <?= $grade ?></h2>
 
     <?php if (!empty($modelsSection)) : ?>
         <?php foreach ($modelsSection as $indexSection => $modelSection): ?>

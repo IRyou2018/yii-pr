@@ -2,12 +2,16 @@
 
 namespace frontend\models;
 
+use common\models\Assessments;
 use common\models\GroupAssessment;
 use common\models\GroupStudentInfo;
 use common\models\IndividualAssessment;
 use common\models\LecturerAssessment;
 use common\models\MarkerStudentInfo;
 use common\models\User;
+use moonland\phpexcel\Excel;
+use PHPExcel;
+use PHPExcel_IOFactory;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
@@ -678,8 +682,10 @@ class LecturerModel extends Model
             || $assessment_type == self::SELF_ASSESSMENT) {
 
             $data = (new yii\db\Query())
-            ->select(["CONCAT(user.first_name, ' ', user.last_name) as name,
-                grade.grade as mark"])
+            ->select('user.first_name as first_name,
+                user.last_name as last_name,
+                user.email as email,
+                grade.grade as mark')
             ->from('individual_assessment as ia')
             ->join('INNER JOIN', 'assessments', 'ia.assessment_id = assessments.id')
             ->join('LEFT OUTER JOIN', 'user', 'ia.student_id = user.id')
@@ -695,10 +701,12 @@ class LecturerModel extends Model
             || $assessment_type == self::G_PEER_ASSESSMENT) {
 
             $data = (new yii\db\Query())
-                ->select(["CONCAT(user.first_name, ' ', user.last_name) as name,
+                ->select('user.first_name as first_name,
+                        user.last_name as last_name,
+                        user.email as email,
                         ga.name as group_name,
                         g2.grade as group_mark,
-                        g1.grade as individual_mark"])
+                        g1.grade as individual_mark')
                 ->from('group_student_info as gsi')
                 ->join('INNER JOIN', 'group_assessment as ga', 'gsi.group_id = ga.id')
                 ->join('INNER JOIN', 'assessments', 'ga.assessment_id = assessments.id')
@@ -713,5 +721,55 @@ class LecturerModel extends Model
         }
 
         return $data;
+    }
+
+    /**
+     * Get brief result.
+     *
+     * @param int assessment_id
+     * @return coorinators
+     */
+    public function getExportData($id)
+    {
+        $model = Assessments::findOne($id);
+        $assessment_type = $model->assessment_type;
+        $header = [];
+
+        if ($assessment_type == self::G_PEER_ASSESSMENT
+            || $assessment_type == self::G_PEER_REVIEW
+            || $assessment_type == self::G_PEER_R_A) {
+            $data = $this->getBriefResult($id, $assessment_type);
+            $header = ['first_name' => 'First Name',
+                    'last_name' => 'Last Name',
+                    'email' => 'Email',
+                    'group_name' => 'Group Name',
+                    'group_mark' => 'Group Mark',
+                    'individual_mark' => 'Individual Mark',];
+        } else if ($assessment_type == self::SELF_ASSESSMENT
+            || $assessment_type == self::PEER_MARKING) {
+            $data = $this->getBriefResult($id, $assessment_type);
+            $header = ['first_name' => 'First Name',
+                    'last_name' => 'Last Name',
+                    'email' => 'Email',
+                    'mark' => 'Mark',];
+        }
+        
+        $filename = 'Assessment_'. $model->name;
+
+        if(empty($data)) {
+            echo json_encode(['error'=>'Problem with the exporting.']);
+        } else {
+
+            $dataKeys = array_keys($data[0]);
+
+            Excel::widget([
+                'models' => $data,
+                'fileName' => $filename,
+                'mode' => 'export',
+                'asAttachment' => true,
+                'columns' => $dataKeys,
+                'headers' => $header, 
+            ]);
+        }
     }
 }

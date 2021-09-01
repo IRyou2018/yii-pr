@@ -18,26 +18,31 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div class="row">
         <div class="col-md-10">
-            <p>
-                <?= Html::a('Assessment Results', ['brief-result', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
-                <!-- <?= Html::a('Edit Details', ['update', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?> -->
-                <?php if ($model->assessment_type == 0 || $model->assessment_type == 1 || $model->assessment_type == 2) : ?>
-                    <?= Html::button('Add Group', ['value' => Url::to(['add-group', 'id' => $model->id]), 'class' => 'btn btn-primary btn-sm', 'id' => 'modalButton']) ?>
-                    <?php
-                        Modal::begin([
-                            'title' => '<h4>Add Group</h4>',
-                            'id' => 'modal',
-                            'size' => 'modal-lg',
-                        ]);
-                        echo "<div id='modalContent'></div>";
-                        Modal::end();
-                    ?>
-                <?php elseif ($model->assessment_type == 3) : ?>
-                    <?= Html::a('Add Student', ['add-student', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
-                <?php elseif ($model->assessment_type == 4) : ?>
-                    <?= Html::a('Add Student', ['add-student-pm', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
-                <?php endif; ?>
-            </p>
+ 
+            <?= Html::a('Assessment Results', ['brief-result', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
+            <?= Html::button('Edit Assessmet', ['value' => Url::to(['update', 'id' => $model->id]), 'class' => 'btn modalButton2 btn-primary btn-sm', 'id' => 'modalButtonEA']) ?>
+            <?php
+                Modal::begin([
+                    'title' => '<h4>Edit Assessmet</h4>',
+                    'id' => 'modalEA',
+                    'size' => 'modal-lg',
+                ]);
+                echo "<div id='modalContentEA'></div>";
+                Modal::end();
+            ?>
+            <?php if ($model->assessment_type == 0 || $model->assessment_type == 1 || $model->assessment_type == 2) : ?>
+                <?= Html::button('Add Group', ['value' => Url::to(['add-group', 'id' => $model->id]), 'class' => 'btn btn-primary btn-sm', 'id' => 'modalButtonAG']) ?>
+                <?php
+                    Modal::begin([
+                        'title' => '<h4>Add Group</h4>',
+                        'id' => 'modalAG',
+                        'size' => 'modal-lg',
+                    ]);
+                    echo "<div id='modalContentAG'></div>";
+                    Modal::end();
+                ?>
+            <?php endif; ?>
+
         </div>
         <div class="col-md-2 ml-auto">
             <p>
@@ -525,10 +530,40 @@ $this->params['breadcrumbs'][] = $this->title;
         <?php endif; ?>
     <?php endif; ?>
 </div>
-
 <?php
-$this->registerJsFile(
-    '@web/js/lecturer/assessment.js',
-    ['depends' => [\yii\web\JqueryAsset::class]]
-);
+$script = <<< JS
+
+$(function(){
+    $('#modalButton').click(function() {
+    // get the click of the create button
+    $('#modal').modal('show')
+        .find('#modalContent')
+        .load($(this).attr('value'));
+    });
+
+    $('#modalButtonEA').click(function() {
+    // get the click of the create button
+    $('#modalEA').modal('show')
+        .find('#modalContentEA')
+        .load($(this).attr('value'));
+     });
+
+    $('#modalButtonAG').click(function() {
+    // get the click of the create button
+    $('#modalAG').modal('show')
+        .find('#modalContentAG')
+        .load($(this).attr('value'));
+    });
+
+    $('#modalButtonAS').click(function() {
+    // get the click of the create button
+    $('#modalAS').modal('show')
+        .find('#modalContentAS')
+        .load($(this).attr('value'));
+    });
+});
+
+JS;
+
+$this->registerJS($script);
 ?>

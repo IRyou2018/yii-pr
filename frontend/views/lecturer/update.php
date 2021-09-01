@@ -3,25 +3,58 @@
 use common\models\Items;
 use common\models\Rubrics;
 use common\models\Sections;
+use kartik\datetime\DateTimePicker;
+use yii\bootstrap4\ActiveForm;
 use yii\helpers\Html;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\Assessments */
 
-$this->title = 'Update Assessments: ' . $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'Assessments', 'url' => ['index']];
-$this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['view', 'id' => $model->id]];
-$this->params['breadcrumbs'][] = 'Update';
 ?>
 <div class="assessments-update">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+    <?php $form = ActiveForm::begin(); ?>
 
-    <?= $this->render('_form-assessment_update', [
-        'model' => $model,
-        'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
-        'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
-        'modelsRubric' => (empty($modelsRubric)) ? [[[new Rubrics()]]] : $modelsRubric,
-    ]) ?>
+    <div class="row">
+        <div class="col-md-3">
+            Assessment Name
+        </div>
+        <div class="col-md-9">
+            <?= $form->field($model, 'name')->label(false)->textInput(['maxlength' => true]) ?>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            Deadline
+        </div>
+        <div class="col-md-9">
+            <?= $form->field($model, 'deadline')->label(false)->widget(DateTimePicker::classname(), [
+                'options' => ['placeholder' => 'Enter event time ...'],
+                'pluginOptions' => [
+                    'autoclose' => true
+                ]
+            ]) ?>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            Visibility
+        </div>
+        <div class="col-md-9">
+            <?= $form->field($model, 'active')->label(false)->dropdownList(
+                [
+                    1 => 'Active', 
+                    0 => 'Inactive'
+                ],
+                ['prompt'=>'Select Active Status']
+            ) ?>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <?= Html::submitButton('Update', ['class' => 'btn btn-success']) ?>
+    </div>
+
+    <?php ActiveForm::end(); ?>
 
 </div>

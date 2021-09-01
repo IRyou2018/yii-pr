@@ -66,7 +66,7 @@ class StudentController extends Controller
     }
 
     /**
-     * Displays a single Assessments model.
+     * Displays current year assessment list.
      * @param int $id ID
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
@@ -85,7 +85,7 @@ class StudentController extends Controller
     }
 
     /**
-     * Displays a single Assessments model.
+     * Displays archived assessment list.
      * @param int $id ID
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
@@ -104,7 +104,7 @@ class StudentController extends Controller
     }
 
     /**
-     * Displays a single Assessments model.
+     * Displays feedback given assessment list.
      * @param int $id ID
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found

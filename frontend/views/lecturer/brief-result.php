@@ -15,11 +15,11 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="brief-result">
 
     <div class="row">
-        <div class="col-md-10">
+        <div class="col-md-8">
             <h3>Assessment: <?= $model->name ?></h3>
         </div>
-        <div class="col-md-2">
-            
+        <div class="col-md-4">
+        <?= Html::a('Export Result', ['export-result', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
         </div>
     </div>
 
@@ -37,6 +37,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 [
                     'attribute' => 'name',
                     'label' => 'Student Name',
+                    'value' => function ($model) {
+                            return $model['first_name'] . " " . $model['last_name'];
+                        },
                     'contentOptions' =>['width' => '35%'],
                     'headerOptions' => ['class' => 'text-light bg-dark']
                 ],
@@ -86,6 +89,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 [
                     'attribute' => 'name',
                     'label' => 'Student Name',
+                    'value' => function ($model) {
+                            return $model['first_name'] . " " . $model['last_name'];
+                        },
                     'contentOptions' =>['width' => '80%'],
                     'headerOptions' => ['class' => 'text-light bg-dark']
                 ],

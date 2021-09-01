@@ -38,8 +38,15 @@ use yii\helpers\Url;
             ],
             [
                 'attribute' => 'grade',
-                'contentOptions' =>['width' => '20%'],
-                'headerOptions' => ['class' => 'text-light bg-dark'],
+                'contentOptions' =>['width' => '10%', 'class' => 'text-center'],
+                'headerOptions' => ['class' => 'text-center text-light bg-dark'],
+            ],
+            [
+                'attribute' => 'deadline',
+                'label' => 'Year',
+                'format' => ['date', 'Y'],
+                'contentOptions' =>['width' => '10%', 'class' => 'text-center'],
+                'headerOptions' => ['class' => 'text-center text-light bg-dark'],
             ],
         ],
     ]); ?>
