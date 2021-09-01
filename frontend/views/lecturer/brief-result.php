@@ -36,6 +36,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'columns' => [
                 [
                     'attribute' => 'name',
+                    'label' => 'Student Name',
                     'contentOptions' =>['width' => '35%'],
                     'headerOptions' => ['class' => 'text-light bg-dark']
                 ],
@@ -84,6 +85,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'columns' => [
                 [
                     'attribute' => 'name',
+                    'label' => 'Student Name',
                     'contentOptions' =>['width' => '80%'],
                     'headerOptions' => ['class' => 'text-light bg-dark']
                 ],

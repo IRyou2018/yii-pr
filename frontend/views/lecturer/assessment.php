@@ -32,8 +32,10 @@ $this->params['breadcrumbs'][] = $this->title;
                         echo "<div id='modalContent'></div>";
                         Modal::end();
                     ?>
-                <?php elseif ($model->assessment_type == 3 || $model->assessment_type == 4) : ?>
-                    <?= Html::a('Manage Student', ['manage-student', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
+                <?php elseif ($model->assessment_type == 3) : ?>
+                    <?= Html::a('Add Student', ['add-student', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
+                <?php elseif ($model->assessment_type == 4) : ?>
+                    <?= Html::a('Add Student', ['add-student-pm', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm']) ?>
                 <?php endif; ?>
             </p>
         </div>
@@ -182,7 +184,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div class="container">
         <div class="row mt-4 border-dark">
-            <span class="title h4">Incompleted Groups</span>
+            <span class="title h4">Incomplete Groups</span>
         </div>
     </div>
         <?php if (!empty($groupInfo['incomplete'])) : ?>
@@ -412,7 +414,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
         <div class="container">
             <div class="row mt-4 border-dark">
-                <span class="title h4">Incompleted Peer Marking</span>
+                <span class="title h4">Incomplete Peer Marking</span>
             </div>
         </div>
         <?php if (!empty($individualInfo['incomplete'])) : ?>

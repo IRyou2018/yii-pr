@@ -34,7 +34,14 @@ $this->title = 'Dashboard';
             [
                 'attribute' => 'name',
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
-                'contentOptions' =>['width' => '92%']
+                'contentOptions' =>['width' => '84%']
+            ],
+            [
+                'attribute' => 'deadline',
+                'label' => 'Year',
+                'format' => ['date', 'Y'],
+                'headerOptions' => ['class' => 'text-center text-light bg-secondary'],
+                'contentOptions' =>['width' => '8%', 'class' => 'text-center']
             ],
             [
                 'class' => 'yii\grid\ActionColumn',

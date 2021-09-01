@@ -37,14 +37,15 @@ use yii\helpers\Url;
                 'attribute' => 'name',
                 'label' => 'Assessment',
                 'value' => 'name',
-                'contentOptions' =>['width' => '80%'],
+                'contentOptions' =>['width' => '90%'],
                 'headerOptions' => ['class' => 'text-light bg-dark'],
             ],
             [
                 'attribute' => 'deadline',
-                'value' => function ($data) { return 'Finished';},
-                'contentOptions' =>['width' => '20%'],
-                'headerOptions' => ['class' => 'text-light bg-dark'],
+                'label' => 'Year',
+                'format' => ['date', 'Y'],
+                'contentOptions' =>['width' => '10%', 'class' => 'text-center'],
+                'headerOptions' => ['class' => 'text-center text-light bg-dark'],
             ],
         ],
     ]); ?>
@@ -80,9 +81,6 @@ $this->registerJs("
                     location.href = '" . Url::to(['student/view-individual']) . "?id=' + id + '&assessment_id=' + assessment_id;
                 }
                 
-            }
-            if(status == 2) {
-                location.href = '" . Url::to(['student/view-feedback']) . "?id=' + id + '&assessment_id=' + assessment_id;
             }
         }
     });
