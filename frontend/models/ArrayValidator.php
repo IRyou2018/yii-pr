@@ -87,7 +87,7 @@ class ArrayValidator extends Model
         return $valid;
     }
 
-    public function validateInputMarks($modelsIndividualFeedback, $proposedMarkList) {
+    public function validateInputMarks($modelsIndividualFeedback, $proposedMarkList, $markerCommentsList) {
 
         $valid = true;
 
@@ -100,9 +100,22 @@ class ArrayValidator extends Model
                     
                         $individualFeedback->addError('mark', 'Supposed Mark is empty. Please enter a mark.');
                         $valid = false;
-                        echo "<pre>";
-                        print_r($valid . "after");
-                        echo "</pre>";
+                    }
+
+                    if (empty($individualFeedback->comment) && empty($markerCommentsList[$indexSection][$indexItem])) {
+                        $individualFeedback->addError('comment', 'Please enter your comment.');
+                        $valid = false;
+                    }
+                } else {
+                    if (empty($individualFeedback->mark)) {
+                    
+                        $individualFeedback->addError('mark', 'Please enter a mark.');
+                        $valid = false;
+                    }
+
+                    if (empty($individualFeedback->comment)) {
+                        $individualFeedback->addError('comment', 'Please enter your comment.');
+                        $valid = false;
                     }
                 }
             }

@@ -7,14 +7,12 @@ use common\models\GroupAssessment;
 use common\models\GroupAssessmentDetail;
 use common\models\GroupAssessmentFeedback;
 use common\models\GroupAssessmentGrade;
-use common\models\GroupStudentInfo;
 use common\models\IndividualAssessment;
 use common\models\IndividualAssessmentDetail;
 use common\models\IndividualAssessmentFeedback;
 use common\models\Items;
 use common\models\Rubrics;
 use common\models\Sections;
-use common\models\User;
 use Exception;
 use frontend\models\ArrayValidator;
 use frontend\models\AssessmentsSearch;
@@ -527,7 +525,7 @@ class LecturerController extends Controller
                 
                 $markValidate = new ArrayValidator();
 
-                if ($markValidate->validateInputMarks($modelsIndividualFeedback, $supposedMarkList)) {
+                if ($markValidate->validateInputMarks($modelsIndividualFeedback, $supposedMarkList, $markerCommentsList)) {
                 } else {
                     $valid = false;
                 }
