@@ -52,6 +52,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 Modal::begin([
                                     'title' => 'Rubrics',
                                     'toggleButton' => ['label' => $modelItem->name, 'tag' => 'a', 'class'=>'text-black h5'],
+                                    'size' => 'modal-lg',
                                 ]);
                             ?>
 
@@ -65,17 +66,20 @@ $this->params['breadcrumbs'][] = $this->title;
                                         'attribute' => 'level',
                                         'label' => 'Name',
                                         'value' => 'level',
-                                        'headerOptions' => ['class' => 'text-light bg-primary']
+                                        'headerOptions' => ['class' => 'text-light bg-primary'],
+                                        'contentOptions' => ['class' => 'text-wrap']
                                     ],
                                     [
                                         'attribute' => 'weight',
                                         'value' => 'weight',
-                                        'headerOptions' => ['class' => 'text-light bg-primary']
+                                        'headerOptions' => ['class' => 'text-light bg-primary'],
+                                        'contentOptions' => ['class' => 'text-wrap']
                                     ],
                                     [
                                         'attribute' => 'description',
                                         'value' => 'description',
-                                        'headerOptions' => ['class' => 'text-light bg-primary']
+                                        'headerOptions' => ['class' => 'text-light bg-primary'],
+                                        'contentOptions' => ['class' => 'text-wrap']
                                     ]
                                 ],
                             ]); ?>

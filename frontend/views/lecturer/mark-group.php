@@ -184,6 +184,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     Modal::begin([
                                             'title' => 'Students comments for each other',
                                             'toggleButton' => ['label' => 'Group Members Comments', 'class' => 'btn btn-info btn-sm'],
+                                            'size' => 'modal-lg',
                                         ]);
                                     ?>
 
@@ -206,7 +207,8 @@ $this->params['breadcrumbs'][] = $this->title;
                                             [
                                                 'attribute' => 'comment',
                                                 'value' => 'comment',
-                                                'headerOptions' => ['class' => 'text-light bg-dark']
+                                                'headerOptions' => ['class' => 'text-light bg-dark'],
+                                                'contentOptions' => ['class' => 'text-wrap']
                                             ]
                                         ],
                                     ]); ?>
