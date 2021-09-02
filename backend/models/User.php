@@ -48,7 +48,7 @@ class User extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['first_name', 'last_name', 'matric_number', 'auth_key', 'email', 'type', 'created_at', 'updated_at'], 'required'],
+            [['first_name', 'last_name', 'matric_number', 'email', 'type'], 'required'],
             [['type', 'status', 'created_at', 'updated_at'], 'integer'],
             [['username', 'password_hash', 'password_reset_token', 'verification_token', 'email'], 'string', 'max' => 255],
             [['first_name', 'last_name'], 'string', 'max' => 60],
@@ -81,95 +81,5 @@ class User extends \yii\db\ActiveRecord
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];
-    }
-
-    /**
-     * Gets query for [[Assessments]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getAssessments()
-    {
-        return $this->hasMany(Assessments::className(), ['created_by' => 'id']);
-    }
-
-    /**
-     * Gets query for [[Assessments0]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getAssessments0()
-    {
-        return $this->hasMany(Assessments::className(), ['updated_by' => 'id']);
-    }
-
-    /**
-     * Gets query for [[GroupAssessmentDetails]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getGroupAssessmentDetails()
-    {
-        return $this->hasMany(GroupAssessmentDetail::className(), ['work_student_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[GroupAssessmentFeedbacks]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getGroupAssessmentFeedbacks()
-    {
-        return $this->hasMany(GroupAssessmentFeedback::className(), ['student_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[GroupStudentInfos]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getGroupStudentInfos()
-    {
-        return $this->hasMany(GroupStudentInfo::className(), ['student_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[IndividualAssessmentFeedbacks]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getIndividualAssessmentFeedbacks()
-    {
-        return $this->hasMany(IndividualAssessmentFeedback::className(), ['student_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[IndividualAssessments]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getIndividualAssessments()
-    {
-        return $this->hasMany(IndividualAssessment::className(), ['student_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[LecturerAssessments]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getLecturerAssessments()
-    {
-        return $this->hasMany(LecturerAssessment::className(), ['lecturer_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[MarkerStudentInfos]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getMarkerStudentInfos()
-    {
-        return $this->hasMany(MarkerStudentInfo::className(), ['marker_student_id' => 'id']);
     }
 }
