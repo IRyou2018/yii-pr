@@ -16,6 +16,7 @@ use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 
 /**
  * ContactForm is the model behind the contact form.
@@ -32,7 +33,7 @@ class LecturerModel extends Model
     const INACTIVE = 0;
     const ACTIVE = 1;
 
-    const UNCOMPLETE = 0;
+    const INCOMPLETE = 0;
     const COMPLETE = 1;
 
     const G_PEER_REVIEW = 0;
@@ -59,7 +60,7 @@ class LecturerModel extends Model
     public function getCoordinators($id)
     {
         $coorinators = (new yii\db\Query())
-            ->select(["CONCAT(first_name, ' ', last_name) as name"])
+            ->select(["CONCAT(first_name, ' ', last_name) as name, user.email as email"])
             ->from('user')
             ->join('INNER JOIN', 'lecturer_assessment as ls', 'ls.lecturer_id = user.id')
             ->where('ls.lecturer_id <> :user_id')
@@ -333,7 +334,7 @@ class LecturerModel extends Model
             $modelGroupStudentInfo = new GroupStudentInfo();
             $modelGroupStudentInfo->group_id = $groupId;
             $modelGroupStudentInfo->marked = self::UNMARK;
-            $modelGroupStudentInfo->completed = self::UNCOMPLETE;
+            $modelGroupStudentInfo->completed = self::INCOMPLETE;
             $modelGroupStudentInfo->student_id = $studentId;
 
             if ($modelGroupStudentInfo->save(false)) {
@@ -466,7 +467,7 @@ class LecturerModel extends Model
     
                             $modelMarkerStudentInfo = new MarkerStudentInfo();
                             $modelMarkerStudentInfo->individual_assessment_id = $modelIndividualAssessment->id;
-                            $modelMarkerStudentInfo->completed = self::UNCOMPLETE;
+                            $modelMarkerStudentInfo->completed = self::INCOMPLETE;
                             $modelMarkerStudentInfo->marker_student_id = $modelIndividualAssessment->student_id;
     
                             if ($modelMarkerStudentInfo->save(false)) {
@@ -519,7 +520,7 @@ class LecturerModel extends Model
                         if (!empty($studentId)) {
                             $modelMarkerStudentInfo = new MarkerStudentInfo();
                             $modelMarkerStudentInfo->individual_assessment_id = $temp_individual_assessment_id;
-                            $modelMarkerStudentInfo->completed = self::UNCOMPLETE;
+                            $modelMarkerStudentInfo->completed = self::INCOMPLETE;
                             $modelMarkerStudentInfo->marker_student_id = $markerStudentId;
 
                             if ($modelMarkerStudentInfo->save(false)) {
@@ -565,7 +566,7 @@ class LecturerModel extends Model
                                 if (!empty($studentId)) {
                                     $modelMarkerStudentInfo = new MarkerStudentInfo();
                                     $modelMarkerStudentInfo->individual_assessment_id = $temp_individual_assessment_id;
-                                    $modelMarkerStudentInfo->completed = self::UNCOMPLETE;
+                                    $modelMarkerStudentInfo->completed = self::INCOMPLETE;
                                     $modelMarkerStudentInfo->marker_student_id = $markerStudentId;
 
                                     if ($modelMarkerStudentInfo->save(false)) {
@@ -682,19 +683,19 @@ class LecturerModel extends Model
             || $assessment_type == self::SELF_ASSESSMENT) {
 
             $data = (new yii\db\Query())
-            ->select('user.first_name as first_name,
-                user.last_name as last_name,
-                user.email as email,
-                grade.grade as mark')
-            ->from('individual_assessment as ia')
-            ->join('INNER JOIN', 'assessments', 'ia.assessment_id = assessments.id')
-            ->join('LEFT OUTER JOIN', 'user', 'ia.student_id = user.id')
-            ->join('LEFT OUTER JOIN', 'grade', 'ia.mark_value >= grade.min_mark and ia.mark_value < grade.max_mark')
-            ->where('assessments.id = :id')
-            ->addParams([
-                ':id' => $id
-                ])
-            ->all();
+                ->select('user.first_name as first_name,
+                    user.last_name as last_name,
+                    user.email as email,
+                    grade.grade as mark')
+                ->from('individual_assessment as ia')
+                ->join('INNER JOIN', 'assessments', 'ia.assessment_id = assessments.id')
+                ->join('LEFT OUTER JOIN', 'user', 'ia.student_id = user.id')
+                ->join('LEFT OUTER JOIN', 'grade', 'ia.mark_value >= grade.min_mark and ia.mark_value < grade.max_mark')
+                ->where('assessments.id = :id')
+                ->addParams([
+                    ':id' => $id
+                    ])
+                ->all();
 
         } else if ($assessment_type == self::G_PEER_R_A
             || $assessment_type == self::G_PEER_REVIEW
@@ -724,7 +725,7 @@ class LecturerModel extends Model
     }
 
     /**
-     * Get brief result.
+     * Export results to excel.
      *
      * @param int assessment_id
      * @return coorinators
@@ -771,5 +772,197 @@ class LecturerModel extends Model
                 'headers' => $header, 
             ]);
         }
+    }
+
+    /**
+     * Send reminder emails to student who doesn't finished their peer review.
+     *
+     * @param int assessment_id
+     * @return coorinators
+     */
+    public function sendReminderEmail($id)
+    {
+        $model = Assessments::findOne($id);
+        $assessment_type = $model->assessment_type;
+        $incomplete = [];
+
+        $flag = true;
+
+        if ($assessment_type == self::G_PEER_ASSESSMENT
+            || $assessment_type == self::G_PEER_REVIEW
+            || $assessment_type == self::G_PEER_R_A) {
+            
+            $incomplete = (new yii\db\Query())
+                ->select('user.first_name as first_name,
+                        user.last_name as last_name,
+                        user.email as email')
+                ->from('group_assessment as ga')
+                ->join('INNER JOIN', 'group_student_info as gsi', 'ga.id = gsi.group_id')
+                ->join('LEFT OUTER JOIN', 'user', 'gsi.student_id = user.id')
+                ->where('ga.assessment_id = :assessment_id')
+                ->andWhere('gsi.complete = 0')
+                ->addParams([
+                    ':assessment_id' => $id, 
+                    ])
+                ->all();
+
+        } else if ($assessment_type == self::SELF_ASSESSMENT
+            || $assessment_type == self::PEER_MARKING) {
+            $incomplete = (new yii\db\Query())
+                ->select('user.first_name as first_name,
+                    user.last_name as last_name,
+                    user.email as email')
+                ->from('individual_assessment as ia')
+                ->join('INNER JOIN', 'marker_student_info as msi', 'msi.individual_assessment_id = ia.id')
+                ->join('LEFT OUTER JOIN', 'user', 'msi.marker_student_id = user.id')
+                ->where('ia.assessment_id = :id')
+                ->addParams([
+                    ':id' => $id
+                    ])
+                ->all();
+        }
+
+        if (!empty($incomplete)) {
+            
+            foreach ($incomplete as $reciver) {
+                Yii::$app->mailer->compose(
+                    'email_reminder', [
+                        'student_name' => $reciver['first_name'] . " " . $reciver['last_name'],
+                        'assessment_name' => $model->name,
+                        'deadline' => date("d.m.Y H:i",strtotime($model->deadline)),
+                        'link' => Url::base(true),
+                        'lecturer_name' => Yii::$app->user->identity->first_name . " " . Yii::$app->user->identity->last_name
+                    ]
+                )
+                ->setFrom(Yii::$app->user->identity->email)
+                ->setTo($reciver['email'])
+                ->setSubject($model->name . ' - Peer Assessment Reminder')
+                ->send();
+            }
+        } else {
+            $flag = false;
+        }
+
+        return $flag;
+    }
+
+    /**
+     * Send result to student.
+     *
+     * @param int assessment_id
+     * @return coorinators
+     */
+    public function sendResult($id)
+    {
+        $model = Assessments::findOne($id);
+        $assessment_type = $model->assessment_type;
+        $data = [];
+        $view = '';
+
+        $flag = true;
+
+        if ($assessment_type == self::G_PEER_ASSESSMENT
+            || $assessment_type == self::G_PEER_REVIEW
+            || $assessment_type == self::G_PEER_R_A) {
+
+            $count = (new yii\db\Query())
+                ->select('count(*)')
+                ->from('group_assessment as ga')
+                ->where('ga.assessment_id = :assessment_id')
+                ->andWhere('ga.marked = 0')
+                ->addParams([
+                    ':assessment_id' => $id, 
+                    ])
+                ->column();
+                
+            if($count[0] > 0) {
+                Yii::$app->session->setFlash('error', 'Not all groups are marked.');
+            } else {
+
+                $data = $this->getBriefResult($id, $assessment_type);
+                $view = 'email_results_group';
+            }
+
+        } else if ($assessment_type == self::SELF_ASSESSMENT
+            || $assessment_type == self::PEER_MARKING) {
+            $count = (new yii\db\Query())
+                ->select('count(*)')
+                ->from('individual_assessment as ia')
+                ->where('ia.assessment_id = :id')
+                ->andWhere('ia.marked = 0')
+                ->addParams([
+                    ':id' => $id
+                    ])
+                ->column();
+
+            if($count[0] > 0) {
+                Yii::$app->session->setFlash('error', 'Not all students are marked.');
+            } else {
+
+                $data = $this->getBriefResult($id, $assessment_type);
+                $view = 'email_results_individual';
+            }
+        }
+        // echo "<pre>";
+        // print_r($data);
+        // echo "</pre>";
+        // exit;
+        
+
+        if (!empty($data)) {
+
+            $coordinators = $this->getCoordinators($id);
+            $cc = [];
+
+            if(!empty($coordinators)) {
+                foreach($coordinators as $coordinator) {
+                    array_push($cc, $coordinator['email']);
+                }
+            }
+
+            if ($assessment_type == self::G_PEER_ASSESSMENT
+                || $assessment_type == self::G_PEER_REVIEW
+                || $assessment_type == self::G_PEER_R_A) {
+                    foreach ($data as $reciver) {
+                        Yii::$app->mailer->compose(
+                                'email_results_group', [
+                                'student_name' => $reciver['first_name'] . " " . $reciver['last_name'],
+                                'assessment_name' => $model->name,
+                                'group_mark' => $reciver['group_mark'],
+                                'individual_mark' => $reciver['individual_mark'],
+                                'link' => Url::base(true),
+                                'lecturer_name' => Yii::$app->user->identity->first_name . " " . Yii::$app->user->identity->last_name
+                            ]
+                        )
+                        ->setFrom(Yii::$app->user->identity->email)
+                        ->setTo($reciver['email'])
+                        ->setCc($cc)
+                        ->setSubject($model->name . ' - Marks and Feedback')
+                        ->send();
+                    }
+            } else if ($assessment_type == self::SELF_ASSESSMENT
+                || $assessment_type == self::PEER_MARKING) {
+                    foreach ($data as $reciver) {
+                        Yii::$app->mailer->compose(
+                                'email_results_individual', [
+                                'student_name' => $reciver['first_name'] . " " . $reciver['last_name'],
+                                'assessment_name' => $model->name,
+                                'mark' => $reciver['mark'],
+                                'link' => Url::base(true),
+                                'lecturer_name' => Yii::$app->user->identity->first_name . " " . Yii::$app->user->identity->last_name
+                            ]
+                        )
+                        ->setFrom(Yii::$app->user->identity->email)
+                        ->setTo($reciver['email'])
+                        ->setCc($cc)
+                        ->setSubject($model->name . ' - Marks and Feedback')
+                        ->send();
+                    }
+            }
+        } else {
+            $flag = false;
+        }
+
+        return $flag;
     }
 }

@@ -42,7 +42,9 @@ $this->params['breadcrumbs'][] = $this->title;
                     Modal::end();
                 ?>
             <?php endif; ?>
-
+            <?= Html::a('Send result', ['send-result', 'id' => $model->id], ['class' => 'btn btn-success btn-sm']) ?>
+            <?= Html::a('Send reminder Email', ['send-reminder', 'id' => $model->id], ['class' => 'btn btn-success btn-sm']) ?>
+            
         </div>
         <div class="col-md-2 ml-auto">
             <p>

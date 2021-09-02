@@ -1387,9 +1387,47 @@ class LecturerController extends Controller
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
+    /**
+     * Export results to excel.
+     * @return mixed
+     */
     public function actionExportResult($id)
     {
         $modelLecturer = new LecturerModel();
         $modelLecturer->getExportData($id);
+    }
+
+    /**
+     * Send reminder email.
+     * @return mixed
+     */
+    public function actionSendReminder($id)
+    {
+        $modelLecturer = new LecturerModel();
+        $flag = $modelLecturer->sendReminderEmail($id);
+
+        if ($flag) {
+            Yii::$app->session->setFlash('success', 'Reminder email has been successfully sent.');
+        } else {
+            Yii::$app->session->setFlash('error', 'Sending error occurs, check the assessment status.');
+        }
+
+        return $this->redirect(['assessment', 'id' => $id]);
+    }
+
+    /**
+     * Send results to student.
+     * @return mixed
+     */
+    public function actionSendResult($id)
+    {
+        $modelLecturer = new LecturerModel();
+        $flag = $modelLecturer->sendResult($id);
+
+        if ($flag) {
+            Yii::$app->session->setFlash('success', 'Results have been successfully sent.');
+        }
+
+        return $this->redirect(['assessment', 'id' => $id]);
     }
 }
