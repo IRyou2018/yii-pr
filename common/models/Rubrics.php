@@ -10,7 +10,7 @@ use Yii;
  * @property int $id
  * @property string $level
  * @property string $description
- * @property int $weight
+ * @property string $weight
  * @property int $item_id
  *
  * @property Items $item
@@ -40,8 +40,8 @@ class Rubrics extends \yii\db\ActiveRecord
             ['description', 'required', 'when' => function($model) {
                 return !empty($model->weight) || !empty($model->level) ;
             }, 'enableClientValidation' => false],
-            [['weight', 'item_id'], 'integer'],
-            [['level', 'description'], 'string', 'max' => 255],
+            [['item_id'], 'integer'],
+            [['level', 'weight', 'description'], 'string', 'max' => 255],
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
         ];
     }

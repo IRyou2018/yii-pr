@@ -21,66 +21,62 @@ use wbraganca\dynamicform\DynamicFormWidget;
     ],
 ]); ?>
 
-<div class="card mt-1"><!-- widgetBody -->
-    <div class="card-header text-white bg-dark">
-        <div class="row">
-            <div class="col-md-11">
-                <h5>Item</h5>
-            </div>
-            <div class="col-md-1 text-right">
-                <button type="button" class="add-item btn-success btn-xs"><i class="fas fa-plus"></i></button>
-            </div>
-        </div>
-    </div>
-    <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem) : ?>
-    <div class="card-body container-item border-bottom">
-        <div class="row item mb-3">
-            <div class="col">
-                <div class="row">
-                    <div class="col-md-2">
-                        <span class="align-middle">Item Name</span>
-                    </div>
-                    <div class="col-md-9">
-                        <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]name")->label(false)->textInput(['maxlength' => true]) ?>
-                    </div>
-                    <div class="col-md-1 text-right" rowspan="3">
-                        <button type="button" class="remove-item btn-danger btn-xs"><i class="fas fa-minus"></i></button>
-                    </div>
+<?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem) : ?>
+<div class="container-item">
+    <div class="card item mb-2"><!-- widgetBody -->
+        <div class="card-header text-white bg-primary">
+            <div class="row">
+                <div class="col-md-10">
+                    <h5>Item for the section</h5>
                 </div>
-                <div class="row">
-                    <div class="col-md-2 align-middle">
-                        <span class="align-middle">Max Value</span>
-                    </div>
-                    <div class="col-md-2">
-                        <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]max_mark_value")->label(false)->textInput(['maxlength' => true]) ?>
-                    </div>
-                    <div class="col-md-2 align-middle">
-                        <span class="align-middle">Item Type</span>
-                    </div>
-                    <div class="col-md-5">
-                        <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]item_type")->label(false)->dropdownList(
-                                [
-                                    0 => 'Individual Item',
-                                    1 => 'Group Item'
-                                ],
-                                ['prompt'=>'Select Item Type', 'class' => 'itemType'],
-                        ) ?>
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col-md-11">
-                        <?= $this->render('_form-rubrics', [
-                            'form' => $form,
-                            'indexSection' => $indexSection,
-                            'indexItem' => $indexItem,
-                            'modelsRubric' => $modelsRubric,
-                        ]) ?>
-                    </div>
+                <div class="col-md-2 text-right">
+                    <button type="button" class="add-item btn-success btn-xs"><i class="fas fa-plus"></i></button>
+                    <button type="button" class="remove-item btn-danger btn-xs"><i class="fas fa-minus"></i></button>
                 </div>
             </div>
         </div>
-    </div>
-    <?php endforeach; ?>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-2">
+                    <span class="align-middle">Item Name</span>
+                </div>
+                <div class="col-md-10">
+                    <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]name")->label(false)->textInput(['maxlength' => true]) ?>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2 align-middle">
+                    <span class="align-middle">Max Value</span>
+                </div>
+                <div class="col-md-4">
+                    <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]max_mark_value")->label(false)->textInput(['maxlength' => true]) ?>
+                </div>
+                <div class="col-md-2 align-middle">
+                    <span class="align-middle">Item Type</span>
+                </div>
+                <div class="col-md-4">
+                    <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]item_type")->label(false)->dropdownList(
+                            [
+                                0 => 'Individual Item',
+                                1 => 'Group Item'
+                            ],
+                            ['prompt'=>'Select Item Type', 'class' => 'itemType'],
+                    ) ?>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <?= $this->render('_form-rubrics', [
+                        'form' => $form,
+                        'indexSection' => $indexSection,
+                        'indexItem' => $indexItem,
+                        'modelsRubric' => $modelsRubric,
+                    ]) ?>
+                </div>
+            </div>
+        </div>
+    </div>  
 </div>
+<?php endforeach; ?>
 
 <?php DynamicFormWidget::end(); ?>

@@ -21,22 +21,24 @@ use wbraganca\dynamicform\DynamicFormWidget;
     ],
 ]); ?>
 
-<div class="card mt-1"><!-- widgetBody -->
-    <div class="card-header text-white bg-dark">
-        <div class="row">
-            <div class="col-md-11">
-            <h5>Rubric (Optional)</h5>
+    <?php foreach ($modelsRubric[$indexSection][$indexItem] as $indexRubric => $modelRubric) : ?>
+    <div class="container-rubric">
+        <div class="row mb-1">
+            <div class="col-md-11 text-white bg-info">
+                Rubrics for the item (Optional)
             </div>
-            <div class="col-md-1 text-right">
+            <div class="col-md-1 text-right bg-info">
                 <button type="button" class="add-rubric btn-success btn-xs"><i class="fas fa-plus"></i></button>
             </div>
         </div>
-    </div>
-    <?php foreach ($modelsRubric[$indexSection][$indexItem] as $indexRubric => $modelRubric) : ?>
-    <div class="card-body container-rubric border-bottom">
-        <div class="row rubric mt-2">
+        <div class="row rubric border">
             <div class="col">
                 <div class="row">
+                    <div class="col-md-12 text-white bg-info">
+                        Rubric Information
+                    </div>
+                </div>
+                <div class="row mt-1">
                     <div class="col-md-2">
                         <span class="align-middle">Name</span>
                     </div>
@@ -65,5 +67,4 @@ use wbraganca\dynamicform\DynamicFormWidget;
         </div>
     </div>
     <?php endforeach; ?>
-</div>
 <?php DynamicFormWidget::end(); ?>
