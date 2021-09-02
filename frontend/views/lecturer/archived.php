@@ -34,7 +34,7 @@ $this->title = 'Dashboard';
             [
                 'attribute' => 'name',
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
-                'contentOptions' =>['width' => '84%']
+                'contentOptions' =>['width' => '74%']
             ],
             [
                 'attribute' => 'deadline',
@@ -45,18 +45,26 @@ $this->title = 'Dashboard';
             ],
             [
                 'class' => 'yii\grid\ActionColumn',
-                'contentOptions' =>['width' => '8%'],
+                'contentOptions' =>['width' => '18%'],
                 'headerOptions' => ['class' => 'text-light bg-secondary'],
-                'template' => '{result}',
+                'template' => '{copy-create}{result}',
                 'buttons'=>
                     [
+                        'copy-create' => function ($url, $model, $key)
+                            {     
+                                $options = [
+                                    'title' => Yii::t('yii', 'Result'),
+                                    'class' => 'btn'
+                                ];
+                                return Html::a('Copy Create', ['copy-create', 'id'=>$model->id], ['class'=>'btn btn-primary btn-sm']);
+                            },
                         'result' => function ($url, $model, $key)
                             {     
                                 $options = [
                                     'title' => Yii::t('yii', 'Result'),
                                     'class' => 'btn'
                                 ];
-                                return Html::a('Result', ['brief-result', 'id'=>$model->id], ['class'=>'btn btn-primary btn-sm']);
+                                return Html::a('Result', ['brief-result', 'id'=>$model->id], ['class'=>'btn btn-primary btn-sm mx-2']);
                             }
                     ],
             ],

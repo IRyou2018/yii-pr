@@ -37,22 +37,48 @@ $this->params['breadcrumbs'][] = $this->title;
                         </div>
                     </div>
                     <div class="row mb-1">
-                        <div class="col-md-2 text-white bg-secondary">
-                            Group Mark
-                        </div>
-                        <div class="col-md-4">
-                            &nbsp&nbsp<?php foreach ($groupGrades as $groupGrade)
-                                if ($groupGrade->item_id == $modelItem->id) {
-                                    echo $groupGrade->mark;
-                                }
-                            ?>
-                        </div>
-                        <div class="col-md-2 text-white bg-secondary">
-                            Max Mark
-                        </div>
-                        <div class="col-md-4">
-                            &nbsp&nbsp&nbsp<?= $modelItem->max_mark_value ?>
-                        </div>
+                        <?php if ($model->assessment_type == 2 && $modelSection->section_type == 0) : ?>
+                            <div class="col-md-2 text-white bg-secondary">
+                                Group Mark
+                            </div>
+                            <div class="col-md-2">
+                                &nbsp&nbsp<?php foreach ($groupGrades as $groupGrade)
+                                    if ($groupGrade->item_id == $modelItem->id) {
+                                        echo $groupGrade->mark;
+                                    }
+                                ?>
+                            </div>
+                            <div class="col-md-2 text-white bg-secondary">
+                                Self-Assess Mark
+                            </div>
+                            <div class="col-md-2">
+                                &nbsp&nbsp<?= $totalProposedMarkList[$indexSection][$indexItem][0]; ?>
+                            </div>
+                            <div class="col-md-2 text-white bg-secondary">
+                                Max Mark
+                            </div>
+                            <div class="col-md-2">
+                                &nbsp&nbsp&nbsp<?= $modelItem->max_mark_value ?>
+                            </div>
+                        <?php else : ?>
+                            <div class="col-md-2 text-white bg-secondary">
+                                Group Mark
+                            </div>
+                            <div class="col-md-4">
+                                &nbsp&nbsp<?php foreach ($groupGrades as $groupGrade)
+                                    if ($groupGrade->item_id == $modelItem->id) {
+                                        echo $groupGrade->mark;
+                                    }
+                                ?>
+                            </div>
+                            <div class="col-md-2 text-white bg-secondary">
+                                Max Mark
+                            </div>
+                            <div class="col-md-4">
+                                &nbsp&nbsp&nbsp<?= $modelItem->max_mark_value ?>
+                            </div>
+                        
+                        <?php endif; ?>
                     </div>
                     <?php if ($modelSection->section_type == 0) : ?>
                         <?php if ($model->assessment_type == 0 || $model->assessment_type == 2) : ?>
@@ -157,7 +183,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                                         
                                     Modal::begin([
                                             'title' => 'Students comments for each other',
-                                            'toggleButton' => ['label' => 'Group Members Comments', 'class' => 'btn btn-primary btn-sm'],
+                                            'toggleButton' => ['label' => 'Group Members Comments', 'class' => 'btn btn-info btn-sm'],
                                         ]);
                                     ?>
 

@@ -18,6 +18,10 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <h2><?= Html::encode($this->title) ?></h2>
 
+    <?php if ($model->assessment_type == 4) : ?>
+        <a href="#" onClick="FileWindow=window.open('<?= $workFile ?>','FileWindow','width=800,height=600'); return false;">See work file from here.</a>
+    <?php endif; ?>
+
     <?php $form = ActiveForm::begin([
         'id' => 'dynamic-form',
         'options' => ['enctype' => 'multipart/form-data']

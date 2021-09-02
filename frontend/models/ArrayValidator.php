@@ -123,4 +123,30 @@ class ArrayValidator extends Model
 
         return $valid;
     }
+
+    public function validateGroupComments($modelsGroupAssessmentFeedback, $markerCommentsList) {
+
+        $valid = true;
+
+        foreach ($modelsGroupAssessmentFeedback as $indexSection => $groupIndividualFeedbacks) {
+            foreach ($groupIndividualFeedbacks as $indexItem => $feedbacks) {               
+                foreach ($feedbacks as $indexStudent => $feedback) {
+                    if($feedback->item->section->section_type == 0) {
+                        if (empty($feedback->comment) && empty($markerCommentsList[$indexSection][$indexItem][$indexStudent])) {
+                            $feedback->addError('comment', 'Please enter your comment.');
+                            $valid = false;
+                        }
+                    } else {
+
+                        if (empty($feedback->comment)) {
+                            $feedback->addError('comment', 'Please enter your comment.');
+                            $valid = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $valid;
+    }
 }

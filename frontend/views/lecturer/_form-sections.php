@@ -40,12 +40,6 @@ use wbraganca\dynamicform\DynamicFormWidget;
                         <span class="align-middle">Section Name</span>
                     </div>
                     <div class="col-md-5">
-                        <?php
-                            // necessary for update action.
-                            if (!$modelSection->isNewRecord) {
-                                echo Html::activeHiddenInput($modelSection, "[{$indexSection}]id");
-                            }
-                        ?>
                         <?= $form->field($modelSection, "[{$indexSection}]name")->label(false)->textInput(['maxlength' => true]) ?>
                     </div>
                     <div class="col-md-2 align-middle">

@@ -41,12 +41,6 @@ use wbraganca\dynamicform\DynamicFormWidget;
                         <span class="align-middle">Name</span>
                     </div>
                     <div class="col-md-5">
-                        <?php
-                        // necessary for update action.
-                        if (!$modelRubric->isNewRecord) {
-                            echo Html::activeHiddenInput($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]id");
-                        }
-                        ?>
                         <?= $form->field($modelRubric, "[{$indexSection}][{$indexItem}][{$indexRubric}]level")->label(false)->textInput(['maxlength' => true]) ?>
                     </div>
                     <div class="col-md-2">

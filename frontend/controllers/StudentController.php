@@ -13,6 +13,7 @@ use Exception;
 use frontend\models\ArrayValidator;
 use frontend\models\GroupItemMark;
 use frontend\models\StudentModel;
+use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -129,6 +130,8 @@ class StudentController extends Controller
         $this->layout = 'student';
         $model = Assessments::findOne($assessment_id);
 
+        $workFile = MarkerStudentInfo::findOne($id)->individualAssessment->file_path;
+
         $section = new Sections();
         $modelsSection = $section->getStudentSections($assessment_id);
         $modelsItem = [[new Items()]];
@@ -203,14 +206,18 @@ class StudentController extends Controller
 
                         if ($flag) {
                             $transaction->commit();
+                            Yii::$app->session->setFlash('success', 'Marks and Comments have been successfully submitted.');
                             return $this->redirect(['dashboard']);
                         } else {
-
+                            Yii::$app->session->setFlash('error', 'Submit failed. Please check your input.');
                             $transaction->rollBack();
                         }
                     } catch (Exception $e) {
+                        Yii::$app->session->setFlash('error', 'Submit failed. Please check your input.');
                         $transaction->rollBack();
                     }
+                } else {
+                    Yii::$app->session->setFlash('error', 'Input error occurs. Please check your input.');
                 }
             }
         } else {
@@ -219,6 +226,7 @@ class StudentController extends Controller
 
         return $this->render('submit-individual', [
             'model' => $model,
+            'workFile' => $workFile,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
             'modelsAssessmentDetail' => (empty($modelsAssessmentDetail)) ? [[new IndividualAssessmentDetail()]] :  $modelsAssessmentDetail,
@@ -413,14 +421,18 @@ class StudentController extends Controller
 
                         if ($flag) {
                             $transaction->commit();
+                            Yii::$app->session->setFlash('success', 'Marks and Comments have been successfully submitted.');
                             return $this->redirect(['dashboard']);
                         } else {
-
+                            Yii::$app->session->setFlash('error', 'Submit failed. Please check your input.');
                             $transaction->rollBack();
                         }
                     } catch (Exception $e) {
+                        Yii::$app->session->setFlash('error', 'Submit failed. Please check your input.');
                         $transaction->rollBack();
                     }
+                } else {
+                    Yii::$app->session->setFlash('error', 'Input error occurs. Please check your input.');
                 }
             }
         } else {
@@ -551,6 +563,7 @@ class StudentController extends Controller
         return $this->render('view-feedback', [
             'model' => $model,
             'grade' => $grade,
+            'id' => $id,
             'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
             'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
             'feedbackDetail' => $feedbackDetail,

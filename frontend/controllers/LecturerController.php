@@ -211,7 +211,7 @@ class LecturerController extends Controller
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $modelUpload->load($this->request->post())) {
-
+                
                 $modelsSection = Model::createMultiple(Sections::classname());
                 Model::loadMultiple($modelsSection, Yii::$app->request->post());
 
@@ -321,14 +321,18 @@ class LecturerController extends Controller
                         }
                         if ($flag) {
                             $transaction->commit();
+                            Yii::$app->session->setFlash('success', 'Assessment has been successfully created.');
                             return $this->redirect(['dashboard']);
                         } else {
-
+                            Yii::$app->session->setFlash('error', 'Create assessment failed. Please check your input.');
                             $transaction->rollBack();
                         }
                     } catch (Exception $e) {
+                        Yii::$app->session->setFlash('error', 'Create assessment failed. Please check your input.');
                         $transaction->rollBack();
                     }
+                } else {
+                    Yii::$app->session->setFlash('error', 'Input error occurs. Please check your input.');
                 }
             }
         } else {
@@ -357,11 +361,187 @@ class LecturerController extends Controller
         $model = $this->findModel($id);
         
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
+            Yii::$app->session->setFlash('success', 'Assessment has been successfully updated.');
             return $this->redirect(['assessment', 'id' => $model->id]);
         }
 
         return $this->renderAjax('update', [
             'model' => $model,
+        ]);
+    }
+
+    /**
+     * Updates an Assessment details.
+     * 
+     * @param int $id ID
+     * @return mixed
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    public function actionCopyCreate($id)
+    {
+        $copyModel = $this->findModel($id);
+
+        $model = new Assessments();
+        $modelsSection = $copyModel->sections;
+        $modelsItem = [[new Items()]];
+        $modelsRubric = [[[new Rubrics()]]];     
+        $modelUpload = new Upload();
+        $modelLecturer = new LecturerModel();
+        $coordinators = $modelLecturer->getCoordinatorList();
+
+        foreach ($modelsSection as $indexSection => $section) {
+            $items = $section->items;
+
+            foreach ($items as $indexItem => $item) {
+                $rubrics = $item->rubrics;
+
+                if(empty($rubrics[0]->id)) {
+                    $modelsRubric[$indexSection][$indexItem][0] = new Rubrics();
+                } else {
+                    $modelsRubric[$indexSection][$indexItem] = $rubrics;
+                }
+            }
+
+            $modelsItem[$indexSection] = $items;
+        }
+
+        if ($this->request->isPost) {
+            if ($model->load($this->request->post()) && $modelUpload->load($this->request->post())) {
+                
+                $modelsSection = Model::createMultiple(Sections::classname());
+                Model::loadMultiple($modelsSection, Yii::$app->request->post());
+
+                // validate all models
+                $valid = $model->validate();
+                $valid = Model::validateMultiple($modelsSection) && $valid;
+
+                if (isset($_POST['Items'][0][0])) {
+                    foreach ($_POST['Items'] as $indexSection => $items) {
+                        foreach ($items as $indexItem => $item) {
+                            $data['Items'] = $item;
+                            $modelItem = new Items();
+                            $modelItem->load($data);
+                            $modelsItem[$indexSection][$indexItem] = $modelItem;
+                            if ($modelItem->validate()) {
+                            } else {
+                                $valid = false;
+                            }
+                        }
+                    }
+                }
+
+                if (isset($_POST['Rubrics'][0][0][0])) {
+                    foreach ($_POST['Rubrics'] as $indexSection => $items) {
+                        foreach ($items as $indexItem => $rubrics) {
+                            foreach ($rubrics as $indexRubric => $rubric) {
+                                $data['Rubrics'] = $rubric;
+                                $modelRubric = new Rubrics();
+                                $modelRubric->load($data);
+                                $modelsRubric[$indexSection][$indexItem][$indexRubric] = $modelRubric;
+                                if ($modelRubric->validate()) {
+                                } else {
+                                    $valid = false;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if ($valid) {
+
+                    $arrayValidator = new ArrayValidator();
+
+                    if($arrayValidator->validateCreateAssessment($modelsSection, $modelsItem)) {
+                    } else {
+                        $valid = false;
+                    }
+                }
+
+                // Get upload file name
+                $modelUpload->file = UploadedFile::getInstance($modelUpload, 'file');
+                // Set upload path
+                $path = "uploads/";
+
+                // Validate file extension
+                if($modelUpload->validate()){
+                } else {
+                    $valid = false;
+                }
+
+                if ($valid) {
+                    // Upload file to server
+                    if (!file_exists($path)) {
+                        mkdir($path, 0777, true);
+                    }
+                    $modelUpload->file->saveAs($path . time() . '.' . $modelUpload->file->extension);
+
+                    $fileName = $path . time() . '.' . $modelUpload->file->extension;
+
+                    $excelData = Excel::widget([
+                        'mode' => 'import',
+                        'fileName' => $fileName,
+                        'setFirstRecordAsKeys' => true,
+                        'setIndexSheetByName' => true,
+                    ]);
+
+
+                    // Validate file format
+                    if ($modelUpload->validateTemplateFormat($excelData, $model->assessment_type)) {
+                    } else {
+                        $valid = false;
+                    }
+
+                    // Validate file Content
+                    if ($modelUpload->validateInputContents($excelData, $model->assessment_type)) {
+                    } else {
+                        $valid = false;
+                    }
+
+                }
+
+                if ($valid) {
+                    $modelLecturer = new LecturerModel();
+                    $transaction = \Yii::$app->db->beginTransaction();
+                    try {
+                        if ($flag = $model->save(false)) {
+
+                            if ($flag && count($excelData) > 0) {
+
+                                
+                                $flag = $modelLecturer->registDatafromUpload($excelData, $model);
+                            }
+
+                            if($flag) {
+                                $flag = $modelLecturer->registAssessmentInfo($model, $modelsSection, $modelsItem, $modelsRubric);
+                            }
+                        }
+                        if ($flag) {
+                            $transaction->commit();
+                            Yii::$app->session->setFlash('success', 'Assessment has been successfully created.');
+                            return $this->redirect(['dashboard']);
+                        } else {
+                            Yii::$app->session->setFlash('error', 'Create assessment failed. Please check your input.');
+                            $transaction->rollBack();
+                        }
+                    } catch (Exception $e) {
+                        Yii::$app->session->setFlash('error', 'Create assessment failed. Please check your input.');
+                        $transaction->rollBack();
+                    }
+                } else {
+                    Yii::$app->session->setFlash('error', 'Input error occurs. Please check your input.');
+                }
+            }
+        } else {
+            $model->loadDefaultValues();
+        }
+
+        return $this->render('copy-create', [
+            'model' => $model,
+            'modelUpload' => $modelUpload,
+            'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
+            'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
+            'modelsRubric' => (empty($modelsRubric)) ? [[[new Rubrics()]]] : $modelsRubric,
+            'coordinators' => $coordinators,
         ]);
     }
 
@@ -535,14 +715,18 @@ class LecturerController extends Controller
 
                         if ($flag) {
                             $transaction->commit();
+                            Yii::$app->session->setFlash('success', 'Assessment mark has been successfully updated.');
                             return $this->redirect(['assessment', 'id' => $model->id]);
                         } else {
-
+                            Yii::$app->session->setFlash('error', 'Assessment mark update failed. Please check your input.');
                             $transaction->rollBack();
                         }
                     } catch (Exception $e) {
+                        Yii::$app->session->setFlash('error', 'Assessment mark update failed. Please check your input.');
                         $transaction->rollBack();
                     }
+                } else {
+                    Yii::$app->session->setFlash('error', 'Input error occurs. Please check your input.');
                 }
             }
         } else {
@@ -670,6 +854,7 @@ class LecturerController extends Controller
     {
         $this->findModel($id)->delete();
 
+        Yii::$app->session->setFlash('success', 'Assessment has been deleted.');
         return $this->redirect(['dashboard']);
     }
 
@@ -754,6 +939,7 @@ class LecturerController extends Controller
             $supposedMarkList = [];
             $markerCommentsList = [];
             $contributionList = [];
+            $totalProposedMarkList = [];
 
             $proposedMarks = [];
             $tempComments = [];
@@ -783,8 +969,8 @@ class LecturerController extends Controller
                                         $modelsReviewDetail[$indexSection][$indexItem][$indexMarker][$indexWorker] = $reviewDetail;
 
                                         $proposedMarks[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->mark;
-                                        $tempComments[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->mark;
-                                        $tempContributions[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->mark;
+                                        $tempComments[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->comment;
+                                        $tempContributions[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->contribution;
                                         $indexWorker++;
                                     }
                                 }
@@ -844,20 +1030,22 @@ class LecturerController extends Controller
                             }
     
                             $contributionList[$indexSection][$indexItem][$index] = $totalC;
-
-                            if ($count > 0) {
-                                foreach ($groupGrades as $groupGrade) {
-                                    if ($groupGrade->item_id == $modelsItem[$indexSection][$indexItem]->id) {
-                                        $supposedMarkList[$indexSection][$indexItem][$index] = round($groupGrade->mark * ($totalC/$count) / (100/$totalStudentNumber),0,PHP_ROUND_HALF_DOWN);
+                            
+                            if ($model->assessment_type == self::G_PEER_REVIEW) {
+                                if ($count > 0) {
+                                    foreach ($groupGrades as $groupGrade) {
+                                        if ($groupGrade->item_id == $modelsItem[$indexSection][$indexItem]->id) {
+                                            $supposedMarkList[$indexSection][$indexItem][$index] = round($groupGrade->mark * ($totalC/$count) / (100/$totalStudentNumber),0,PHP_ROUND_HALF_DOWN);
+                                        }
+                                    }
+                                } else {
+                                    foreach ($groupGrades as $groupGrade) {
+                                        if ($groupGrade->item_id == $modelsItem[$indexSection][$indexItem]->id) {
+                                            $supposedMarkList[$indexSection][$indexItem][$index] = $groupGrade->mark;
+                                        }
                                     }
                                 }
-                            } else {
-                                foreach ($groupGrades as $groupGrade) {
-                                    if ($groupGrade->item_id == $modelsItem[$indexSection][$indexItem]->id) {
-                                        $supposedMarkList[$indexSection][$indexItem][$index] = $groupGrade->mark;
-                                    }
-                                }
-                            }
+                            }                            
                         }
                     }
                 }
@@ -877,13 +1065,15 @@ class LecturerController extends Controller
                                 }
                             }
     
+                            $totalProposedMarkList[$indexSection][$indexItem][$index] = $totalProposedMark;
+
                             if ($count > 0) {
                                 if ($model->assessment_type == self::G_PEER_ASSESSMENT) {
                                     $supposedMarkList[$indexSection][$indexItem][$index] = round($totalProposedMark/$count,0,PHP_ROUND_HALF_DOWN);
                                 }
 
                                 if ($model->assessment_type == self::G_PEER_R_A) {
-                                    $supposedMarkList[$indexSection][$indexItem][$index] = round(($totalProposedMark/$count) * ($contributionList[$indexSection][$indexItem][$index]/$count),0,PHP_ROUND_HALF_DOWN);
+                                    $supposedMarkList[$indexSection][$indexItem][$index] = round(($totalProposedMark/$count) * ($contributionList[$indexSection][$indexItem][$index]/$count)  / (100/$totalStudentNumber),0,PHP_ROUND_HALF_DOWN);
                                 }
                                 
                             } else {
@@ -946,6 +1136,13 @@ class LecturerController extends Controller
                         }
                     }
 
+                    $markValidate = new ArrayValidator();
+
+                    if ($markValidate->validateGroupComments($modelsGroupAssessmentFeedback, $markerCommentsList)) {
+                    } else {
+                        $valid = false;
+                    }
+                    
                     if($valid) {
                         $transaction = \Yii::$app->db->beginTransaction();
 
@@ -1040,14 +1237,18 @@ class LecturerController extends Controller
 
                             if ($flag) {
                                 $transaction->commit();
+                                Yii::$app->session->setFlash('success', 'Group mark has been successfully updated.');
                                 return $this->redirect(['assessment', 'id' => $model->id]);
                             } else {
-
+                                Yii::$app->session->setFlash('error', 'Group mark update failed. Please check your input.');
                                 $transaction->rollBack();
                             }
                         } catch (Exception $e) {
+                            Yii::$app->session->setFlash('error', 'Group mark update failed. Please check your input.');
                             $transaction->rollBack();
                         }
+                    } else {
+                        Yii::$app->session->setFlash('error', 'Input error occurs. Please check your input.');
                     }
                 }
             } else {
@@ -1060,6 +1261,7 @@ class LecturerController extends Controller
                 'id' => $id,
                 'supposedMarkList' => $supposedMarkList,
                 'contributionList' => $contributionList,
+                'totalProposedMarkList' => $totalProposedMarkList,
                 'modelsSection' => (empty($modelsSection)) ? [new Sections()] : $modelsSection,
                 'modelsItem' => (empty($modelsItem)) ? [[new Items()]] : $modelsItem,
                 'groupStudentInfos' => $groupStudentInfos,
@@ -1122,8 +1324,8 @@ class LecturerController extends Controller
                                     $modelsReviewDetail[$indexSection][$indexItem][$indexMarker][$indexWorker] = $reviewDetail;
 
                                     $proposedMarks[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->mark;
-                                    $tempComments[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->mark;
-                                    $tempContributions[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->mark;
+                                    $tempComments[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->comment;
+                                    $tempContributions[$indexSection][$indexItem][$indexWorker][$indexMarker] = $reviewDetail->contribution;
                                     $indexWorker++;
                                 }
                             }

@@ -34,7 +34,7 @@ class GroupAssessmentFeedback extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['mark', 'item_id', 'group_id'], 'required'],
+            [['item_id', 'group_id'], 'required'],
             [['student_id', 'mark', 'item_id', 'group_id'], 'integer'],
             [['comment'], 'string'],
             [['group_id'], 'exist', 'skipOnError' => true, 'targetClass' => GroupAssessment::className(), 'targetAttribute' => ['group_id' => 'id']],
