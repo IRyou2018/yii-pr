@@ -77,9 +77,9 @@ $this->params['breadcrumbs'][] = $this->title;
                     if ($model->assessment_type == 0) {
                         echo "(Group) Peer Review";
                     } else if ($model->assessment_type == 1) {
-                        echo "(Group) Peer Assessment";
+                        echo "(Group) Peer Review Mark";
                     } else if ($model->assessment_type == 2) {
-                        echo "(Group) Peer Review & Assessment";
+                        echo "(Group) Self Assessment & Peer Review";
                     } else if ($model->assessment_type == 3) {
                         echo "Self Assessment";
                     } else if ($model->assessment_type == 4) {

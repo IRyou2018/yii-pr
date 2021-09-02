@@ -37,8 +37,8 @@ class LecturerModel extends Model
     const COMPLETE = 1;
 
     const G_PEER_REVIEW = 0;
-    const G_PEER_ASSESSMENT = 1;
-    const G_PEER_R_A = 2;
+    const G_PEER_REVIEW_MARK = 1;
+    const G_SELF_ASSESS_PEER_REVIEW = 2;
     const SELF_ASSESSMENT = 3;
     const PEER_MARKING = 4;
     
@@ -356,8 +356,8 @@ class LecturerModel extends Model
 
         // For Group Assessment
         if ($model->assessment_type == self::G_PEER_REVIEW
-            || $model->assessment_type == self::G_PEER_ASSESSMENT
-            || $model->assessment_type == self::G_PEER_R_A) {
+            || $model->assessment_type == self::G_PEER_REVIEW_MARK
+            || $model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
 
             $sortedData = $this->arraySort($excelData, 'Group Name', SORT_ASC);
 
@@ -697,9 +697,9 @@ class LecturerModel extends Model
                     ])
                 ->all();
 
-        } else if ($assessment_type == self::G_PEER_R_A
+        } else if ($assessment_type == self::G_SELF_ASSESS_PEER_REVIEW
             || $assessment_type == self::G_PEER_REVIEW
-            || $assessment_type == self::G_PEER_ASSESSMENT) {
+            || $assessment_type == self::G_PEER_REVIEW_MARK) {
 
             $data = (new yii\db\Query())
                 ->select('user.first_name as first_name,
@@ -736,9 +736,9 @@ class LecturerModel extends Model
         $assessment_type = $model->assessment_type;
         $header = [];
 
-        if ($assessment_type == self::G_PEER_ASSESSMENT
+        if ($assessment_type == self::G_PEER_REVIEW_MARK
             || $assessment_type == self::G_PEER_REVIEW
-            || $assessment_type == self::G_PEER_R_A) {
+            || $assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
             $data = $this->getBriefResult($id, $assessment_type);
             $header = ['first_name' => 'First Name',
                     'last_name' => 'Last Name',
@@ -788,9 +788,9 @@ class LecturerModel extends Model
 
         $flag = true;
 
-        if ($assessment_type == self::G_PEER_ASSESSMENT
+        if ($assessment_type == self::G_PEER_REVIEW_MARK
             || $assessment_type == self::G_PEER_REVIEW
-            || $assessment_type == self::G_PEER_R_A) {
+            || $assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
             
             $incomplete = (new yii\db\Query())
                 ->select('user.first_name as first_name,
@@ -861,9 +861,9 @@ class LecturerModel extends Model
 
         $flag = true;
 
-        if ($assessment_type == self::G_PEER_ASSESSMENT
+        if ($assessment_type == self::G_PEER_REVIEW_MARK
             || $assessment_type == self::G_PEER_REVIEW
-            || $assessment_type == self::G_PEER_R_A) {
+            || $assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
 
             $count = (new yii\db\Query())
                 ->select('count(*)')
@@ -920,9 +920,9 @@ class LecturerModel extends Model
                 }
             }
 
-            if ($assessment_type == self::G_PEER_ASSESSMENT
+            if ($assessment_type == self::G_PEER_REVIEW_MARK
                 || $assessment_type == self::G_PEER_REVIEW
-                || $assessment_type == self::G_PEER_R_A) {
+                || $assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
                     foreach ($data as $reciver) {
                         Yii::$app->mailer->compose(
                                 'email_results_group', [

@@ -38,15 +38,15 @@ use wbraganca\dynamicform\DynamicFormWidget;
         <div class="card-body ">
             <div class="row">
                 <div class="col-md-2">
-                    <span class="align-middle">Section Name</span>
+                    Section Name
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <?= $form->field($modelSection, "[{$indexSection}]name")->label(false)->textInput(['maxlength' => true]) ?>
                 </div>
-                <div class="col-md-2 align-middle">
-                <span class="align-middle">Section Type</span>
-                </div>
                 <div class="col-md-2">
+                    Section Type
+                </div>
+                <div class="col-md-3">
                     <?= $form->field($modelSection, "[{$indexSection}]section_type")->label(false)->dropdownList(
                             [
                                 0 => 'For Student',

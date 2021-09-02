@@ -39,12 +39,12 @@ use yii\grid\GridView;
                 <div class="col-md-2">
                     Assessment Type
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-5">
                     <?= $form->field($model, 'assessment_type')->label(false)->dropdownList(
                         [
                             0 => '(Group) Peer Review',
-                            1 => '(Group) Peer Assessment',
-                            2 => '(Group) Peer Review & Assessment',
+                            1 => '(Group) Peer Review Mark',
+                            2 => '(Group) Self Assessment & Peer Review',
                             3 => 'Self Assessment',
                             4 => 'Peer Marking'
                         ],
@@ -54,7 +54,7 @@ use yii\grid\GridView;
                 <div class="col-md-2">
                     Visibility
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <?= $form->field($model, 'active')->label(false)->dropdownList(
                         [
                             1 => 'Active', 

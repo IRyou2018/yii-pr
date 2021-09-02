@@ -48,19 +48,19 @@ use wbraganca\dynamicform\DynamicFormWidget;
                 <div class="col-md-2 align-middle">
                     <span class="align-middle">Max Value</span>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-5">
                     <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]max_mark_value")->label(false)->textInput(['maxlength' => true]) ?>
                 </div>
                 <div class="col-md-2 align-middle">
                     <span class="align-middle">Item Type</span>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <?= $form->field($modelItem, "[{$indexSection}][{$indexItem}]item_type")->label(false)->dropdownList(
                             [
                                 0 => 'Individual Item',
                                 1 => 'Group Item'
                             ],
-                            ['prompt'=>'Select Item Type', 'class' => 'itemType'],
+                            ['prompt'=>'Select Item Type', 'class' => 'itemType', 'style' => 'width:200px'],
                     ) ?>
                 </div>
             </div>

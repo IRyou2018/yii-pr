@@ -34,8 +34,8 @@ class StudentController extends Controller
     const GROUP_ITEM = 1;
 
     const G_PEER_REVIEW = 0;
-    const G_PEER_ASSESSMENT = 1;
-    const G_PEER_R_A = 2;
+    const G_PEER_REVIEW_MARK = 1;
+    const G_SELF_ASSESS_PEER_REVIEW = 2;
     const SELF_ASSESSMENT = 3;
     const PEER_MARKING = 4;
 
@@ -300,7 +300,7 @@ class StudentController extends Controller
 
             foreach ($items as $index => $item) {
 
-                if ($model->assessment_type == self::G_PEER_R_A) {
+                if ($model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
                     $modelGroupItemMark = new GroupItemMark();
                     $modelGroupItemMark->item_max_mark = $item->max_mark_value;
                     $modelsGroupItemMark[$indexSection][$index] = $modelGroupItemMark;
@@ -313,7 +313,7 @@ class StudentController extends Controller
                         $modelGroupDetail->group_student_Info_id = $id;
                         $modelGroupDetail->work_student_id = $groupStudent->student_id;
 
-                        if ($model->assessment_type == self::G_PEER_R_A || $model->assessment_type == self::G_PEER_REVIEW) {
+                        if ($model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW || $model->assessment_type == self::G_PEER_REVIEW) {
 
                             $contribution = 0;
                             if($countGroupMember % 2 != 0) {
@@ -372,9 +372,9 @@ class StudentController extends Controller
                             $data['GroupAssessmentDetail'] = $groupDetailStudent;
                             $groupDetail = new GroupAssessmentDetail();
                             $groupDetail->load($data);
-                            if ($model->assessment_type == self::G_PEER_ASSESSMENT) {
+                            if ($model->assessment_type == self::G_PEER_REVIEW_MARK) {
                                 $groupDetail->scenario = 'submit';
-                            } else if ($model->assessment_type == self::G_PEER_R_A) {
+                            } else if ($model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
                                 $groupDetail->mark = $modelsGroupItemMark[$indexSection][$indexItem]->mark;
                             }
 
@@ -391,7 +391,7 @@ class StudentController extends Controller
                     }
                 }
 
-                if ($model->assessment_type == self::G_PEER_REVIEW || $model->assessment_type == self::G_PEER_R_A) {
+                if ($model->assessment_type == self::G_PEER_REVIEW || $model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
                     $arrayValidator = new ArrayValidator();
                     $valid = $arrayValidator->validateGroupDetail($modelsGroupAssessmentDetail, $countGroupMember);
                 }
@@ -500,7 +500,7 @@ class StudentController extends Controller
                     }
                 }
 
-                if ($model->assessment_type == self::G_PEER_R_A) {
+                if ($model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
                     $marklist[$indexSection][$index] = $modelsGroupAssessmentDetail[$indexSection][$index][0]->mark;
                 }
             }
@@ -531,9 +531,9 @@ class StudentController extends Controller
 
         $modelStudent = new StudentModel();
 
-        if ($model->assessment_type == self::G_PEER_ASSESSMENT
+        if ($model->assessment_type == self::G_PEER_REVIEW_MARK
             || $model->assessment_type == self::G_PEER_REVIEW
-            || $model->assessment_type == self::G_PEER_R_A) {
+            || $model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
 
                 $group_id = GroupStudentInfo::findOne($id)->group_id;
                 $feedbacks = $modelStudent->getGroupFeedback($id, $group_id);

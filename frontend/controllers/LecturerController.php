@@ -47,8 +47,8 @@ class LecturerController extends Controller
     const COMPLETED = 1;
 
     const G_PEER_REVIEW = 0;
-    const G_PEER_ASSESSMENT = 1;
-    const G_PEER_R_A = 2;
+    const G_PEER_REVIEW_MARK = 1;
+    const G_SELF_ASSESS_PEER_REVIEW = 2;
 
     /**
      * @inheritDoc
@@ -1014,7 +1014,7 @@ class LecturerController extends Controller
                 }
             }
 
-            if ($model->assessment_type == self::G_PEER_REVIEW || $model->assessment_type == self::G_PEER_R_A) {
+            if ($model->assessment_type == self::G_PEER_REVIEW || $model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
                 foreach ($tempContributions as $indexSection => $modelsContribution) {
                     foreach ($modelsContribution as $indexItem => $contributions) {
                         foreach ($contributions as $index => $contribution) {
@@ -1051,7 +1051,7 @@ class LecturerController extends Controller
                 }
             }
 
-            if($model->assessment_type == self::G_PEER_ASSESSMENT || $model->assessment_type == self::G_PEER_R_A) {
+            if($model->assessment_type == self::G_PEER_REVIEW_MARK || $model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
                 foreach ($proposedMarks as $indexSection => $proposedMark) {
                     foreach ($proposedMark as $indexItem => $marks) {
                         foreach ($marks as $index => $markersMark) {
@@ -1068,11 +1068,11 @@ class LecturerController extends Controller
                             $totalProposedMarkList[$indexSection][$indexItem][$index] = $totalProposedMark;
 
                             if ($count > 0) {
-                                if ($model->assessment_type == self::G_PEER_ASSESSMENT) {
+                                if ($model->assessment_type == self::G_PEER_REVIEW_MARK) {
                                     $supposedMarkList[$indexSection][$indexItem][$index] = round($totalProposedMark/$count,0,PHP_ROUND_HALF_DOWN);
                                 }
 
-                                if ($model->assessment_type == self::G_PEER_R_A) {
+                                if ($model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
                                     $supposedMarkList[$indexSection][$indexItem][$index] = round(($totalProposedMark/$count) * ($contributionList[$indexSection][$indexItem][$index]/$count)  / (100/$totalStudentNumber),0,PHP_ROUND_HALF_DOWN);
                                 }
                                 
@@ -1374,7 +1374,7 @@ class LecturerController extends Controller
             }
         }
 
-        if($model->assessment_type == self::G_PEER_ASSESSMENT || $model->assessment_type == self::G_PEER_R_A) {
+        if($model->assessment_type == self::G_PEER_REVIEW_MARK || $model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
             foreach ($proposedMarks as $indexSection => $proposedMark) {
                 foreach ($proposedMark as $indexItem => $marks) {
                     foreach ($marks as $index => $markersMark) {
