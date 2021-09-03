@@ -1549,18 +1549,18 @@ class LecturerController extends Controller
 
                     if ($flag) {
                         $transaction->commit();
-                        // echo "<pre>";
-                        // print_r($flag);
-                        // echo "</pre>";
-                        // exit;
+                        Yii::$app->session->setFlash('success', 'Group mark has been successfully updated.');
                         return $this->redirect(['mark-group', 'id' => $id]);
                     } else {
-
+                        Yii::$app->session->setFlash('error', 'Group mark update failed. Please check your input.');
                         $transaction->rollBack();
                     }
                 } catch (Exception $e) {
+                    Yii::$app->session->setFlash('error', 'Group mark update failed. Please check your input.');
                     $transaction->rollBack();
                 }
+            } else {
+                Yii::$app->session->setFlash('error', 'Input error occurs. Please check your input.');
             }
         }
 

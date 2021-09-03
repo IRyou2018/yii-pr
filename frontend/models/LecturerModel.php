@@ -847,7 +847,7 @@ class LecturerModel extends Model
     }
 
     /**
-     * Send result to student.
+     * Send result email to student.
      *
      * @param int assessment_id
      * @return coorinators
@@ -902,12 +902,7 @@ class LecturerModel extends Model
                 $data = $this->getBriefResult($id, $assessment_type);
                 $view = 'email_results_individual';
             }
-        }
-        // echo "<pre>";
-        // print_r($data);
-        // echo "</pre>";
-        // exit;
-        
+        }        
 
         if (!empty($data)) {
 
