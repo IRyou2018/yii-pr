@@ -138,6 +138,12 @@ class ArrayValidator extends Model
                         }
                     } else {
 
+                        if (empty($feedback->mark)) {
+                    
+                            $feedback->addError('mark', 'Please enter a mark.');
+                            $valid = false;
+                        }
+
                         if (empty($feedback->comment)) {
                             $feedback->addError('comment', 'Please enter your comment.');
                             $valid = false;
