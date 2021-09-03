@@ -34,7 +34,7 @@ use wbraganca\dynamicform\DynamicFormWidget;
         <div class="row rubric border">
             <div class="col">
                 <div class="row">
-                    <div class="col-md-12 text-white bg-info">
+                    <div class="col-md-12 text-white bg-secondary">
                         Rubric Information
                     </div>
                 </div>
