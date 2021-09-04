@@ -1,9 +1,5 @@
 <?php
 
-use common\models\Rubrics;
-use yii\bootstrap4\Modal;
-use yii\data\ActiveDataProvider;
-use yii\grid\GridView;
 use yii\helpers\Html;
 
 /* @var $this yii\web\View */

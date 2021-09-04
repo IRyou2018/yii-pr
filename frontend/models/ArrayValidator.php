@@ -5,7 +5,7 @@ namespace frontend\models;
 use yii\base\Model;
 
 /**
- * Validate summary of contributions.
+ * Validate for array inputs.
  */
 class ArrayValidator extends Model
 {

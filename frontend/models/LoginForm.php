@@ -31,17 +31,11 @@ class LoginForm extends Model
             [['username', 'password'], 'required'],
             // rememberMe must be a boolean value
             ['rememberMe', 'boolean'],
-            // password is validated by validatePassword()
-            // ['password', 'validatePassword'],
         ];
     }
 
     /**
-     * Validates the password.
-     * This method serves as the inline validation for password.
-     *
-     * @param string $attribute the attribute currently being validated
-     * @param array $params the additional name-value pairs given in the rule
+     * Validates via LDAP
      */
     public function validateLDAP()
     {
@@ -67,8 +61,7 @@ class LoginForm extends Model
                 if ($ldapbind) {
 
                     $dataStudent = $this->getLDAPUser($studenttree,$ldapuser,$ldapconn);
-                    // print_r($dataStudent);
-                    // exit;
+
                     if ($dataStudent["count"] != 0) {
 
                         $userInfo = array(
@@ -159,8 +152,6 @@ class LoginForm extends Model
     {
         $user = User::findByMatric($userInfo['matric']);
         
-        // print_r($user === null);
-        // exit;
         if ($user === null) {
             $modelUser = new User();
             $modelUser->first_name = $userInfo['firstname'];

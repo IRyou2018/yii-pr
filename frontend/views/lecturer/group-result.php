@@ -1,7 +1,5 @@
 <?php
 
-use yii\helpers\Html;
-use yii\bootstrap4\ActiveForm;
 use yii\bootstrap4\Modal;
 use yii\data\ArrayDataProvider;
 use yii\grid\GridView;
@@ -14,7 +12,7 @@ $this->params['breadcrumbs'][] = ['label' => 'Assessments', 'url' => ['assessmen
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
-<div class="mark-group">
+<div class="group-result">
 
     <h4>Assessment : <?= $model->name ?></h4>
 

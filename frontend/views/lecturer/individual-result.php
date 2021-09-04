@@ -1,8 +1,5 @@
 <?php
 
-use yii\helpers\Html;
-use yii\bootstrap4\ActiveForm;
-
 /* @var $this yii\web\View */
 /* @var $form yii\widgets\ActiveForm */
 
@@ -11,7 +8,7 @@ $this->params['breadcrumbs'][] = ['label' => 'Assessments', 'url' => ['assessmen
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
-<div class="individual-form">
+<div class="individual-result">
 
     <h4>Assessment : <?= $model->name ?></h4>
     <h5>Student : <?= $workStudentName ?></h5>

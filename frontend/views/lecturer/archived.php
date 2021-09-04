@@ -1,6 +1,5 @@
 <?php
 
-use kartik\switchinput\SwitchInput;
 use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\helpers\Url;
@@ -9,9 +8,9 @@ use yii\widgets\Pjax;
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\models\LecturerAssessmentSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
-$this->title = 'Dashboard';
+$this->title = 'Archived';
 ?>
-<div class="lecturer-assessment-index">
+<div class="archived">
 
     <?php Pjax::begin() ?>
     <?= GridView::widget([

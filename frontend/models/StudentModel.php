@@ -2,7 +2,6 @@
 
 namespace frontend\models;
 
-use common\models\Assessments;
 use Yii;
 use yii\base\Model;
 

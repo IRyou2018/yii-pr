@@ -5,7 +5,6 @@ use yii\data\ArrayDataProvider;
 use yii\grid\GridView;
 use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\widgets\DetailView;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\Assessments */
@@ -14,7 +13,7 @@ $this->title = "Assessment";
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
-<div class="assessments-view">
+<div class="assessments-details">
 
     <div class="row">
         <div class="col-md-10">

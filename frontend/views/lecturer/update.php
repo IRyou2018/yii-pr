@@ -1,8 +1,5 @@
 <?php
 
-use common\models\Items;
-use common\models\Rubrics;
-use common\models\Sections;
 use kartik\datetime\DateTimePicker;
 use yii\bootstrap4\ActiveForm;
 use yii\helpers\Html;

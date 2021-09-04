@@ -1,6 +1,5 @@
 <?php
 
-use wbraganca\dynamicform\DynamicFormWidget;
 use yii\bootstrap4\ActiveForm;
 use yii\helpers\Html;
 
