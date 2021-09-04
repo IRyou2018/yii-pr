@@ -13,18 +13,6 @@ $this->title = 'Dashboard';
 ?>
 <div class="lecturer-assessment-index">
 
-    <?= common\widgets\Alert::widget() ?>
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <h4><?= Html::encode($this->title) ?></h4>
-        </div>
-        <div class="col-md-6 mb-3">
-            <p>
-                <?= Html::a('Create an Assessment', ['create'], ['class' => 'btn btn-success float-right']) ?>
-            </p>
-        </div>
-    </div>
-
     <?php Pjax::begin() ?>
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
@@ -33,20 +21,20 @@ $this->title = 'Dashboard';
         'columns' => [
             [
                 'attribute' => 'name',
-                'headerOptions' => ['class' => 'text-light bg-secondary'],
+                'headerOptions' => ['class' => 'text-light bg-dark'],
                 'contentOptions' =>['width' => '74%']
             ],
             [
                 'attribute' => 'deadline',
                 'label' => 'Year',
                 'format' => ['date', 'Y'],
-                'headerOptions' => ['class' => 'text-center text-light bg-secondary'],
+                'headerOptions' => ['class' => 'text-center text-light bg-dark'],
                 'contentOptions' =>['width' => '8%', 'class' => 'text-center']
             ],
             [
                 'class' => 'yii\grid\ActionColumn',
                 'contentOptions' =>['width' => '18%'],
-                'headerOptions' => ['class' => 'text-light bg-secondary'],
+                'headerOptions' => ['class' => 'text-light bg-dark'],
                 'template' => '{copy-create}{result}',
                 'buttons'=>
                     [
