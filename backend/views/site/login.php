@@ -7,7 +7,7 @@
 use yii\bootstrap4\ActiveForm;
 use yii\bootstrap4\Html;
 
-$this->title = 'Login';
+$this->title = 'Peer Review System';
 ?>
 <div class="site-login">
     <div class="mt-5 offset-lg-3 col-lg-6">
@@ -21,12 +21,12 @@ $this->title = 'Login';
 
             <?= $form->field($model, 'password')->passwordInput() ?>
 
-            <?= $form->field($model, 'rememberMe')->checkbox() ?>
-
             <div class="form-group">
                 <?= Html::submitButton('Login', ['class' => 'btn btn-primary btn-block', 'name' => 'login-button']) ?>
             </div>
 
+            <p style="color:red;"><br><b>NOTE</b>: If you have not logged into your computing account before, you will need to do that 
+			first. You can find details on My Dundee > Computing Specialist Resources (QMB) > How to Connect to a Computing LABPC remotely (no VPN). </p>
         <?php ActiveForm::end(); ?>
     </div>
 </div>
