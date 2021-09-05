@@ -158,7 +158,7 @@ class LoginForm extends Model
             $modelUser->last_name = $userInfo['lastname'];
             $modelUser->matric_number = $userInfo['matric'];
             $modelUser->email = $userInfo['email'];
-            $modelUser->type = self::STUDENT;
+            $modelUser->type = $userInfo['type'];
             $modelUser->generateAuthKey();
 
             if($modelUser->save()) {
