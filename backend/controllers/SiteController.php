@@ -77,14 +77,14 @@ class SiteController extends Controller
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
-            return $this->render('manage-user');
+            return $this->redirect('manage-user');
         }
 
         $this->layout = 'blank';
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->render('manage-user');
+            return $this->redirect('manage-user');
         }
 
         $model->password = '';
