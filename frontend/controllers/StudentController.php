@@ -377,6 +377,7 @@ class StudentController extends Controller
                                 $groupDetail->scenario = 'groupPRM';
                             } else if ($model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
                                 $groupDetail->mark = $modelsGroupItemMark[$indexSection][$indexItem]->mark;
+                                $groupDetail->scenario = 'groupSAPR';
                             }
 
                             $modelsGroupAssessmentDetail[$indexSection][$indexItem][$indexStudent] = $groupDetail;

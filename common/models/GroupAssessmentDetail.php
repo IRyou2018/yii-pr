@@ -43,6 +43,7 @@ class GroupAssessmentDetail extends \yii\db\ActiveRecord
             [['work_student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['work_student_id' => 'id']],
             [['mark'], 'validateMark'],
             [['mark', 'comment'], 'required', 'on' => 'groupPRM'],
+            [['mark'], 'required', 'on' => 'groupSAPR'],
             // [['contribution'], 'validateContribution'],
         ];
     }
@@ -69,6 +70,7 @@ class GroupAssessmentDetail extends \yii\db\ActiveRecord
         $scenarios['submit'] = ['mark'];
         $scenarios['contribution'] = ['contribution'];
         $scenarios['groupPRM'] = ['mark', 'comment'];
+        $scenarios['groupSAPR'] = ['mark'];
         return $scenarios;
     }
 
