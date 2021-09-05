@@ -42,6 +42,7 @@ class GroupAssessmentDetail extends \yii\db\ActiveRecord
             [['item_id'], 'exist', 'skipOnError' => true, 'targetClass' => Items::className(), 'targetAttribute' => ['item_id' => 'id']],
             [['work_student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['work_student_id' => 'id']],
             [['mark'], 'validateMark'],
+            [['mark', 'comment'], 'required', 'on' => 'groupPRM'],
             // [['contribution'], 'validateContribution'],
         ];
     }
@@ -67,6 +68,7 @@ class GroupAssessmentDetail extends \yii\db\ActiveRecord
         $scenarios = parent::scenarios();
         $scenarios['submit'] = ['mark'];
         $scenarios['contribution'] = ['contribution'];
+        $scenarios['groupPRM'] = ['mark', 'comment'];
         return $scenarios;
     }
 

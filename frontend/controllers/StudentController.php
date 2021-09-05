@@ -374,6 +374,7 @@ class StudentController extends Controller
                             $groupDetail->load($data);
                             if ($model->assessment_type == self::G_PEER_REVIEW_MARK) {
                                 $groupDetail->scenario = 'submit';
+                                $groupDetail->scenario = 'groupPRM';
                             } else if ($model->assessment_type == self::G_SELF_ASSESS_PEER_REVIEW) {
                                 $groupDetail->mark = $modelsGroupItemMark[$indexSection][$indexItem]->mark;
                             }
