@@ -23,10 +23,10 @@ $this->params['breadcrumbs'][] = $this->title;
                 <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
                 <div class="container border mb-2"> 
                 <div class="row mb-1">
-                    <div class="col-md-2 font-weight-bold text-white bg-primary">
+                    <div class="col-md-2 font-weight-bold text-white bg-info">
                         Item/Functionality
                     </div>
-                    <div class="col-md-10">
+                    <div class="col-md-10 text-white bg-info">
                         <?= $modelItem->name ?>
                     </div>
                 </div>

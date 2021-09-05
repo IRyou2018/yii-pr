@@ -30,10 +30,10 @@ $this->params['breadcrumbs'][] = $this->title;
                 <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
                 <div class="container border mb-2">
                 <div class="row mb-1">
-                    <div class="col-md-2 font-weight-bold text-white bg-primary">
+                    <div class="col-md-2 font-weight-bold text-white bg-info">
                         Item/Functionality
                     </div>
-                    <div class="col-md-10">
+                    <div class="col-md-10 text-white bg-info">
                         <?php
                             $query = Rubrics::find()
                                 ->where('item_id = :id')
@@ -44,7 +44,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             ]);
                             Modal::begin([
                                 'title' => 'Rubrics',
-                                'toggleButton' => ['label' => $modelItem->name, 'tag' => 'a', 'class'=>'text-black h5'],
+                                'toggleButton' => ['label' => $modelItem->name, 'tag' => 'a', 'style'=>'color:yellow'],
                                 'size' => 'modal-lg',
                             ]);
                         ?>
@@ -58,19 +58,19 @@ $this->params['breadcrumbs'][] = $this->title;
                                     'attribute' => 'level',
                                     'label' => 'Name',
                                     'value' => 'level',
-                                    'headerOptions' => ['class' => 'text-light bg-primary'],
+                                    'headerOptions' => ['class' => 'text-light bg-info'],
                                     'contentOptions' => ['class' => 'text-wrap']
                                 ],
                                 [
                                     'attribute' => 'weight',
                                     'value' => 'weight',
-                                    'headerOptions' => ['class' => 'text-light bg-primary'],
+                                    'headerOptions' => ['class' => 'text-light bg-info'],
                                     'contentOptions' => ['class' => 'text-wrap']
                                 ],
                                 [
                                     'attribute' => 'description',
                                     'value' => 'description',
-                                    'headerOptions' => ['class' => 'text-light bg-primary'],
+                                    'headerOptions' => ['class' => 'text-light bg-info'],
                                     'contentOptions' => ['class' => 'text-wrap']
                                 ]
                             ],
@@ -97,10 +97,10 @@ $this->params['breadcrumbs'][] = $this->title;
                 </div>
                 <?php if ($modelItem->item_type == 0) : ?>
                     <div class="row mb-1">
-                        <div class="col-md-2 font-weight-bold bg-light">
+                        <div class="col-md-2 font-weight-bold text-white bg-secondary">
                             Student Name
                         </div>
-                        <div class="col-md-2 font-weight-bold bg-light">
+                        <div class="col-md-2 font-weight-bold text-white bg-secondary">
                         <?php
                             if ($model->assessment_type == 0 || $model->assessment_type == 2) {
                                 echo 'Contribution';
@@ -109,7 +109,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             }
                         ?>   
                         </div>
-                        <div class="col-md-8 font-weight-bold bg-light">
+                        <div class="col-md-8 font-weight-bold text-white bg-secondary">
                             Comment
                         </div>
                     </div>

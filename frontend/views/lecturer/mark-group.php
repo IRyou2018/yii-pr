@@ -29,10 +29,10 @@ $this->params['breadcrumbs'][] = $this->title;
             <?php foreach ($modelsItem[$indexSection] as $indexItem => $modelItem): ?>
                 <div class="container border mb-2">
                     <div class="row mb-1">
-                        <div class="col-md-2 font-weight-bold text-white bg-primary">
+                        <div class="col-md-2 font-weight-bold text-white bg-info">
                             Item/Functionality
                         </div>
-                        <div class="col-md-10 font-weight-bold text-white bg-primary">
+                        <div class="col-md-10 text-white bg-info">
                             <?= $modelItem->name ?>
                         </div>
                     </div>
@@ -197,17 +197,17 @@ $this->params['breadcrumbs'][] = $this->title;
                                             [
                                                 'attribute' => 'commentor',
                                                 'value' => 'commentor',
-                                                'headerOptions' => ['class' => 'text-light bg-dark']
+                                                'headerOptions' => ['class' => 'text-light bg-info']
                                             ],
                                             [
                                                 'attribute' => 'commentee',
                                                 'value' => 'commentee',
-                                                'headerOptions' => ['class' => 'text-light bg-dark']
+                                                'headerOptions' => ['class' => 'text-light bg-info']
                                             ],
                                             [
                                                 'attribute' => 'comment',
                                                 'value' => 'comment',
-                                                'headerOptions' => ['class' => 'text-light bg-dark'],
+                                                'headerOptions' => ['class' => 'text-light bg-info'],
                                                 'contentOptions' => ['class' => 'text-wrap']
                                             ]
                                         ],
