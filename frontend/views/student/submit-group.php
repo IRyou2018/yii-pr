@@ -33,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     <div class="col-md-2 font-weight-bold text-white bg-info">
                         Item/Functionality
                     </div>
-                    <div class="col-md-10 text-white bg-info">
+                    <div class="col-md-10 text-black bg-info">
                         <?php
                             $query = Rubrics::find()
                                 ->where('item_id = :id')
